@@ -51,7 +51,7 @@ class FrameController extends Controller
                 'product_id' => 'required|exists:products,id',
                 'quantity' => 'required|integer|min:1|max:100',
                 'location_id' => 'required|exists:locations,id',
-                'special_instructions' => 'nullable|string|max:500',
+                'item_specific_notes' => 'nullable|string|max:1000',
             ]);
 
             $registryCode = $this->orderNumbers->generateRegistryCode();
@@ -64,7 +64,7 @@ class FrameController extends Controller
                 'product_id' => 'required|exists:products,id',
                 'quantity' => 'required|integer|min:1|max:100',
                 'location_id' => 'required|exists:locations,id',
-                'special_instructions' => 'nullable|string|max:500',
+                'item_specific_notes' => 'nullable|string|max:1000',
             ]);
 
             $product = Product::findOrFail($validated['product_id']);
@@ -83,7 +83,7 @@ class FrameController extends Controller
                 'payment_status' => 'unpaid',
                 'total_amount' => $product->price * $validated['quantity'],
                 'amount_paid' => 0,
-                'special_instructions' => $validated['special_instructions'] ?? null,
+                'special_instructions' => null,
             ]);
 
             OrderItem::create([
@@ -94,7 +94,7 @@ class FrameController extends Controller
                 'subtotal' => $product->price * $validated['quantity'],
                 'photo_paths' => $photoPaths ?: null,
                 'photo_source' => $validated['photo_source'] ?? null,
-                'item_specific_notes' => null,
+                'item_specific_notes' => $validated['item_specific_notes'] ?? null,
             ]);
 
             if ($hasPhotoUpload && $registryCode) {

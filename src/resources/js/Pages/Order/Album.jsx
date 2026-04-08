@@ -7,7 +7,7 @@ export default function Album({ products, locations }) {
     const [quantity, setQuantity] = useState(1);
     const [selectedLocation, setSelectedLocation] = useState(locations?.[0]?.id?.toString() || '');
     const [photoSource, setPhotoSource] = useState('');
-    const [specialInstructions, setSpecialInstructions] = useState('');
+    const [itemNotes, setItemNotes] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -26,7 +26,7 @@ export default function Album({ products, locations }) {
             quantity: quantity,
             location_id: parseInt(selectedLocation),
             photo_source: photoSource || null,
-            special_instructions: specialInstructions || null,
+            item_specific_notes: itemNotes || null,
         }, {
             onError: (errs) => setErrors(errs),
             onFinish: () => setSubmitting(false),
@@ -146,13 +146,13 @@ export default function Album({ products, locations }) {
                         {errors.location_id && <p className="mt-2 text-sm text-red-500">{errors.location_id}</p>}
                     </div>
 
-                    {/* Special Instructions */}
+                    {/* Item Notes */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Special Instructions (Optional)</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Notes for Album Design <span className="font-normal text-gray-400">(Optional)</span></h2>
                         <textarea
-                            value={specialInstructions}
-                            onChange={(e) => setSpecialInstructions(e.target.value)}
-                            placeholder="Any special requests or notes..."
+                            value={itemNotes}
+                            onChange={(e) => setItemNotes(e.target.value)}
+                            placeholder="Any special instructions for album design..."
                             rows={3}
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         />

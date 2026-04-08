@@ -44,7 +44,7 @@ class AlbumController extends Controller
             'quantity' => 'required|integer|min:1|max:100',
             'location_id' => 'required|exists:locations,id',
             'photo_source' => 'nullable|string|max:1000',
-            'special_instructions' => 'nullable|string|max:500',
+            'item_specific_notes' => 'nullable|string|max:1000',
         ]);
 
         $orderNumber = $this->orderNumbers->generate();
@@ -62,7 +62,7 @@ class AlbumController extends Controller
                 'payment_status' => 'unpaid',
                 'total_amount' => $product->price * $validated['quantity'],
                 'amount_paid' => 0,
-                'special_instructions' => $validated['special_instructions'] ?? null,
+                'special_instructions' => null,
             ]);
 
             OrderItem::create([
@@ -73,7 +73,7 @@ class AlbumController extends Controller
                 'subtotal' => $product->price * $validated['quantity'],
                 'photo_paths' => null,
                 'photo_source' => $validated['photo_source'] ?? null,
-                'item_specific_notes' => null,
+                'item_specific_notes' => $validated['item_specific_notes'] ?? null,
             ]);
 
             return $order;
