@@ -166,6 +166,7 @@ export default function CreateOrder({ products, locations }) {
             if (!reprintProduct) return false;
             if (customerType === 'existing' && customerRegistries.length > 0 && reprintSource === 'registry' && !selectedRegistry) return false;
             if (customerType === 'existing' && customerRegistries.length === 0 && reprintSource === 'registry') return true; // No registries, skip validation
+            if (reprintSource === 'manual' && !manualPhotoId.trim()) return false;
             if (reprintSource === 'manual' && manualPhotoId.trim() && !manualPhotoData) return false;
             if (reprintSource === 'upload' && !reprintFile) return false;
             if (reprintSource === 'awaiting') return true; // Valid - will upload later
@@ -400,10 +401,18 @@ export default function CreateOrder({ products, locations }) {
         if (reprintFile && selectedServices.has('reprint') && reprintSource === 'upload') {
             const formData = new FormData();
             Object.keys(data).forEach(key => {
-                if (typeof data[key] === 'object' && data[key] !== null) {
-                    formData.append(key, JSON.stringify(data[key]));
-                } else {
-                    formData.append(key, data[key]);
+                const val = data[key];
+                if (Array.isArray(val)) {
+                    val.forEach(item => formData.append(`${key}[]`, item));
+                } else if (val !== null && typeof val === 'object') {
+                    Object.keys(val).forEach(subKey => {
+                        const subVal = val[subKey];
+                        if (subVal !== null && subVal !== undefined) {
+                            formData.append(`${key}[${subKey}]`, typeof subVal === 'boolean' ? (subVal ? '1' : '0') : subVal);
+                        }
+                    });
+                } else if (val !== null && val !== undefined) {
+                    formData.append(key, val);
                 }
             });
             formData.append('reprint_file', reprintFile);
@@ -862,13 +871,11 @@ export default function CreateOrder({ products, locations }) {
                                                     />
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium text-gray-700">
-                                                            {customerType === 'walkin' ? 'Enter Photo ID (optional)' : 'Enter Photo ID manually'}
+                                                            Enter Photo ID
                                                         </p>
-                                                        {customerType === 'walkin' && (
-                                                            <p className="text-xs text-gray-500">
-                                                                Leave blank if this is a new photo session. System will generate a Photo ID.
-                                                            </p>
-                                                        )}
+                                                        <p className="text-xs text-gray-500">
+                                                            Enter an existing Photo ID
+                                                        </p>
                                                         {reprintSource === 'manual' && (
                                                             <div className="mt-3">
                                                                 <div className="flex gap-2">
@@ -1036,7 +1043,7 @@ export default function CreateOrder({ products, locations }) {
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium text-gray-700">New Photo Session</p>
                                                         <p className="text-xs text-gray-500">
-                                                            Customer is here for a new photo. Leave blank and upload later.
+                                                            Customer is here for a new photo. Leave blank and upload later
                                                         </p>
                                                         {reprintSource === 'awaiting' && (
                                                             <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">

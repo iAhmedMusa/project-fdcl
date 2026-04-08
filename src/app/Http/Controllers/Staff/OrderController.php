@@ -103,6 +103,7 @@ class OrderController extends Controller
                 'items_count' => $order->items->count(),
                 'items_summary' => $order->items->pluck('product.name')->join(', '),
                 'service_types' => $order->items->pluck('product.category')->filter()->unique()->values()->all(),
+                'reprint_source' => $order->items->firstWhere('product.category', 'reprint')?->reprint_source,
                 'photo_id' => $order->photoRegistries->first()?->registry_code,
                 'is_awaiting_photo' => $order->isAwaitingPhoto(),
             ];

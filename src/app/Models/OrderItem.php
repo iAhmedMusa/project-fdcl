@@ -18,6 +18,7 @@ class OrderItem extends Model
         'subtotal',
         'photo_paths',
         'photo_source',
+        'reprint_source',
         'item_specific_notes',
         'special_instructions',
     ];

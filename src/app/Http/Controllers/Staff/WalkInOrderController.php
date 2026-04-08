@@ -65,7 +65,7 @@ class WalkInOrderController extends Controller
             'reprint.quantity' => 'required_with:reprint|integer|min:1|max:100',
             'reprint.paper_type' => 'nullable|in:glossy,matte',
             'reprint.registry_code' => 'nullable|string',
-            'reprint.photo_id' => 'nullable|string',
+            'reprint.photo_id' => 'required_if:reprint.source,manual|nullable|string',
             'reprint.confirm_share' => 'nullable|boolean',
             'album' => 'required_if:services,album|array',
             'album.product_id' => 'required_with:album|exists:products,id',
@@ -232,6 +232,7 @@ class WalkInOrderController extends Controller
                     'unit_price' => $product->price,
                     'subtotal' => $product->price * $quantity,
                     'photo_paths' => $photoPaths,
+                    'reprint_source' => $reprint['source'],
                 ]);
 
                 // Handle photo registry attachment

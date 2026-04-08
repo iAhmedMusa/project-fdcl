@@ -1,13 +1,20 @@
+import StaffLayout from '@/Layouts/StaffLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import StaffLayout from '@/Layouts/StaffLayout';
 
 const SERVICE_TYPE_LABELS = {
     photo_studio: 'Photo Print & ID',
-    reprint:      'Upload Photo',
     album:        'Album',
     frame:        'Frame',
     mug:          'Mug',
+};
+
+const REPRINT_SOURCE_LABELS = {
+    registry: 'Reprint',
+    manual:   'Reprint',
+    upload:   'Uploaded Photo',
+    // awaiting: 'New Photo Session',
+    awaiting: 'Studio Service',
 };
 
 const SERVICE_TYPE_COLORS = {
@@ -311,7 +318,9 @@ export default function Orders({ orders, filters }) {
                                                             key={type}
                                                             className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium ${SERVICE_TYPE_COLORS[type] ?? 'bg-muted text-muted-foreground border-border'}`}
                                                         >
-                                                            {SERVICE_TYPE_LABELS[type] ?? type}
+                                                            {type === 'reprint'
+                                                                ? (REPRINT_SOURCE_LABELS[order.reprint_source] ?? 'Uploaded Photo')
+                                                                : (SERVICE_TYPE_LABELS[type] ?? type)}
                                                         </span>
                                                     ))
                                                 ) : (
@@ -406,7 +415,9 @@ export default function Orders({ orders, filters }) {
                                                     key={type}
                                                     className={`inline-flex items-center rounded border px-1.5 py-0.5 text-xs font-medium ${SERVICE_TYPE_COLORS[type] ?? 'bg-muted text-muted-foreground border-border'}`}
                                                 >
-                                                    {SERVICE_TYPE_LABELS[type] ?? type}
+                                                    {type === 'reprint'
+                                                        ? (REPRINT_SOURCE_LABELS[order.reprint_source] ?? 'Uploaded Photo')
+                                                        : (SERVICE_TYPE_LABELS[type] ?? type)}
                                                 </span>
                                             ))}
                                         </div>
