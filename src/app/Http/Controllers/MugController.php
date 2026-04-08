@@ -52,6 +52,7 @@ class MugController extends Controller
                 'quantity' => 'required|integer|min:1|max:100',
                 'location_id' => 'required|exists:locations,id',
                 'item_specific_notes' => 'nullable|string|max:1000',
+                'special_instructions' => 'nullable|string|max:500',
             ]);
 
             $registryCode = $this->orderNumbers->generateRegistryCode();
@@ -65,6 +66,7 @@ class MugController extends Controller
                 'quantity' => 'required|integer|min:1|max:100',
                 'location_id' => 'required|exists:locations,id',
                 'item_specific_notes' => 'nullable|string|max:1000',
+                'special_instructions' => 'nullable|string|max:500',
             ]);
 
             $product = Product::findOrFail($validated['product_id']);
@@ -83,7 +85,7 @@ class MugController extends Controller
                 'payment_status' => 'unpaid',
                 'total_amount' => $product->price * $validated['quantity'],
                 'amount_paid' => 0,
-                'special_instructions' => null,
+                'special_instructions' => $validated['special_instructions'] ?? null,
             ]);
 
             OrderItem::create([

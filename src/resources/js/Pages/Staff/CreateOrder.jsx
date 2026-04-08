@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
 import StaffLayout from '@/Layouts/StaffLayout';
+import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
 
 const SERVICES = [
     { id: 'reprint', name: 'Photo Print', description: 'Photo prints from FDCL Photo ID or customer upload', icon: 'reprint' },
@@ -1232,7 +1232,7 @@ export default function CreateOrder({ products, locations }) {
                                     {/* Album Notes */}
                                     <div className="mb-4">
                                         <label className="mb-2 block text-sm font-medium text-gray-700">
-                                            Notes for Album Design
+                                            Notes for Album
                                         </label>
                                         <textarea
                                             value={albumNotes}

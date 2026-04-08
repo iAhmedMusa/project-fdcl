@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Album({ products, locations }) {
     const [selectedProduct, setSelectedProduct] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [selectedLocation, setSelectedLocation] = useState(locations?.[0]?.id?.toString() || '');
+    const [selectedLocation, setSelectedLocation] = useState('');
     const [photoSource, setPhotoSource] = useState('');
     const [itemNotes, setItemNotes] = useState('');
+    const [specialInstructions, setSpecialInstructions] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -27,6 +28,7 @@ export default function Album({ products, locations }) {
             location_id: parseInt(selectedLocation),
             photo_source: photoSource || null,
             item_specific_notes: itemNotes || null,
+            special_instructions: specialInstructions || null,
         }, {
             onError: (errs) => setErrors(errs),
             onFinish: () => setSubmitting(false),
@@ -53,7 +55,7 @@ export default function Album({ products, locations }) {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Product Selection */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Select Album</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Select Album <span className="text-red-500">*</span></h2>
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             {products.map((product) => {
                                 const isSelected = selectedProduct === product.id.toString();
@@ -80,9 +82,36 @@ export default function Album({ products, locations }) {
                         {errors.product_id && <p className="mt-2 text-sm text-red-500">{errors.product_id}</p>}
                     </div>
 
+                    {/* Photo Source */}
+                    <div className="rounded-lg border bg-card p-5">
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Photo Source</h2>
+                        <textarea
+                            value={photoSource}
+                            onChange={(e) => setPhotoSource(e.target.value)}
+                            placeholder="Google Drive link, USB/Pendrive, WeTransfer, etc."
+                            rows={3}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                        <p className="mt-2 text-xs text-gray-500">
+                            Provide link or describe how you will provide photos for your album.
+                        </p>
+                    </div>
+
+                    {/* Item Notes */}
+                    <div className="rounded-lg border bg-card p-5">
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Note for Album <span className="font-normal text-gray-400">(Optional)</span></h2>
+                        <textarea
+                            value={itemNotes}
+                            onChange={(e) => setItemNotes(e.target.value)}
+                            placeholder="Any special instructions for album design..."
+                            rows={3}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
+                    </div>
+
                     {/* Quantity */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Quantity</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Quantity <span className="text-red-500">*</span></h2>
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
@@ -113,24 +142,9 @@ export default function Album({ products, locations }) {
                         </div>
                     </div>
 
-                    {/* Photo Source */}
-                    <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Photo Source</h2>
-                        <textarea
-                            value={photoSource}
-                            onChange={(e) => setPhotoSource(e.target.value)}
-                            placeholder="Google Drive link, USB/Pendrive, WeTransfer, etc."
-                            rows={3}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                        />
-                        <p className="mt-2 text-xs text-gray-500">
-                            Provide link or describe how you will provide photos for your album.
-                        </p>
-                    </div>
-
                     {/* Pickup Location */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Pickup Location</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Pickup Location <span className="text-red-500">*</span></h2>
                         <select
                             value={selectedLocation}
                             onChange={(e) => setSelectedLocation(e.target.value)}
@@ -146,14 +160,14 @@ export default function Album({ products, locations }) {
                         {errors.location_id && <p className="mt-2 text-sm text-red-500">{errors.location_id}</p>}
                     </div>
 
-                    {/* Item Notes */}
+                    {/* Special Instructions */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Notes for Album Design <span className="font-normal text-gray-400">(Optional)</span></h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
                         <textarea
-                            value={itemNotes}
-                            onChange={(e) => setItemNotes(e.target.value)}
-                            placeholder="Any special instructions for album design..."
-                            rows={3}
+                            value={specialInstructions}
+                            onChange={(e) => setSpecialInstructions(e.target.value)}
+                            placeholder="e.g. Matte paper, do not crop, specific colour notes..."
+                            rows={2}
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>

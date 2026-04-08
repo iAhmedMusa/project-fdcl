@@ -1,29 +1,30 @@
-import { useState, useRef } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { Head, Link, router } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 
 export default function Mug({ products, locations }) {
     const [activeTab, setActiveTab] = useState('upload');
-    
+
     // Upload
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadPreview, setUploadPreview] = useState(null);
     const fileInputRef = useRef(null);
-    
+
     // Photo source
     const [photoSource, setPhotoSource] = useState('');
-    
+
     // Common fields
     const [selectedProduct, setSelectedProduct] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [selectedLocation, setSelectedLocation] = useState(locations?.[0]?.id?.toString() || '');
+    const [selectedLocation, setSelectedLocation] = useState('');
     const [itemNotes, setItemNotes] = useState('');
+    const [specialInstructions, setSpecialInstructions] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
     const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
-    
+
     const hasPhoto = (activeTab === 'upload' && uploadedFile) || (activeTab === 'source' && photoSource.trim());
     const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation;
 
@@ -57,6 +58,7 @@ export default function Mug({ products, locations }) {
             formData.append('quantity', quantity);
             formData.append('location_id', selectedLocation);
             if (itemNotes) formData.append('item_specific_notes', itemNotes);
+            if (specialInstructions) formData.append('special_instructions', specialInstructions);
 
             router.post('/order/mug', formData, {
                 forceFormData: true,
@@ -70,6 +72,7 @@ export default function Mug({ products, locations }) {
                 quantity: quantity,
                 location_id: parseInt(selectedLocation),
                 item_specific_notes: itemNotes || null,
+                special_instructions: specialInstructions || null,
             }, {
                 onError: (errs) => setErrors(errs),
                 onFinish: () => setSubmitting(false),
@@ -95,9 +98,38 @@ export default function Mug({ products, locations }) {
 
             <div className="max-w-xl">
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Product Selection */}
+                    <div className="rounded-lg border bg-card p-5">
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Select Mug <span className="text-red-500">*</span></h2>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {products.map((product) => {
+                                const isSelected = selectedProduct === product.id.toString();
+                                return (
+                                    <button
+                                        key={product.id}
+                                        type="button"
+                                        onClick={() => setSelectedProduct(product.id.toString())}
+                                        className={`rounded-lg border p-3 text-left transition-all ${
+                                            isSelected
+                                                ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                                                : 'border-gray-200 bg-white hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                                            {product.name}
+                                        </p>
+                                        <p className="text-xs text-gray-500">{product.size_label}</p>
+                                        <p className="mt-1 text-sm font-semibold text-gray-900">৳{parseFloat(product.price).toFixed(0)}</p>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {errors.product_id && <p className="mt-2 text-sm text-red-500">{errors.product_id}</p>}
+                    </div>
+
                     {/* Photo Source */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Provide Your Photo</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Provide Your Photo <span className="text-red-500">*</span></h2>
 
                         {/* Tabs */}
                         <div className="flex gap-3">
@@ -149,7 +181,7 @@ export default function Mug({ products, locations }) {
                                     onChange={handleFileChange}
                                     className="hidden"
                                 />
-                                
+
                                 {!uploadedFile ? (
                                     <button
                                         type="button"
@@ -194,38 +226,21 @@ export default function Mug({ products, locations }) {
                         )}
                     </div>
 
-                    {/* Product Selection */}
+                    {/* Item Notes */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Select Mug</h2>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                            {products.map((product) => {
-                                const isSelected = selectedProduct === product.id.toString();
-                                return (
-                                    <button
-                                        key={product.id}
-                                        type="button"
-                                        onClick={() => setSelectedProduct(product.id.toString())}
-                                        className={`rounded-lg border p-3 text-left transition-all ${
-                                            isSelected
-                                                ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                                                : 'border-gray-200 bg-white hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
-                                            {product.name}
-                                        </p>
-                                        <p className="text-xs text-gray-500">{product.size_label}</p>
-                                        <p className="mt-1 text-sm font-semibold text-gray-900">৳{parseFloat(product.price).toFixed(0)}</p>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        {errors.product_id && <p className="mt-2 text-sm text-red-500">{errors.product_id}</p>}
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Note for Mug <span className="font-normal text-gray-400">(Optional)</span></h2>
+                        <textarea
+                            value={itemNotes}
+                            onChange={(e) => setItemNotes(e.target.value)}
+                            placeholder="Any special instructions for mug..."
+                            rows={3}
+                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        />
                     </div>
 
                     {/* Quantity */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Quantity</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Quantity <span className="text-red-500">*</span></h2>
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
@@ -258,7 +273,7 @@ export default function Mug({ products, locations }) {
 
                     {/* Pickup Location */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Pickup Location</h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Pickup Location <span className="text-red-500">*</span></h2>
                         <select
                             value={selectedLocation}
                             onChange={(e) => setSelectedLocation(e.target.value)}
@@ -274,14 +289,14 @@ export default function Mug({ products, locations }) {
                         {errors.location_id && <p className="mt-2 text-sm text-red-500">{errors.location_id}</p>}
                     </div>
 
-                    {/* Item Notes */}
+                    {/* Special Instructions */}
                     <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900">Notes for Mug <span className="font-normal text-gray-400">(Optional)</span></h2>
+                        <h2 className="mb-4 text-base font-semibold text-gray-900">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
                         <textarea
-                            value={itemNotes}
-                            onChange={(e) => setItemNotes(e.target.value)}
-                            placeholder="Any special instructions for mug..."
-                            rows={3}
+                            value={specialInstructions}
+                            onChange={(e) => setSpecialInstructions(e.target.value)}
+                            placeholder="e.g. Matte paper, do not crop, specific colour notes..."
+                            rows={2}
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         />
                     </div>
