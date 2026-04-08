@@ -1,0 +1,46 @@
+# ── Laravel ──────────────────────────────────────────────────────────────────
+/src/.env
+/src/.env.backup
+/src/.env.production
+/src/vendor/
+/src/node_modules/
+/src/public/hot
+/src/public/storage
+/src/public/build/
+/src/storage/app/public/*
+/src/storage/logs/*
+/src/storage/framework/cache/*
+/src/storage/framework/sessions/*
+/src/storage/framework/testing/*
+/src/storage/framework/views/*
+/src/bootstrap/cache/*.php
+/src/focus_lab/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+docker/mysql/data/
+.env.docker
+
+# ── Google OAuth / Secrets ────────────────────────────────────────────────────
+client_secret*.json
+*.credentials.json
+service-account*.json
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+
+# ── Misc project notes (not for repo) ────────────────────────────────────────
+notes.txt
+todays_work.md
+claude_todays_work.md
+photo-size.txt
+reprint.txt
+CLOUD_STORAGE_PLAN.md
+.claude/
+.opencode/

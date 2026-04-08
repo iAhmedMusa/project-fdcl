@@ -1,0 +1,37 @@
+# ── Git ───────────────────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Laravel build artifacts ───────────────────────────────────────────────────
+src/vendor/
+src/node_modules/
+src/public/build/
+src/public/hot
+src/storage/logs/*
+src/storage/framework/cache/*
+src/storage/framework/sessions/*
+src/storage/framework/views/*
+src/bootstrap/cache/*.php
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+src/tests/
+
+# ── Secrets ───────────────────────────────────────────────────────────────────
+src/.env
+.env.docker
+client_secret*.json
+
+# ── OS / Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# ── Docker data volumes ───────────────────────────────────────────────────────
+docker/mysql/data/
+
+# ── Docs / notes ──────────────────────────────────────────────────────────────
+*.md
+notes.txt
+.claude/
+.opencode/

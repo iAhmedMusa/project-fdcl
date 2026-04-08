@@ -1,0 +1,72 @@
+services:
+  app:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    container_name: fdcl_app
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+      - mailpit
+    networks:
+      - fdcl_network
+    env_file:
+      - .env.docker
+
+  nginx:
+    image: nginx:alpine
+    container_name: fdcl_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - fdcl_network
+
+  db:
+    image: mysql:8.0
+    container_name: fdcl_db
+    ports:
+      - "3307:3306" # 3306 occupied by wp_db on this machine
+    volumes:
+      - fdcl_mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    env_file:
+      - .env.docker
+    networks:
+      - fdcl_network
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: fdcl_mailpit
+    ports:
+      - "8026:8025" # 8025 occupied by wp_mailhog on this machine
+      - "1026:1025" # 1025 occupied by wp_mailhog on this machine
+    networks:
+      - fdcl_network
+
+  vite:
+    image: node:20-alpine
+    container_name: fdcl_vite
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - app
+    networks:
+      - fdcl_network
+
+volumes:
+  fdcl_mysql_data:
+
+networks:
+  fdcl_network:
+    driver: bridge
