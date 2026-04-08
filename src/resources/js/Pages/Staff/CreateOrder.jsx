@@ -99,6 +99,8 @@ export default function CreateOrder({ products, locations }) {
     const [shareConfirmation, setShareConfirmation] = useState(null);
     const [confirmShare, setConfirmShare] = useState(false);
     const fileInputRef = useRef(null);
+    // Additional reprint items (for upload/awaiting sources)
+    const [additionalReprintItems, setAdditionalReprintItems] = useState([]);
 
     // ── Step 3: Order details ────────────────────────────────
     const [locationId, setLocationId] = useState('');
@@ -171,7 +173,17 @@ export default function CreateOrder({ products, locations }) {
             if (reprintSource === 'manual' && !manualPhotoId.trim()) return false;
             if (reprintSource === 'manual' && manualPhotoId.trim() && !manualPhotoData) return false;
             if (reprintSource === 'upload' && !reprintFile) return false;
-            if (reprintSource === 'awaiting') return true; // Valid - will upload later
+            if (reprintSource === 'awaiting') {
+                for (const item of additionalReprintItems) {
+                    if (!item.product) return false;
+                }
+                return true;
+            }
+            if (reprintSource === 'upload') {
+                for (const item of additionalReprintItems) {
+                    if (!item.product || !item.file) return false;
+                }
+            }
         }
         if (selectedServices.has('album') && !albumProduct) return false;
         if (selectedServices.has('frame') && !frameProduct) return false;
@@ -247,6 +259,10 @@ export default function CreateOrder({ products, locations }) {
         let total = 0;
         if (selectedServices.has('reprint') && reprintProduct) {
             total += reprintTotal;
+            additionalReprintItems.forEach(item => {
+                const prod = reprintProducts.find(p => p.id == item.product);
+                if (prod) total += parseFloat(prod.price) * item.quantity;
+            });
         }
         if (selectedServices.has('album') && albumProduct) {
             total += albumTotal;
@@ -333,6 +349,33 @@ export default function CreateOrder({ products, locations }) {
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    const addReprintItem = () => {
+        setAdditionalReprintItems(prev => [...prev, {
+            id: Date.now() + Math.random(),
+            product: reprintProduct,
+            quantity: 1,
+            file: null,
+            preview: null,
+        }]);
+    };
+
+    const removeReprintItem = (id) => {
+        setAdditionalReprintItems(prev => prev.filter(i => i.id !== id));
+    };
+
+    const updateReprintItem = (id, field, value) => {
+        setAdditionalReprintItems(prev => prev.map(i => i.id === id ? { ...i, [field]: value } : i));
+    };
+
+    const handleAdditionalFileChange = (id, e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => updateReprintItem(id, 'preview', ev.target.result);
+        reader.readAsDataURL(file);
+        updateReprintItem(id, 'file', file);
+    };
+
     // Submit
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -366,22 +409,28 @@ export default function CreateOrder({ products, locations }) {
         }
 
         if (selectedServices.has('reprint')) {
-            data.reprint = {
+            const firstItem = {
                 source: reprintSource,
                 product_id: parseInt(reprintProduct),
                 quantity: reprintQuantity,
                 paper_type: reprintPaperType,
                 confirm_share: confirmShare,
             };
-
             if (reprintSource === 'registry' && selectedRegistry) {
-                data.reprint.registry_code = selectedRegistry.code;
+                firstItem.registry_code = selectedRegistry.code;
             } else if (reprintSource === 'manual') {
-                data.reprint.photo_id = manualPhotoId.trim() || null;
-                if (manualPhotoData) {
-                    data.reprint.registry_code = manualPhotoData.code;
-                }
+                firstItem.photo_id = manualPhotoId.trim() || null;
+                if (manualPhotoData) firstItem.registry_code = manualPhotoData.code;
             }
+            data.reprint_items = [
+                firstItem,
+                ...additionalReprintItems.map(item => ({
+                    source: reprintSource,
+                    product_id: parseInt(item.product),
+                    quantity: item.quantity,
+                    paper_type: reprintPaperType,
+                })),
+            ];
         }
 
         if (selectedServices.has('album')) {
@@ -419,11 +468,23 @@ export default function CreateOrder({ products, locations }) {
             data.payment_reference = paymentReference;
         }
 
-        if (reprintFile && selectedServices.has('reprint') && reprintSource === 'upload') {
+        const needsFormData = selectedServices.has('reprint') && reprintSource === 'upload' &&
+            (reprintFile || additionalReprintItems.some(i => i.file));
+
+        if (needsFormData) {
             const formData = new FormData();
             Object.keys(data).forEach(key => {
                 const val = data[key];
-                if (Array.isArray(val)) {
+                if (key === 'reprint_items') {
+                    val.forEach((item, idx) => {
+                        Object.keys(item).forEach(subKey => {
+                            const subVal = item[subKey];
+                            if (subVal !== null && subVal !== undefined) {
+                                formData.append(`reprint_items[${idx}][${subKey}]`, typeof subVal === 'boolean' ? (subVal ? '1' : '0') : subVal);
+                            }
+                        });
+                    });
+                } else if (Array.isArray(val)) {
                     val.forEach(item => formData.append(`${key}[]`, item));
                 } else if (val !== null && typeof val === 'object') {
                     Object.keys(val).forEach(subKey => {
@@ -436,17 +497,18 @@ export default function CreateOrder({ products, locations }) {
                     formData.append(key, val);
                 }
             });
-            formData.append('reprint_file', reprintFile);
+            if (reprintFile) formData.append('reprint_file_0', reprintFile);
+            additionalReprintItems.forEach((item, idx) => {
+                if (item.file) formData.append(`reprint_file_${idx + 1}`, item.file);
+            });
 
             router.post(route('staff.orders.store'), formData, {
                 forceFormData: true,
                 onError: (errs) => {
                     setErrors(errs);
                     setSubmitting(false);
-                    if (errs['reprint.registry_code'] || errs['reprint.photo_id']) {
-                        if (shareConfirmation) {
-                            setConfirmShare(false);
-                        }
+                    if (errs['reprint_items.0.registry_code'] || errs['reprint_items.0.photo_id']) {
+                        if (shareConfirmation) setConfirmShare(false);
                     }
                 },
                 onFinish: () => setSubmitting(false),
@@ -456,7 +518,7 @@ export default function CreateOrder({ products, locations }) {
                 onError: (errs) => {
                     setErrors(errs);
                     setSubmitting(false);
-                    if (errs['reprint.registry_code'] || errs['reprint.photo_id']) {
+                    if (errs['reprint_items.0.registry_code'] || errs['reprint_items.0.photo_id']) {
                         if (shareConfirmation) {
                             setConfirmShare(false);
                         }
@@ -887,6 +949,7 @@ export default function CreateOrder({ products, locations }) {
                                                             setReprintSource('manual');
                                                             setSelectedRegistry(null);
                                                             removeFile();
+                                                            setAdditionalReprintItems([]);
                                                         }}
                                                         className="mt-1 h-4 w-4 text-primary"
                                                     />
@@ -993,6 +1056,7 @@ export default function CreateOrder({ products, locations }) {
                                                             setSelectedRegistry(null);
                                                             setManualPhotoId('');
                                                             setManualPhotoData(null);
+                                                            setAdditionalReprintItems([]);
                                                         }}
                                                         className="mt-1 h-4 w-4 text-primary"
                                                     />
@@ -1058,6 +1122,7 @@ export default function CreateOrder({ products, locations }) {
                                                             setManualPhotoId('');
                                                             setManualPhotoData(null);
                                                             removeFile();
+                                                            setAdditionalReprintItems([]);
                                                         }}
                                                         className="mt-1 h-4 w-4 text-primary"
                                                     />
@@ -1157,12 +1222,120 @@ export default function CreateOrder({ products, locations }) {
                                         </select>
                                     </div>
 
+                                    {/* Additional items (upload/awaiting only) */}
+                                    {['upload', 'awaiting'].includes(reprintSource) && (
+                                        <div className="space-y-3">
+                                            {additionalReprintItems.map((item, idx) => {
+                                                const itemProd = reprintProducts.find(p => p.id == item.product);
+                                                return (
+                                                    <div key={item.id} className="rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
+                                                        <div className="mb-3 flex items-center justify-between">
+                                                            <span className="text-sm font-semibold text-primary">Photo {idx + 2}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeReprintItem(item.id)}
+                                                                className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500"
+                                                            >
+                                                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+
+                                                        {/* File upload for this item */}
+                                                        {reprintSource === 'upload' && (
+                                                            <div className="mb-3">
+                                                                {!item.file ? (
+                                                                    <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-gray-300 bg-white px-4 py-4 transition-colors hover:border-primary/50 hover:bg-primary/5">
+                                                                        <svg className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
+                                                                        </svg>
+                                                                        <span className="text-sm font-medium text-primary">Click to upload photo {idx + 2}</span>
+                                                                        <input
+                                                                            type="file"
+                                                                            accept="image/jpeg,image/png,image/jpg"
+                                                                            onChange={(e) => handleAdditionalFileChange(item.id, e)}
+                                                                            className="hidden"
+                                                                        />
+                                                                    </label>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-2">
+                                                                        {item.preview && (
+                                                                            <img src={item.preview} alt="" className="h-10 w-10 rounded border object-cover" />
+                                                                        )}
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <p className="truncate text-xs font-medium text-green-700">{item.file.name}</p>
+                                                                        </div>
+                                                                        <button type="button" onClick={() => updateReprintItem(item.id, 'file', null)} className="rounded p-1 text-green-600 hover:bg-green-100">
+                                                                            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                                                                            </svg>
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Size + Qty */}
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <label className="mb-1 block text-xs font-medium text-gray-600">Size <span className="text-red-500">*</span></label>
+                                                                <select
+                                                                    value={item.product}
+                                                                    onChange={(e) => updateReprintItem(item.id, 'product', e.target.value)}
+                                                                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                                                >
+                                                                    <option value="">Select size...</option>
+                                                                    {reprintProducts.map(p => (
+                                                                        <option key={p.id} value={p.id}>
+                                                                            {p.name} ({p.size_label}) — ৳{parseFloat(p.price).toFixed(0)}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="mb-1 block text-xs font-medium text-gray-600">Copies</label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <button type="button" onClick={() => updateReprintItem(item.id, 'quantity', Math.max(1, item.quantity - 1))} className="rounded border border-gray-300 px-2 py-1.5 text-gray-500 hover:bg-gray-50">
+                                                                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" /></svg>
+                                                                    </button>
+                                                                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                                                                    <button type="button" onClick={() => updateReprintItem(item.id, 'quantity', Math.min(100, item.quantity + 1))} className="rounded border border-gray-300 px-2 py-1.5 text-gray-500 hover:bg-gray-50">
+                                                                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {itemProd && (
+                                                            <p className="mt-2 text-right text-xs font-semibold text-primary">৳{(parseFloat(itemProd.price) * item.quantity).toFixed(0)}</p>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+
+                                            {/* + Add photo button */}
+                                            <button
+                                                type="button"
+                                                onClick={addReprintItem}
+                                                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 text-sm font-medium text-gray-500 transition-colors hover:border-primary hover:text-primary"
+                                            >
+                                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                                </svg>
+                                                Add another photo
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {/* Total */}
                                     {reprintProduct && (
                                         <div className="rounded-lg bg-gray-50 p-4">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm text-gray-600">Reprint subtotal</span>
-                                                <span className="text-xl font-bold text-gray-900">৳{reprintTotal.toFixed(0)}</span>
+                                                <span className="text-xl font-bold text-gray-900">৳{(reprintTotal + additionalReprintItems.reduce((sum, item) => {
+                                                    const prod = reprintProducts.find(p => p.id == item.product);
+                                                    return sum + (prod ? parseFloat(prod.price) * item.quantity : 0);
+                                                }, 0)).toFixed(0)}</span>
                                             </div>
                                         </div>
                                     )}
@@ -1637,35 +1810,39 @@ export default function CreateOrder({ products, locations }) {
                                     </div>
 
                                     {selectedServices.has('reprint') && reprintProduct && (
-                                        <div className="border-t pt-3">
+                                        <div className="border-t pt-3 space-y-1">
                                             <div className="flex justify-between">
-                                                <span className="text-gray-500">Reprint:</span>
+                                                <span className="text-gray-500">Photo 1:</span>
                                                 <span className="font-medium">
                                                     {selectedReprintProduct?.name} ({selectedReprintProduct?.size_label}) × {reprintQuantity}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-gray-500">Source:</span>
+                                            {additionalReprintItems.map((item, idx) => {
+                                                const prod = reprintProducts.find(p => p.id == item.product);
+                                                return prod ? (
+                                                    <div key={item.id} className="flex justify-between text-xs text-gray-500">
+                                                        <span>Photo {idx + 2}:</span>
+                                                        <span>{prod.name} ({prod.size_label}) × {item.quantity}</span>
+                                                    </div>
+                                                ) : null;
+                                            })}
+                                            <div className="flex justify-between text-xs text-gray-400">
+                                                <span>Source:</span>
                                                 <span>
-                                                    {reprintSource === 'registry' && selectedRegistry
-                                                        ? selectedRegistry.code
-                                                        : reprintSource === 'manual' && manualPhotoData
-                                                            ? manualPhotoData.code
-                                                            : reprintSource === 'manual' && manualPhotoId
-                                                                ? manualPhotoId
-                                                                : reprintSource === 'manual'
-                                                                    ? 'Awaiting Photo'
-                                                                    : reprintSource === 'awaiting'
-                                                                        ? 'Awaiting Photo'
-                                                                        : 'Uploaded photo'}
+                                                    {reprintSource === 'registry' && selectedRegistry ? selectedRegistry.code
+                                                        : reprintSource === 'manual' && manualPhotoData ? manualPhotoData.code
+                                                        : reprintSource === 'manual' && manualPhotoId ? manualPhotoId
+                                                        : reprintSource === 'awaiting' ? 'Awaiting Photo'
+                                                        : 'Uploaded photo'}
                                                 </span>
                                             </div>
-                                            {reprintProduct && (
-                                                <div className="mt-2 flex justify-between border-t pt-2">
-                                                    <span className="font-medium">Reprint Total:</span>
-                                                    <span className="font-bold">৳{reprintTotal.toFixed(0)}</span>
-                                                </div>
-                                            )}
+                                            <div className="mt-2 flex justify-between border-t pt-2">
+                                                <span className="font-medium">Reprint Total:</span>
+                                                <span className="font-bold">৳{(reprintTotal + additionalReprintItems.reduce((sum, item) => {
+                                                    const prod = reprintProducts.find(p => p.id == item.product);
+                                                    return sum + (prod ? parseFloat(prod.price) * item.quantity : 0);
+                                                }, 0)).toFixed(0)}</span>
+                                            </div>
                                         </div>
                                     )}
 

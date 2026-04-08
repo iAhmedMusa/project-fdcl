@@ -59,14 +59,14 @@ class WalkInOrderController extends Controller
             'special_instructions' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'services' => 'required|array|min:1',
-            'reprint' => 'required_if:services,reprint|array',
-            'reprint.source' => 'required_with:reprint|in:registry,manual,upload,awaiting',
-            'reprint.product_id' => 'required_with:reprint|exists:products,id',
-            'reprint.quantity' => 'required_with:reprint|integer|min:1|max:100',
-            'reprint.paper_type' => 'nullable|in:glossy,matte',
-            'reprint.registry_code' => 'nullable|string',
-            'reprint.photo_id' => 'required_if:reprint.source,manual|nullable|string',
-            'reprint.confirm_share' => 'nullable|boolean',
+            'reprint_items' => 'nullable|array',
+            'reprint_items.*.source' => 'required_with:reprint_items|in:registry,manual,upload,awaiting',
+            'reprint_items.*.product_id' => 'required_with:reprint_items|exists:products,id',
+            'reprint_items.*.quantity' => 'required_with:reprint_items|integer|min:1|max:100',
+            'reprint_items.*.paper_type' => 'nullable|in:glossy,matte',
+            'reprint_items.*.registry_code' => 'nullable|string',
+            'reprint_items.*.photo_id' => 'nullable|string',
+            'reprint_items.*.confirm_share' => 'nullable|boolean',
             'album' => 'required_if:services,album|array',
             'album.product_id' => 'required_with:album|exists:products,id',
             'album.quantity' => 'required_with:album|integer|min:1|max:100',
@@ -113,52 +113,13 @@ class WalkInOrderController extends Controller
             $albumAmount = 0;
             $frameAmount = 0;
             $mugAmount = 0;
-            $photoRegistry = null;
-            $uploadedRegistryCode = null;
-            $photoPaths = [];
 
-            // Calculate reprint amount first
-            if (in_array('reprint', $validated['services'])) {
-                $reprint = $validated['reprint'];
-                $product = Product::findOrFail($reprint['product_id']);
-                $quantity = $reprint['quantity'];
-                $reprintAmount = $product->price * $quantity;
-
-                // Handle different sources
-                if ($reprint['source'] === 'registry' && ! empty($reprint['registry_code'])) {
-                    $registry = PhotoRegistry::where('registry_code', strtoupper($reprint['registry_code']))->first();
-                    if ($registry) {
-                        if ($registry->user_id && $registry->user_id !== $customer->id) {
-                            if (empty($reprint['confirm_share'])) {
-                                throw ValidationException::withMessages([
-                                    'reprint.registry_code' => 'This Photo ID is already associated with another customer. Please confirm to share it.',
-                                ]);
-                            }
-                        }
-                        $photoPaths = $registry->photo_paths ?? [];
-                        $photoRegistry = $registry;
-                    }
-                } elseif ($reprint['source'] === 'manual' && ! empty($reprint['photo_id'])) {
-                    $registry = PhotoRegistry::where('registry_code', strtoupper($reprint['photo_id']))->first();
-                    if ($registry) {
-                        if ($registry->user_id && $registry->user_id !== $customer->id) {
-                            if (empty($reprint['confirm_share'])) {
-                                throw ValidationException::withMessages([
-                                    'reprint.photo_id' => 'This Photo ID is already associated with another customer. Please confirm to share it.',
-                                ]);
-                            }
-                        }
-                        $photoPaths = $registry->photo_paths ?? [];
-                        $photoRegistry = $registry;
-                    }
-                } elseif ($reprint['source'] === 'manual' || $reprint['source'] === 'awaiting') {
-                    // Walk-in or existing customer with no photo ID yet - leave order without photo_registry
-                    // Staff will upload photo later, which triggers registry creation
-                } elseif ($reprint['source'] === 'upload' && $request->hasFile('reprint_file')) {
-                    // Handle uploaded file - generate registry code first
-                    $uploadedRegistryCode = $this->orderNumbers->generateRegistryCode();
-                    $path = $this->photoStorage->store($request->file('reprint_file'), $uploadedRegistryCode, $orderNumber);
-                    $photoPaths = [$path];
+            // Calculate reprint amount from all items
+            $reprintItemsData = $validated['reprint_items'] ?? [];
+            if (in_array('reprint', $validated['services']) && ! empty($reprintItemsData)) {
+                foreach ($reprintItemsData as $reprintItem) {
+                    $product = Product::findOrFail($reprintItem['product_id']);
+                    $reprintAmount += $product->price * $reprintItem['quantity'];
                 }
             }
 
@@ -219,43 +180,77 @@ class WalkInOrderController extends Controller
                 'total_amount' => $totalAmount,
                 'discount_amount' => $validated['discount_amount'] ?? 0,
                 'amount_paid' => $paymentAmount,
-                'paper_type' => $validated['reprint']['paper_type'] ?? 'glossy',
+                'paper_type' => $reprintItemsData[0]['paper_type'] ?? 'glossy',
                 'special_instructions' => $validated['special_instructions'] ?? null,
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Create order items for reprint
-            if (in_array('reprint', $validated['services'])) {
-                $reprint = $validated['reprint'];
-                $product = Product::findOrFail($reprint['product_id']);
-                $quantity = $reprint['quantity'];
+            // Create order items for reprint (one per slot)
+            if (in_array('reprint', $validated['services']) && ! empty($reprintItemsData)) {
+                foreach ($reprintItemsData as $idx => $reprintItem) {
+                    $product = Product::findOrFail($reprintItem['product_id']);
+                    $quantity = $reprintItem['quantity'];
+                    $source = $reprintItem['source'];
+                    $itemPhotoPaths = [];
+                    $itemRegistry = null;
+                    $itemRegistryCode = null;
 
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'quantity' => $quantity,
-                    'unit_price' => $product->price,
-                    'subtotal' => $product->price * $quantity,
-                    'photo_paths' => $photoPaths,
-                    'reprint_source' => $reprint['source'],
-                ]);
+                    if ($source === 'registry' && ! empty($reprintItem['registry_code'])) {
+                        $registry = PhotoRegistry::where('registry_code', strtoupper($reprintItem['registry_code']))->first();
+                        if ($registry) {
+                            if ($registry->user_id && $registry->user_id !== $customer->id) {
+                                if (empty($reprintItem['confirm_share'])) {
+                                    throw ValidationException::withMessages([
+                                        "reprint_items.{$idx}.registry_code" => 'This Photo ID is already associated with another customer.',
+                                    ]);
+                                }
+                            }
+                            $itemPhotoPaths = $registry->photo_paths ?? [];
+                            $itemRegistry = $registry;
+                        }
+                    } elseif ($source === 'manual' && ! empty($reprintItem['photo_id'])) {
+                        $registry = PhotoRegistry::where('registry_code', strtoupper($reprintItem['photo_id']))->first();
+                        if ($registry) {
+                            if ($registry->user_id && $registry->user_id !== $customer->id) {
+                                if (empty($reprintItem['confirm_share'])) {
+                                    throw ValidationException::withMessages([
+                                        "reprint_items.{$idx}.photo_id" => 'This Photo ID is already associated with another customer.',
+                                    ]);
+                                }
+                            }
+                            $itemPhotoPaths = $registry->photo_paths ?? [];
+                            $itemRegistry = $registry;
+                        }
+                    } elseif ($source === 'upload' && $request->hasFile("reprint_file_{$idx}")) {
+                        $itemRegistryCode = $this->orderNumbers->generateRegistryCode();
+                        $path = $this->photoStorage->store($request->file("reprint_file_{$idx}"), $itemRegistryCode, $orderNumber);
+                        $itemPhotoPaths = [$path];
+                    }
 
-                // Handle photo registry attachment
-                if ($reprint['source'] === 'upload') {
-                    // Create registry for uploaded photo
-                    $photoRegistry = PhotoRegistry::create([
-                        'registry_code' => $uploadedRegistryCode,
-                        'user_id' => $customer->id,
-                        'photo_paths' => $photoPaths,
-                        'expires_at' => now()->addYear(),
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $product->price,
+                        'subtotal' => $product->price * $quantity,
+                        'photo_paths' => $itemPhotoPaths,
+                        'reprint_source' => $source,
                     ]);
-                    $order->photoRegistries()->attach($photoRegistry->id);
-                } elseif ($photoRegistry) {
-                    // Attach existing registry to this order (shared access)
-                    $order->photoRegistries()->attach($photoRegistry->id);
-                    // Set original owner if this registry doesn't have one yet
-                    if ($photoRegistry->user_id === null) {
-                        $photoRegistry->update(['user_id' => $customer->id]);
+
+                    // Attach or create registry
+                    if ($source === 'upload' && $itemRegistryCode) {
+                        $newRegistry = PhotoRegistry::create([
+                            'registry_code' => $itemRegistryCode,
+                            'user_id' => $customer->id,
+                            'photo_paths' => $itemPhotoPaths,
+                            'expires_at' => now()->addYear(),
+                        ]);
+                        $order->photoRegistries()->attach($newRegistry->id);
+                    } elseif ($itemRegistry) {
+                        $order->photoRegistries()->attach($itemRegistry->id);
+                        if ($itemRegistry->user_id === null) {
+                            $itemRegistry->update(['user_id' => $customer->id]);
+                        }
                     }
                 }
             }
