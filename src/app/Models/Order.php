@@ -65,12 +65,8 @@ class Order extends Model
 
     public function isAwaitingPhoto(): bool
     {
-        if ($this->photoRegistries()->exists()) {
-            return false;
-        }
-
         foreach ($this->items as $item) {
-            if ($item->product && $item->product->category === 'reprint') {
+            if ($item->product && $item->product->category === 'reprint' && empty($item->photo_paths)) {
                 return true;
             }
         }

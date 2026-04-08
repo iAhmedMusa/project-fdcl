@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import StaffLayout from '@/Layouts/StaffLayout';
 import { Card, CardContent, Button, Badge, StatusBadge, PaymentBadge, Input, Label, Textarea, Select } from '@/Components/ui';
 
@@ -7,9 +7,8 @@ export default function OrderDetail({ order }) {
     const [showPaymentForm, setShowPaymentForm] = useState(false);
     const [notes, setNotes] = useState(order.notes || '');
     const [pendingStatus, setPendingStatus] = useState(null);
-    const [photoFile, setPhotoFile] = useState(null);
-    const [uploadingPhoto, setUploadingPhoto] = useState(false);
-    const photoInputRef = useRef(null);
+    const [photoFiles, setPhotoFiles] = useState({});
+    const [uploadingPhotos, setUploadingPhotos] = useState({});
 
     const { data, setData, post, processing, errors } = useForm({
         amount: order.balance.toFixed(2),
@@ -41,27 +40,28 @@ export default function OrderDetail({ order }) {
         });
     };
 
-    const handlePhotoUpload = (e) => {
+    const handlePhotoFileChange = (itemId, e) => {
         const file = e.target.files[0];
         if (!file) return;
-        setPhotoFile(file);
+        setPhotoFiles((prev) => ({ ...prev, [itemId]: file }));
     };
 
-    const submitPhoto = () => {
-        if (!photoFile) return;
+    const submitPhoto = (itemId) => {
+        const file = photoFiles[itemId];
+        if (!file) return;
 
-        setUploadingPhoto(true);
+        setUploadingPhotos((prev) => ({ ...prev, [itemId]: true }));
         const formData = new FormData();
-        formData.append('photo', photoFile);
+        formData.append('photo', file);
+        formData.append('item_id', itemId);
 
         router.post(`/staff/orders/${order.id}/photos`, formData, {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                setPhotoFile(null);
-                if (photoInputRef.current) photoInputRef.current.value = '';
+                setPhotoFiles((prev) => { const n = { ...prev }; delete n[itemId]; return n; });
             },
-            onFinish: () => setUploadingPhoto(false),
+            onFinish: () => setUploadingPhotos((prev) => ({ ...prev, [itemId]: false })),
         });
     };
 
@@ -191,47 +191,59 @@ export default function OrderDetail({ order }) {
                             </Card>
                         )}
 
-                        {/* Awaiting Photo Upload */}
-                        {order.is_awaiting_photo && (
-                            <Card>
-                                <CardContent className="p-4">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                        </svg>
-                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Upload Photo</span>
-                                    </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                        This order needs a photo. Upload to generate Photo ID.
-                                    </p>
-                                    <div className="space-y-3">
-                                        <input
-                                            ref={photoInputRef}
-                                            type="file"
-                                            accept="image/jpeg,image/png,image/jpg"
-                                            onChange={handlePhotoUpload}
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-                                        />
-                                        {photoFile && (
-                                            <div className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{photoFile.name}</p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400">{(photoFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                        {/* Awaiting Photo Upload — one slot per pending reprint item */}
+                        {order.is_awaiting_photo && (() => {
+                            const pendingItems = order.items.filter(
+                                (item) => item.category === 'reprint' && (!item.photo_paths || item.photo_paths.length === 0)
+                            );
+                            if (pendingItems.length === 0) return null;
+                            return (
+                                <Card>
+                                    <CardContent className="p-4">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <svg className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                            </svg>
+                                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Upload Photos</span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                                            {pendingItems.length} photo{pendingItems.length > 1 ? 's' : ''} needed. Upload each to generate Photo ID.
+                                        </p>
+                                        <div className="space-y-4">
+                                            {pendingItems.map((item, idx) => (
+                                                <div key={item.id} className="rounded-lg border border-dashed border-amber-300 dark:border-amber-700 p-3">
+                                                    <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-2">
+                                                        Photo {idx + 1} — {item.product_name} {item.size_label ? `(${item.size_label})` : ''}
+                                                    </p>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/jpeg,image/png,image/jpg"
+                                                        onChange={(e) => handlePhotoFileChange(item.id, e)}
+                                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                                    />
+                                                    {photoFiles[item.id] && (
+                                                        <div className="flex items-center gap-3 mt-2 rounded-lg border border-gray-200 dark:border-gray-700 p-2">
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{photoFiles[item.id].name}</p>
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400">{(photoFiles[item.id].size / 1024 / 1024).toFixed(1)} MB</p>
+                                                            </div>
+                                                            <Button
+                                                                variant="primary"
+                                                                size="sm"
+                                                                onClick={() => submitPhoto(item.id)}
+                                                                disabled={uploadingPhotos[item.id]}
+                                                            >
+                                                                {uploadingPhotos[item.id] ? 'Uploading...' : 'Upload'}
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <Button
-                                                    variant="primary"
-                                                    size="sm"
-                                                    onClick={submitPhoto}
-                                                    disabled={uploadingPhoto}
-                                                >
-                                                    {uploadingPhoto ? 'Uploading...' : 'Upload'}
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })()}
 
                         {/* 2. Order Details (moved up) */}
                         <Card>
@@ -246,15 +258,15 @@ export default function OrderDetail({ order }) {
                                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {order.items.map((item) => (
                                         <div key={item.id} className="py-5 first:pt-0 last:pb-0">
-                                            {/* Photo ID — only for reprint items */}
-                                            {order.photo_registry && item.category === 'reprint' && (
+                                            {/* Photo ID — per reprint item */}
+                                            {item.category === 'reprint' && item.registry_code && (
                                                 <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3">
                                                     <svg className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5" />
                                                     </svg>
                                                     <span className="text-xs text-amber-700 dark:text-amber-400 uppercase tracking-wide font-medium">Photo ID</span>
                                                     <span className="font-mono text-base font-bold text-amber-900 dark:text-amber-100 tracking-wider">
-                                                        {order.photo_registry.registry_code}
+                                                        {item.registry_code}
                                                     </span>
                                                 </div>
                                             )}

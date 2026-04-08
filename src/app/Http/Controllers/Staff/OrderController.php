@@ -159,7 +159,20 @@ class OrderController extends Controller
                     'phone' => $order->location->phone,
                     'google_maps_url' => $order->location->google_maps_url,
                 ],
-                'items' => $order->items->map(function ($item) {
+                'items' => $order->items->map(function ($item) use ($order) {
+                    $registryCode = null;
+                    if ($item->product && $item->product->category === 'reprint' && ! empty($item->photo_paths)) {
+                        // Match item photo path against attached registries
+                        $firstPath = $item->photo_paths[0];
+                        $registry = $order->photoRegistries->first(function ($reg) use ($firstPath) {
+                            return in_array($firstPath, $reg->photo_paths ?? []);
+                        });
+                        // Fallback: extract code from filename
+                        $registryCode = $registry
+                            ? $registry->registry_code
+                            : strtoupper(pathinfo(basename($firstPath), PATHINFO_FILENAME));
+                    }
+
                     return [
                         'id' => $item->id,
                         'product_name' => $item->product->name,
@@ -171,6 +184,7 @@ class OrderController extends Controller
                         'photo_paths' => $item->photo_paths ?? [],
                         'photo_source' => $item->photo_source,
                         'item_specific_notes' => $item->item_specific_notes,
+                        'registry_code' => $registryCode,
                     ];
                 }),
                 'payments' => $order->payments->map(function ($payment) {
@@ -247,38 +261,41 @@ class OrderController extends Controller
      */
     public function uploadPhoto(Request $request, Order $order): RedirectResponse
     {
-        if (! $order->isAwaitingPhoto()) {
-            return back()->with('error', 'This order does not need a photo upload.');
-        }
-
         if (! $this->canManageAwaitingPhotoOrder($order)) {
             abort(403, 'You can only manage awaiting photo orders from your location.');
         }
 
         $validated = $request->validate([
-            'photo' => 'required|image|max:10240',
+            'photo'   => 'required|image|max:10240',
+            'item_id' => 'required|integer',
         ]);
+
+        $item = $order->items()->with('product')->find($validated['item_id']);
+
+        if (! $item || ! $item->product || $item->product->category !== 'reprint') {
+            return back()->with('error', 'Invalid item for photo upload.');
+        }
+
+        if (! empty($item->photo_paths)) {
+            return back()->with('error', 'This item already has a photo.');
+        }
 
         $registryCode = $this->orderNumbers->generateRegistryCode();
         $photoPath = $this->photoStorage->store($request->file('photo'), $registryCode, $order->order_number);
 
         $photoRegistry = PhotoRegistry::create([
             'registry_code' => $registryCode,
-            'user_id' => $order->user_id,
-            'photo_paths' => [$photoPath],
-            'expires_at' => now()->addYear(),
+            'user_id'       => $order->user_id,
+            'photo_paths'   => [$photoPath],
+            'expires_at'    => now()->addYear(),
         ]);
 
         $order->photoRegistries()->attach($photoRegistry->id);
 
-        foreach ($order->items as $item) {
-            if ($item->product && $item->product->category === 'reprint') {
-                $item->photo_paths = [$photoPath];
-                $item->save();
-            }
-        }
+        $item->photo_paths = [$photoPath];
+        $item->save();
 
-        return back()->with('success', "Photo uploaded successfully. Photo ID: {$registryCode}");
+        return back()->with('success', "Photo uploaded. Photo ID: {$registryCode}");
     }
 
     private function canManageAwaitingPhotoOrder(Order $order): bool
