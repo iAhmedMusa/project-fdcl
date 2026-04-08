@@ -246,8 +246,8 @@ export default function OrderDetail({ order }) {
                                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {order.items.map((item) => (
                                         <div key={item.id} className="py-5 first:pt-0 last:pb-0">
-                                            {/* Photo ID — bold, prominent */}
-                                            {order.photo_registry && (
+                                            {/* Photo ID — only for reprint items */}
+                                            {order.photo_registry && item.category === 'reprint' && (
                                                 <div className="mb-4 flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3">
                                                     <svg className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5-3.9 19.5m-2.1-19.5-3.9 19.5" />
@@ -391,6 +391,12 @@ export default function OrderDetail({ order }) {
                                         <span className="text-gray-500 dark:text-gray-400">Total</span>
                                         <span className="font-medium text-gray-900 dark:text-white">৳{order.total_amount.toFixed(0)}</span>
                                     </div>
+                                    {order.discount_amount > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500 dark:text-gray-400">Discount</span>
+                                            <span className="font-medium text-emerald-600 dark:text-emerald-400">−৳{order.discount_amount.toFixed(0)}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500 dark:text-gray-400">Paid</span>
                                         <span className="font-medium text-emerald-600 dark:text-emerald-400">৳{order.amount_paid.toFixed(0)}</span>

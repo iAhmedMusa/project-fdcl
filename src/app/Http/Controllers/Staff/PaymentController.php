@@ -13,14 +13,11 @@ class PaymentController extends Controller
     public function store(Request $request, Order $order): RedirectResponse
     {
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:1|max:'.($order->total_amount - $order->amount_paid),
+            'amount' => 'required|numeric|min:1|max:'.($order->total_amount - $order->discount_amount - $order->amount_paid),
             'method' => 'required|in:cash,bkash,nagad,card,other',
             'reference' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
         ]);
-
-        // Calculate remaining balance before payment
-        $remainingBefore = $order->total_amount - $order->amount_paid;
 
         // Create payment record
         Payment::create([
@@ -35,11 +32,12 @@ class PaymentController extends Controller
 
         // Recalculate total paid
         $totalPaid = $order->payments()->sum('amount');
+        $effectiveTotal = $order->total_amount - $order->discount_amount;
 
         // Update order payment status
         $order->amount_paid = $totalPaid;
 
-        if ($totalPaid >= $order->total_amount) {
+        if ($totalPaid >= $effectiveTotal) {
             $order->payment_status = 'paid';
         } elseif ($totalPaid > 0) {
             $order->payment_status = 'partial';

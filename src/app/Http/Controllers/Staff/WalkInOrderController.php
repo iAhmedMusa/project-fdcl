@@ -82,6 +82,7 @@ class WalkInOrderController extends Controller
             'mug.quantity' => 'required_with:mug|integer|min:1|max:100',
             'mug.photo_source' => 'nullable|string|max:1000',
             'mug.notes' => 'nullable|string|max:1000',
+            'discount_amount' => 'nullable|numeric|min:0',
             'payment_amount' => 'nullable|numeric|min:0.01',
             'payment_method' => 'required_with:payment_amount|in:cash,bkash,nagad,card,other',
             'payment_reference' => 'nullable|string|max:100',
@@ -197,8 +198,11 @@ class WalkInOrderController extends Controller
                 ? (float) $validated['payment_amount']
                 : 0.0;
 
+            $discountAmount = (float) ($validated['discount_amount'] ?? 0);
+            $effectiveTotal = $totalAmount - $discountAmount;
+
             $paymentStatus = 'unpaid';
-            if ($paymentAmount >= $totalAmount) {
+            if ($paymentAmount >= $effectiveTotal) {
                 $paymentStatus = 'paid';
             } elseif ($paymentAmount > 0) {
                 $paymentStatus = 'partial';
@@ -213,6 +217,7 @@ class WalkInOrderController extends Controller
                 'status' => 'pending',
                 'payment_status' => $paymentStatus,
                 'total_amount' => $totalAmount,
+                'discount_amount' => $validated['discount_amount'] ?? 0,
                 'amount_paid' => $paymentAmount,
                 'paper_type' => $validated['reprint']['paper_type'] ?? 'glossy',
                 'special_instructions' => $validated['special_instructions'] ?? null,

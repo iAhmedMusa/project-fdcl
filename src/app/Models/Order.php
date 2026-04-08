@@ -20,6 +20,7 @@ class Order extends Model
         'status',
         'payment_status',
         'total_amount',
+        'discount_amount',
         'amount_paid',
         'notes',
         'special_instructions',
@@ -31,6 +32,7 @@ class Order extends Model
     {
         return [
             'total_amount' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'amount_paid' => 'decimal:2',
             'notified_at' => 'datetime',
         ];

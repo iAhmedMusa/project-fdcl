@@ -126,7 +126,9 @@ export default function CreateOrder({ products, locations }) {
 
     // ── Step 4: Payment ──────────────────────────────────────
     const [collectPayment, setCollectPayment] = useState(false);
-    const [paymentAmount, setPaymentAmount] = useState('');
+    const [discount, setDiscount] = useState('');
+    const [discountType, setDiscountType] = useState('amount');
+    const [partialAmount, setPartialAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [paymentReference, setPaymentReference] = useState('');
 
@@ -258,6 +260,15 @@ export default function CreateOrder({ products, locations }) {
         return total;
     };
 
+    const calculateTotalToPay = () => {
+        const bill = calculateTotal();
+        const d = parseFloat(discount) || 0;
+        if (discountType === 'percent') {
+            return Math.max(0, bill - (bill * d) / 100);
+        }
+        return Math.max(0, bill - d);
+    };
+
     // Customer actions
     const selectCustomer = (customer) => {
         setSelectedCustomer(customer);
@@ -330,12 +341,20 @@ export default function CreateOrder({ products, locations }) {
         setSubmitting(true);
         setErrors({});
 
+        const discountValue = (() => {
+            const d = parseFloat(discount) || 0;
+            const bill = calculateTotal();
+            if (discountType === 'percent') return parseFloat(((bill * d) / 100).toFixed(2));
+            return parseFloat(Math.min(d, bill).toFixed(2));
+        })();
+
         const data = {
             location_id: locationId,
             delivery_method: deliveryMethod,
             special_instructions: specialInstructions,
             notes: notes,
             services: Array.from(selectedServices),
+            discount_amount: discountValue,
         };
 
         if (customerType === 'existing' && selectedCustomer) {
@@ -392,8 +411,10 @@ export default function CreateOrder({ products, locations }) {
             };
         }
 
-        if (collectPayment && parseFloat(paymentAmount) > 0) {
-            data.payment_amount = parseFloat(paymentAmount);
+        const totalToPay = calculateTotalToPay();
+        const amountToPay = parseFloat(partialAmount) > 0 ? parseFloat(partialAmount) : totalToPay;
+        if (collectPayment && amountToPay > 0) {
+            data.payment_amount = amountToPay;
             data.payment_method = paymentMethod;
             data.payment_reference = paymentReference;
         }
@@ -1734,7 +1755,7 @@ export default function CreateOrder({ products, locations }) {
                                         checked={collectPayment}
                                         onChange={(e) => {
                                             setCollectPayment(e.target.checked);
-                                            if (e.target.checked) setPaymentAmount(calculateTotal().toFixed(2));
+                                            if (!e.target.checked) { setDiscount(''); setPartialAmount(''); }
                                         }}
                                         className="h-4 w-4 rounded border-input text-primary"
                                     />
@@ -1742,53 +1763,104 @@ export default function CreateOrder({ products, locations }) {
                                 </label>
 
                                 {collectPayment && (
-                                    <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                        <div>
-                                            <label className={LABEL}>
-                                                Amount (৳) <span className="text-destructive">*</span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0.01"
-                                                value={paymentAmount}
-                                                onChange={(e) => setPaymentAmount(e.target.value)}
-                                                className={INPUT}
-                                            />
-                                            {selectedServices.has('album') && (
-                                                <p className="mt-1 text-xs text-muted-foreground">Amount can be adjusted for negotiation</p>
+                                    <div className="mt-4 space-y-4">
+                                        {/* Service Bill + Discount + Total */}
+                                        <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-base font-semibold text-foreground">Total Service Bill</span>
+                                                <span className="text-base font-semibold text-foreground">
+                                                    ৳{calculateTotal().toFixed(2)}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <label className={`${LABEL} shrink-0 w-24`}>Discount</label>
+                                                <div className="flex flex-1 gap-0">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={discount}
+                                                        onChange={(e) => setDiscount(e.target.value)}
+                                                        placeholder="0"
+                                                        className="flex-1 rounded-l-lg rounded-r-none border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                                    />
+                                                    <select
+                                                        value={discountType}
+                                                        onChange={(e) => setDiscountType(e.target.value)}
+                                                        className="w-32 rounded-l-none rounded-r-lg border border-l-0 border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                                    >
+                                                        <option value="amount">৳ Taka</option>
+                                                        <option value="percent">% Percent</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <label className={`${LABEL} shrink-0 w-24`}>Partial Pay</label>
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max={calculateTotalToPay()}
+                                                        step="0.01"
+                                                        value={partialAmount}
+                                                        onChange={(e) => {
+                                                            const val = parseFloat(e.target.value);
+                                                            const max = calculateTotalToPay();
+                                                            setPartialAmount(val > max ? max.toFixed(2) : e.target.value);
+                                                        }}
+                                                        placeholder={`Leave blank to collect full ৳${calculateTotalToPay().toFixed(2)}`}
+                                                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                                    />
+                                                    {partialAmount && parseFloat(partialAmount) < calculateTotalToPay() && (
+                                                        <p className="mt-1 text-xs text-amber-600">
+                                                            Remaining ৳{(calculateTotalToPay() - parseFloat(partialAmount)).toFixed(2)} will be balance due
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between border-t border-border pt-3">
+                                                <span className="text-sm font-semibold text-foreground">Total to Pay</span>
+                                                <span className="text-base font-bold text-primary">
+                                                    ৳{calculateTotalToPay().toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Method + Reference */}
+                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                            <div>
+                                                <label className={LABEL}>
+                                                    Method <span className="text-destructive">*</span>
+                                                </label>
+                                                <select
+                                                    value={paymentMethod}
+                                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                                    className={INPUT}
+                                                >
+                                                    {['cash', 'bkash', 'nagad', 'card', 'other'].map((m) => (
+                                                        <option key={m} value={m}>
+                                                            {m.charAt(0).toUpperCase() + m.slice(1)}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {['bkash', 'nagad', 'card'].includes(paymentMethod) && (
+                                                <div>
+                                                    <label className={LABEL}>Transaction ID</label>
+                                                    <input
+                                                        type="text"
+                                                        value={paymentReference}
+                                                        onChange={(e) => setPaymentReference(e.target.value)}
+                                                        placeholder="TXN reference"
+                                                        className={INPUT}
+                                                    />
+                                                </div>
                                             )}
                                         </div>
-
-                                        <div>
-                                            <label className={LABEL}>
-                                                Method <span className="text-destructive">*</span>
-                                            </label>
-                                            <select
-                                                value={paymentMethod}
-                                                onChange={(e) => setPaymentMethod(e.target.value)}
-                                                className={INPUT}
-                                            >
-                                                {['cash', 'bkash', 'nagad', 'card', 'other'].map((m) => (
-                                                    <option key={m} value={m}>
-                                                        {m.charAt(0).toUpperCase() + m.slice(1)}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        {['bkash', 'nagad', 'card'].includes(paymentMethod) && (
-                                            <div>
-                                                <label className={LABEL}>Transaction ID</label>
-                                                <input
-                                                    type="text"
-                                                    value={paymentReference}
-                                                    onChange={(e) => setPaymentReference(e.target.value)}
-                                                    placeholder="TXN reference"
-                                                    className={INPUT}
-                                                />
-                                            </div>
-                                        )}
                                     </div>
                                 )}
                             </div>
