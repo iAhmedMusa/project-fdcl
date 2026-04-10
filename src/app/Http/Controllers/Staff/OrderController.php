@@ -287,7 +287,7 @@ class OrderController extends Controller
             'registry_code' => $registryCode,
             'user_id'       => $order->user_id,
             'photo_paths'   => [$photoPath],
-            'expires_at'    => now()->addYear(),
+            'expires_at'    => now()->addYears(3),
         ]);
 
         $order->photoRegistries()->attach($photoRegistry->id);
