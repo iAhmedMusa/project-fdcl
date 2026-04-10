@@ -13,7 +13,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
 
     const [selectedProduct, setSelectedProduct] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [locationId, setLocationId] = useState(locations[0]?.id || '');
+    const [locationId, setLocationId] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const handleLookup = async (e) => {
@@ -35,9 +35,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
 
             if (response.ok && data.found) {
                 setFoundRegistry(data.registry);
-                if (data.registry.location) {
-                    setLocationId(data.registry.location.id);
-                }
+                setLocationId('');
             } else {
                 setLookupError(data.message || 'Invalid FDCL Photo ID');
                 setFoundRegistry(null);
@@ -222,6 +220,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                             required
                                             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
                                         >
+                                            <option value="">Select location...</option>
                                             {locations.map((loc) => (
                                                 <option key={loc.id} value={loc.id}>
                                                     {loc.name} — {loc.address}
