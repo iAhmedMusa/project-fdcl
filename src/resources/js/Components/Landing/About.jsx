@@ -22,7 +22,7 @@ const features = [
         title: 'Two Convenient Locations',
         description: 'Shantinagar and Gulshan studios for easy access from anywhere in Dhaka.',
         icon: (
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 2424" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
             </svg>
@@ -32,7 +32,7 @@ const features = [
         title: 'Fast Delivery',
         description: 'Get your passport and visa photos in just 10 minutes. Same-day service for all products.',
         icon: (
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 2424" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
         ),
@@ -41,7 +41,7 @@ const features = [
         title: 'Guaranteed Quality',
         description: 'If you are not satisfied, we will retake your photos at no extra cost. That is our promise.',
         icon: (
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 2424" stroke="currentColor" strokeWidth={1.5}>
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.157 3.745 3.745 0 0 1-3.157 1.043A4.501 4.501 0 0 1 12 21a4.5 4.5 0 0 1-3.207-1.732 3.745 3.745 0 0 1-3.157-1.043 3.745 3.745 0 0 1-1.043-3.157A4.5 4.5 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.157 3.745 3.745 0 0 1 3.157-1.043A4.5 4.5 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.157 1.043 3.745 3.745 0 0 1 1.043 3.157A4.5 4.5 0 0 1 21 12Z" />
             </svg>
         ),
@@ -57,7 +57,7 @@ export default function About() {
             <div className="relative mx-auto max-w-7xl">
                 <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
                     <div>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-sm font-semibold text-secondary">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.062l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                             </svg>
@@ -76,7 +76,7 @@ export default function About() {
                         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-6">
                             <Link
                                 href="/order"
-                                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white shadow-md transition-all hover:bg-accent hover:shadow-lg"
+                                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-white shadow-md transition-all hover:bg-primary/80 hover:shadow-lg"
                             >
                                 Get Started Now
                                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -124,7 +124,7 @@ export default function About() {
                     <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         {features.map((feature) => (
                             <div key={feature.title} className="group rounded-xl bg-white dark:bg-gray-800 border border-border dark:border-gray-700 p-6 transition-all hover:border-secondary/30 dark:hover:border-secondary/50 hover:shadow-md">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     {feature.icon}
                                 </div>
                                 <h4 className="mt-4 font-semibold text-text-primary dark:text-white">

@@ -72,7 +72,7 @@ export default function Services() {
 
             <div className="relative mx-auto max-w-7xl">
                 <div className="text-center">
-                    <span className="inline-flex items-center gap-2 rounded-full bg-secondary/10 px-4 py-1.5 text-sm font-semibold text-secondary">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10.868 2.884c-.321-.752-1.415-.752-1.736 0l-1.83 4.281a1.753 1.753 0 0 1-1.468 1.046l-4.617.64c-.77.107-1.08 1.077-.52 1.635l3.344 3.258c.363.354.529.866.444 1.369l-.79 4.527c-.136.771.678 1.359 1.376 1.007l4.131-2.172a1.753 1.753 0 0 1 1.629 0l4.131 2.172c.698.352 1.512-.236 1.376-1.007l-.79-4.527a1.753 1.753 0 0 1 .444-1.369l3.344-3.258c.56-.558.25-1.528-.52-1.635l-4.617-.64a1.753 1.753 0 0 1-1.468-1.046l-1.83-4.281Z" clipRule="evenodd" />
                         </svg>
@@ -93,7 +93,7 @@ export default function Services() {
                             className="group relative rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-border dark:border-gray-700 transition-all duration-300 hover:border-secondary/30 dark:hover:border-secondary/50 hover:shadow-md sm:p-8"
                         >
                             <div className="flex items-start gap-4">
-                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-secondary/10 text-secondary shadow-sm group-hover:bg-secondary/20">
+                                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-sm group-hover:bg-primary/20">
                                     {service.icon}
                                 </div>
                                 <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
@@ -111,7 +111,7 @@ export default function Services() {
                             <ul className="mt-5 space-y-2">
                                 {service.features.map((feature) => (
                                     <li key={feature} className="flex items-center gap-2 text-sm text-text-secondary dark:text-gray-300">
-                                        <svg className="h-4 w-4 shrink-0 text-secondary" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                         </svg>
                                         {feature}
@@ -121,7 +121,7 @@ export default function Services() {
                             {service.bookingLink && (
                                 <Link
                                     href={service.bookingLink}
-                                    className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-secondary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-secondary/90"
+                                    className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
                                 >
                                     Book Appointment
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
