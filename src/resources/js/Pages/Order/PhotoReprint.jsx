@@ -19,7 +19,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
     const fileInputRef = useRef(null);
 
     // Common order fields
-    const [selectedLocation, setSelectedLocation] = useState(locations?.[0]?.id?.toString() || '');
+    const [selectedLocation, setSelectedLocation] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [paperType, setPaperType] = useState('glossy');
     const [quantity, setQuantity] = useState(4);
@@ -435,6 +435,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                     required
                                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                                 >
+                                    <option value="">Select location...</option>
                                     {locations.map((location) => (
                                         <option key={location.id} value={location.id}>
                                             {location.name} — {location.address}
