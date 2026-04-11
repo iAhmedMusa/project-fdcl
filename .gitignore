@@ -19,6 +19,7 @@
 # ── Docker ────────────────────────────────────────────────────────────────────
 docker/mysql/data/
 .env.docker
+.env.prod
 
 # ── Google OAuth / Secrets ────────────────────────────────────────────────────
 client_secret*.json
