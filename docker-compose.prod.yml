@@ -49,11 +49,11 @@ services:
     networks:
       - fdcl_network
     healthcheck:
-      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null || exit 1"]
-      interval: 30s
+      test: ["CMD-SHELL", "test -f /var/www/html/storage/app/ready && php-fpm -t 2>/dev/null || exit 1"]
+      interval: 15s
       timeout: 5s
-      retries: 3
-      start_period: 30s
+      retries: 10
+      start_period: 60s
 
   nginx:
     build:

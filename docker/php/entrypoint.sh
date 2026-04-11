@@ -14,6 +14,9 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Write a ready marker so the healthcheck knows bootstrap is done
+touch /var/www/html/storage/app/ready
+
 echo "Bootstrap complete. Starting PHP-FPM..."
 
 exec "$@"

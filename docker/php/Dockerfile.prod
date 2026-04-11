@@ -74,7 +74,7 @@ RUN chown -R www-data:www-data /var/www/html \
 COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-USER www-data
-
+# Entry point runs as root so artisan commands can write to storage,
+# then php-fpm drops to www-data via its own config.
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["php-fpm"]
