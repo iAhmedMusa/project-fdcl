@@ -34,15 +34,15 @@ services:
       - fdcl_network
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
     container_name: fdcl_nginx
     restart: unless-stopped
     ports:
       - "${APP_PORT:-80}:80"
     volumes_from:
       - app
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
     networks:
