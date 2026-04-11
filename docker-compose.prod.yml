@@ -8,8 +8,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - fdcl_network
     healthcheck:
       test: ["CMD-SHELL", "test -f /var/www/html/storage/app/ready || exit 1"]
       interval: 10s
@@ -26,8 +24,6 @@ services:
     depends_on:
       app:
         condition: service_healthy
-    networks:
-      - fdcl_network
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ || exit 1"]
       interval: 30s
@@ -36,10 +32,8 @@ services:
       start_period: 10s
 
   db:
-    build:
-      context: .
-      dockerfile: docker/mysql/Dockerfile
     container_name: fdcl_db
+    image: mysql:8.0
     restart: unless-stopped
     volumes:
       - fdcl_mysql_data:/var/lib/mysql
@@ -47,11 +41,9 @@ services:
       MYSQL_DATABASE: "${DB_DATABASE:-focus_lab}"
       MYSQL_USER: "${DB_USERNAME:-focuslab}"
       MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-rootsecret}"
-    networks:
-      - fdcl_network
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-rootsecret}"
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${DB_ROOT_PASSWORD} || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -59,7 +51,3 @@ services:
 
 volumes:
   fdcl_mysql_data:
-
-networks:
-  fdcl_network:
-    driver: bridge
