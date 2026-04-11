@@ -19,7 +19,7 @@ We apologize for any inconvenience this may have caused. If you have questions o
 Our team is here to help you:
 
 📞 **Phone:** 01713-140768  
-📍 **Shantinagar:** Shantinagar Moar, Bailly Road, Dhaka  
+📍 **Shantinagar:** Shantinagar Moar, Bailey Road, Dhaka  
 📍 **Gulshan-1:** House 5, Road 21, Gulshan-1, Dhaka 1212  
 📧 **Email:** noreply@focuslab.com.bd
 
@@ -30,6 +30,6 @@ Place a New Order
 ---
 
 **Focus Digital Color Lab**
-Shantinagar Moar, Bailly Road, Dhaka | House 5, Road 21, Gulshan-1, Dhaka 1212
+Shantinagar Moar, Bailey Road, Dhaka | House 5, Road 21, Gulshan-1, Dhaka 1212
 Phone: 01713-140768
 </x-mail::message>

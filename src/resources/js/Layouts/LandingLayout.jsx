@@ -190,7 +190,7 @@ export default function LandingLayout({ children }) {
                             </h3>
                             <div className="mt-4 space-y-3 text-sm text-text-secondary dark:text-gray-400">
                                 <p className="font-medium text-text-primary dark:text-white">Shantinagar</p>
-                                <p>Shantinagar Moar, Bailly Road, Dhaka</p>
+                                <p>Shantinagar Moar, Bailey Road, Dhaka</p>
                                 <p className="font-medium text-text-primary dark:text-white mt-4">Gulshan-1</p>
                                 <p>House 5, Road 21, Dhaka 1212</p>
                             </div>

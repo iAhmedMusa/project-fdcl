@@ -188,7 +188,7 @@
         </div>
 
         <div class="studio-info">
-            <p><strong>Shantinagar:</strong> Shantinagar Moar, Bailly Road, Dhaka | <strong>Gulshan-1:</strong> House 5, Road 21, Gulshan-1, Dhaka 1212</p>
+            <p><strong>Shantinagar:</strong> Shantinagar Moar, Bailey Road, Dhaka | <strong>Gulshan-1:</strong> House 5, Road 21, Gulshan-1, Dhaka 1212</p>
             <p>Phone: 01713-140768 | Website: https://focuslab.com.bd</p>
         </div>
 
