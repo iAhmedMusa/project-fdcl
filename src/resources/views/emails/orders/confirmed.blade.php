@@ -43,7 +43,7 @@ View Your Orders
 ---
 
 **Focus Digital Color Lab**
-Shantinagar Moar, Bailly Road, Dhaka | House 5, Road 21, Gulshan-1, Dhaka 1212
+Shantinagar Moar, Bailey Road, Dhaka | House 5, Road 21, Gulshan-1, Dhaka 1212
 Phone: 01713-140768
 
 </x-mail::message>

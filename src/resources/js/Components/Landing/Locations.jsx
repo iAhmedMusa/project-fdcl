@@ -2,7 +2,7 @@ const locations = [
     {
         badge: 'Studio 1',
         name: 'Shantinagar',
-        address: 'Shantinagar Moar, Bailly Road, Dhaka',
+        address: 'Shantinagar Moar, Bailey Road, Dhaka',
         hours: 'Sat–Thu 9:30 AM – 9:00 PM, Fri 3:00 PM – 9:00 PM',
         phone: '01713-140768',
         mapUrl: 'https://maps.app.goo.gl/UDVbk2jqn4XVSEbVA',

@@ -12,7 +12,7 @@ class LocationSeeder extends Seeder
         Location::insert([
             [
                 'name' => 'Shantinagar',
-                'address' => 'Shantinagar Moar, Bailly Road, Dhaka',
+                'address' => 'Shantinagar Moar, Bailey Road, Dhaka',
                 'google_maps_url' => 'https://maps.app.goo.gl/UDVbk2jqn4XVSEbVA',
                 'phone' => '01973140768',
                 'is_active' => true,
