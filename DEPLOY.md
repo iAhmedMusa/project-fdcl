@@ -78,8 +78,9 @@ To verify: **Resource** → **Volumes** should show `fdcl_mysql_data`.
 1. Click **Deploy** in the Coolify dashboard
 2. The first build will take 3-5 minutes (Dockerfile.prod multi-stage build)
 3. Watch the deployment logs for:
-   - Frontend build (Stage 1)
-   - Composer install (Stage 2)
+   - **app** image build (Dockerfile.prod multi-stage: Vite build → Composer install)
+   - **nginx** image build (copies prod.conf into image)
+   - **db** image build (copies my.cnf into image)
    - Database migrations (entrypoint.sh)
    - Config/route/view caching (entrypoint.sh)
 
