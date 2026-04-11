@@ -23,8 +23,6 @@ services:
       dockerfile: docker/nginx/Dockerfile
     container_name: fdcl_nginx
     restart: unless-stopped
-    ports:
-      - "80:80"
     depends_on:
       app:
         condition: service_healthy
