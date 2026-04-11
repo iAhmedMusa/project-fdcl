@@ -7,7 +7,7 @@ echo "Waiting for database connection..."
 max_attempts=60
 attempt=0
 while [ $attempt -lt $max_attempts ]; do
-    if php -r "new PDO('mysql:host=${DB_HOST:-db};port=${DB_PORT:-3306};dbname=${DB_DATABASE:-focus_lab}', '${DB_USERNAME:-focuslab}', '${DB_PASSWORD}');" 2>/dev/null; then
+    if php -r "try { new PDO('mysql:host='.getenv('DB_HOST').';port='.getenv('DB_PORT').';dbname='.getenv('DB_DATABASE'), getenv('DB_USERNAME'), getenv('DB_PASSWORD')); echo 'OK'; } catch (Exception \$e) { exit(1); }" 2>/dev/null; then
         echo "Database connection established."
         break
     fi
@@ -18,6 +18,7 @@ done
 
 if [ $attempt -ge $max_attempts ]; then
     echo "WARNING: Could not connect to database after $max_attempts attempts. Starting anyway..."
+    echo "DB_HOST=$(php -r 'echo getenv(\"DB_HOST\");') DB_DATABASE=$(php -r 'echo getenv(\"DB_DATABASE\");') DB_USERNAME=$(php -r 'echo getenv(\"DB_USERNAME\");')"
 else
     # Run database migrations
     echo "Running migrations..."

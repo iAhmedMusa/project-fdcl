@@ -59,6 +59,9 @@ WORKDIR /var/www/html
 # Copy application source
 COPY src/ .
 
+# Copy production .env (Coolify env vars will override these at runtime)
+COPY src/.env.production /var/www/html/.env
+
 # Copy built frontend assets from Stage 1
 COPY --from=frontend /app/public/build public/build
 

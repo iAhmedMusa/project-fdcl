@@ -1,7 +1,6 @@
 # ── Laravel ──────────────────────────────────────────────────────────────────
 /src/.env
 /src/.env.backup
-/src/.env.production
 /src/vendor/
 /src/node_modules/
 /src/public/hot
