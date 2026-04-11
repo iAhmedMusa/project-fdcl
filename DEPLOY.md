@@ -114,6 +114,23 @@ If you haven't set `APP_KEY` yet:
 |---|---|
 | 502 Bad Gateway | `fdcl_app` not healthy — check `docker logs fdcl_app` |
 | DB connection refused | `fdcl_db` not ready — wait 30s or check `docker logs fdcl_db` |
+| Access denied for user | MySQL volume has old credentials — see below |
 | Missing APP_KEY | Run `php artisan key:generate` in the app container |
 | CSS/JS not loading | Run `php artisan storage:link` and check `public/build/` exists |
 | Permission errors | `docker exec fdcl_app chown -R www-data:www-data storage bootstrap/cache` |
+
+### Fix: "Access denied for user" (MySQL credentials mismatch)
+
+MySQL only creates the `MYSQL_USER` and `MYSQL_DATABASE` on **first initialization**.
+If the `fdcl_mysql_data` volume already has data from a previous run (even a failed
+one), changing `DB_PASSWORD` or `MYSQL_ROOT_PASSWORD` in Coolify will NOT update the
+existing user.
+
+**To fix:**
+
+1. In Coolify, go to **Resource** → **Volumes** → delete `fdcl_mysql_data`
+2. Or on the server: `docker volume rm fdcl_mysql_data`
+3. Redeploy — MySQL will re-initialize with the new credentials
+
+> **Important:** This destroys all database data. Only do this on a fresh deploy
+> or when you have a backup to restore.
