@@ -23,6 +23,21 @@ class FrameController extends Controller
         private PhotoStorage $photoStorage,
     ) {}
 
+    public function index(Request $request): Response
+    {
+        $products = Product::where('category', 'frame')
+            ->where('is_active', true)
+            ->get();
+
+        $locations = Location::where('is_active', true)
+            ->get(['id', 'name', 'address']);
+
+        return Inertia::render('Landing/Frame', [
+            'products' => $products,
+            'locations' => $locations,
+        ]);
+    }
+
     public function create(Request $request): Response
     {
         $products = Product::where('category', 'frame')

@@ -4,6 +4,7 @@ const services = [
         description: 'Professional photography for passport, visa, NID, driving license, and all official documents.',
         features: ['10-minute express service', 'High-end DSLR cameras', 'Professional studio lighting', 'Instant digital & print delivery'],
         bookingLink: '/order/photo-studio',
+        ctaLabel: 'Book Appointment',
         icon: (
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
@@ -15,6 +16,8 @@ const services = [
         title: 'Photo Reprint',
         description: 'Reorder your photos anytime using your unique FDCL Photo ID. No need to visit the studio again.',
         features: ['Use FDCL Photo ID', 'Upload from device, or Cloud Drive', 'Visa & passport sizes', 'Instant digital & print delivery'],
+        bookingLink: '/login',
+        ctaLabel: 'Order Now',
         icon: (
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m2.161 2.242a34.348 34.348 0 0 1-5.828 5.828l-.002.002-.002-.002a8.25 8.25 0 0 1-2.16-2.161m5.992 5.992a8.25 8.25 0 0 0-5.828 5.828" />
@@ -25,6 +28,8 @@ const services = [
         title: 'Photo Album',
         description: 'Transform your cherished memories into beautifully crafted photo albums that last a lifetime.',
         features: ['Wedding albums', 'Travel memories', 'Custom layouts & designs', 'Premium binding & paper'],
+        bookingLink: '/album',
+        ctaLabel: 'Order Now',
         icon: (
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
@@ -35,6 +40,8 @@ const services = [
         title: 'Photo Frame',
         description: 'Custom-framed prints perfect for homes, offices, and gifts. Professional mounting included.',
         features: ['Multiple sizes available', 'Wall mounting service', 'Premium frame materials', 'Custom matting options'],
+        bookingLink: '/frame',
+        ctaLabel: 'Order Now',
         icon: (
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 6 20.25h12" />
@@ -45,6 +52,8 @@ const services = [
         title: 'Mug Print',
         description: 'Personalized photo mugs for gifts, corporate branding, or promotional items.',
         features: ['Single or bulk orders', 'Corporate packages', 'Full-color printing', 'Durable ceramic mugs'],
+        bookingLink: '/mug',
+        ctaLabel: 'Order Now',
         icon: (
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
@@ -52,9 +61,9 @@ const services = [
         ),
     },
     {
-        title: 'Photo Print',
-        description: 'Print photos from your phone, USB drive, or cloud storage. Any size, any quantity.',
-        features: ['Phone, Portable Drive, or Cloud Drive', 'Standard & custom sizes', 'Glossy or matte finish', 'Instant printing'],
+        title: 'Print Service',
+        description: 'Print any kind of paper — any size, any quality, colour or black & white. Walk in with your PDF or Photos and walk out with prints.',
+        features: ['Phone, Portable Drive, or Cloud Drive', 'Colour & black-and-white', 'Standard & custom sizes', 'Premium paper options'],
         icon: (
             <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0 1 10.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0 .229 2.523a1.125 1.125 0 0 1-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0 0 21 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 0 0-1.913-.247M6.34 18H5.25A2.25 2.25 0 0 1 3 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 0 1 1.913-.247m10.5 0a48.536 48.536 0 0 0-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.75 12h.008v.008h-.008V12Zm-3 0h.008v.008h-.008V12Z" />
@@ -123,7 +132,7 @@ export default function Services() {
                                     href={service.bookingLink}
                                     className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
                                 >
-                                    Book Appointment
+                                    {service.ctaLabel || 'Book Appointment'}
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
                                     </svg>

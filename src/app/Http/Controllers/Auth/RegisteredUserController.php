@@ -16,8 +16,12 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        if ($request->has('intended')) {
+            $request->session()->put('url.intended', $request->get('intended'));
+        }
+
         return Inertia::render('Auth/Register');
     }
 
@@ -66,6 +70,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('customer.dashboard', absolute: false));
+        return redirect()->intended(route('customer.dashboard', absolute: false));
     }
 }

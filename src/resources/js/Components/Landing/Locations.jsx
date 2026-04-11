@@ -1,8 +1,8 @@
 const locations = [
     {
         badge: 'Studio 1',
-        name: 'Shantinagar',
-        address: 'Shantinagar Moar, Bailly Road, Dhaka',
+        name: 'Baily Road',
+        address: 'Shantinagar Moar, Baily Road, Dhaka',
         hours: 'Sat–Thu 9:30 AM – 9:00 PM, Fri 3:00 PM – 9:00 PM',
         phone: '01713-140768',
         mapUrl: 'https://maps.app.goo.gl/UDVbk2jqn4XVSEbVA',
@@ -10,8 +10,18 @@ const locations = [
     },
     {
         badge: 'Studio 2',
-        name: 'Gulshan-1',
+        name: 'Gulshan',
         address: 'House 5, Road 21, Gulshan-1, Dhaka 1212',
+        hours: 'Sat–Thu 9:30 AM – 9:00 PM, Fri 3:00 PM – 9:00 PM',
+        phone: '01713-140768',
+        mapUrl: 'https://maps.app.goo.gl/uLh3GKExPgmbjY8H8',
+        gradient: 'from-primary to-primary/80',
+    },
+
+    {
+        badge: 'Opening Soon ...',
+        name: 'Banasree',
+        address: 'House 10/12, Road 04, Block F, Banasree, Rampura, Dhaka 1212',
         hours: 'Sat–Thu 9:30 AM – 9:00 PM, Fri 3:00 PM – 9:00 PM',
         phone: '01713-140768',
         mapUrl: 'https://maps.app.goo.gl/uLh3GKExPgmbjY8H8',

@@ -20,6 +20,21 @@ class AlbumController extends Controller
         private OrderNumberGenerator $orderNumbers,
     ) {}
 
+    public function index(Request $request): Response
+    {
+        $products = Product::where('category', 'album')
+            ->where('is_active', true)
+            ->get();
+
+        $locations = Location::where('is_active', true)
+            ->get(['id', 'name', 'address']);
+
+        return Inertia::render('Landing/Album', [
+            'products' => $products,
+            'locations' => $locations,
+        ]);
+    }
+
     public function create(Request $request): Response
     {
         $products = Product::where('category', 'album')

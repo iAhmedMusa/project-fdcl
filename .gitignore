@@ -44,3 +44,7 @@ reprint.txt
 CLOUD_STORAGE_PLAN.md
 .claude/
 .opencode/
+
+# ── AI / MCP config (local only) ────────────────────────────────────────────
+.mcp.json
+.opencode.json

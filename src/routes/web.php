@@ -30,6 +30,11 @@ Route::get('/', function () {
 Route::get('/order/photo-studio', [AppointmentController::class, 'create'])->name('order.photo-studio');
 Route::post('/order/photo-studio', [AppointmentController::class, 'store'])->name('order.photo-studio.store');
 
+// ─── Public order pages (auth gate on submit) ───────────────────────────────
+Route::get('/album', [AlbumController::class, 'index'])->name('public.album');
+Route::get('/frame', [FrameController::class, 'index'])->name('public.frame');
+Route::get('/mug', [MugController::class, 'index'])->name('public.mug');
+
 // ─── Order flow (auth required) ─────────────────────────────────────────────
 
 Route::middleware(['auth', 'customer'])->group(function () {
