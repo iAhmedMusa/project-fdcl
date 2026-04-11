@@ -1,0 +1,80 @@
+# ============================================================
+# Stage 1: Build frontend assets
+# ============================================================
+FROM node:20-alpine AS frontend
+
+WORKDIR /app
+
+COPY src/package*.json ./
+RUN npm ci
+
+COPY src/ .
+RUN npm run build
+
+# ============================================================
+# Stage 2: PHP application (production)
+# ============================================================
+FROM php:8.3-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    git \
+    libzip-dev \
+    libexif-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libwebp-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure and install PHP extensions
+RUN docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
+    && docker-php-ext-install \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        zip \
+        gd \
+        opcache
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy custom php.ini
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+
+WORKDIR /var/www/html
+
+# Copy application source
+COPY src/ .
+
+# Copy built frontend assets from Stage 1
+COPY --from=frontend /app/public/build public/build
+
+# Install Composer dependencies (production only)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Copy and register entrypoint
+COPY docker/php/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+USER www-data
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm"]
