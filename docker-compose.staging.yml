@@ -1,0 +1,125 @@
+# ==============================================================================
+# docker-compose.staging.yml — Coolify deployment
+# ==============================================================================
+#
+# SETUP IN COOLIFY:
+#   Build Pack       → Docker Compose
+#   Compose File     → docker-compose.staging.yml
+#   Health Check URL → /up   (port 80)
+#
+# All secrets are injected by Coolify's Environment dashboard.
+# See .env.staging.example for the full list of required variables.
+# ==============================================================================
+
+services:
+
+  # ── PHP-FPM application ──────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+    container_name: fdcl_app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # Coolify injects all env vars from its dashboard into the container.
+    # The entrypoint reads them directly; no .env file needed at runtime.
+    environment:
+      APP_NAME: "${APP_NAME:-Focus Digital Color Lab}"
+      APP_ENV: "${APP_ENV:-staging}"
+      APP_KEY: "${APP_KEY}"
+      APP_DEBUG: "${APP_DEBUG:-false}"
+      APP_TIMEZONE: "${APP_TIMEZONE:-Asia/Dhaka}"
+      APP_URL: "${APP_URL}"
+      APP_LOCALE: en
+      APP_FALLBACK_LOCALE: en
+      APP_MAINTENANCE_DRIVER: file
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: "${LOG_LEVEL:-warning}"
+      DB_CONNECTION: mysql
+      DB_HOST: "${DB_HOST:-db}"
+      DB_PORT: "${DB_PORT:-3306}"
+      DB_DATABASE: "${DB_DATABASE:-focus_lab}"
+      DB_USERNAME: "${DB_USERNAME:-focuslab}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      SESSION_DRIVER: database
+      SESSION_LIFETIME: "${SESSION_LIFETIME:-120}"
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+      FILESYSTEM_DISK: local
+      MAIL_MAILER: smtp
+      MAIL_HOST: "${MAIL_HOST}"
+      MAIL_PORT: "${MAIL_PORT:-587}"
+      MAIL_USERNAME: "${MAIL_USERNAME}"
+      MAIL_PASSWORD: "${MAIL_PASSWORD}"
+      MAIL_ENCRYPTION: tls
+      MAIL_FROM_ADDRESS: "${MAIL_FROM_ADDRESS:-noreply@focuslab.com.bd}"
+      MAIL_FROM_NAME: "${MAIL_FROM_NAME:-Focus Digital Color Lab}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      GOOGLE_REDIRECT_URI: "${GOOGLE_REDIRECT_URI}"
+    healthcheck:
+      # Checks that the entrypoint bootstrap finished (ready marker written after
+      # migrations + cache commands complete). This prevents nginx from starting
+      # before the app is actually able to serve requests.
+      test: ["CMD-SHELL", "test -f /var/www/html/storage/app/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18           # up to 3 min (18 × 10s) for migrations on first deploy
+      start_period: 120s
+    networks:
+      - fdcl_network
+
+  # ── Nginx reverse proxy ──────────────────────────────────────────────────────
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile.staging
+    container_name: fdcl_nginx
+    restart: unless-stopped
+    expose:
+      - "80"                # tells Coolify/Traefik which internal port to proxy to
+    depends_on:
+      app:
+        condition: service_healthy   # only start after PHP-FPM + migrations are ready
+    healthcheck:
+      # Static endpoint — does NOT hit PHP-FPM. Returns 200 immediately.
+      # Coolify must be set to check GET /up on port 80.
+      test: ["CMD-SHELL", "wget -qO- http://localhost/up || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - fdcl_network
+
+  # ── MySQL database ───────────────────────────────────────────────────────────
+  # Remove this service if using Coolify's built-in Database resource instead.
+  db:
+    image: mysql:8.0
+    container_name: fdcl_db
+    restart: unless-stopped
+    volumes:
+      - fdcl_mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-focus_lab}"
+      MYSQL_USER: "${DB_USERNAME:-focuslab}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p${DB_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - fdcl_network
+
+volumes:
+  fdcl_mysql_data:
+
+networks:
+  fdcl_network:
+    driver: bridge
