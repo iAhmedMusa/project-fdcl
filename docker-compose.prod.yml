@@ -29,8 +29,6 @@ services:
     networks:
       - fdcl_network
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.services.fdcl.loadBalancer.server.port=80"
       - "traefik.http.routers.fdcl.entryPoints=web"
       - "traefik.http.routers.fdcl.tls.certresolver=letsencrypt" # if using HTTPS
       - "traefik.http.routers.fdcl-https.rule=Host(`focusdigitalcolorlab.com`)"
