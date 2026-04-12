@@ -28,11 +28,11 @@ services:
         condition: service_healthy
     networks:
       - fdcl_network
-    labels:
-      - "traefik.http.routers.fdcl.entryPoints=web"
-      - "traefik.http.routers.fdcl.tls.certresolver=letsencrypt" # if using HTTPS
-      - "traefik.http.routers.fdcl-https.rule=Host(`focusdigitalcolorlab.com`)"
-      - "traefik.http.routers.fdcl-https.entryPoints=websecure"
+    # labels:
+    #   - "traefik.http.routers.fdcl.entryPoints=web"
+    #   - "traefik.http.routers.fdcl.tls.certresolver=letsencrypt" # if using HTTPS
+    #   - "traefik.http.routers.fdcl-https.rule=Host(`focusdigitalcolorlab.com`)"
+    #   - "traefik.http.routers.fdcl-https.entryPoints=websecure"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
       interval: 30s
