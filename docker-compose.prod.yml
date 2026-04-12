@@ -23,6 +23,8 @@ services:
       dockerfile: docker/nginx/Dockerfile
     container_name: fdcl_nginx
     restart: unless-stopped
+    expose:
+      - "8080"                     # tells Coolify/Traefik which port to proxy to
     depends_on:
       app:
         condition: service_healthy
@@ -34,8 +36,8 @@ services:
     #   - "traefik.http.routers.fdcl-https.rule=Host(`focusdigitalcolorlab.com`)"
     #   - "traefik.http.routers.fdcl-https.entryPoints=websecure"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
-      interval: 30s
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/up || exit 1"]
+      interval: 15s
       timeout: 5s
       retries: 3
       start_period: 10s
