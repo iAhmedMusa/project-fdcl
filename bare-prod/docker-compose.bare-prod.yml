@@ -1,0 +1,117 @@
+# =============================================================================
+# FDCL — Bare Production stack (single-host VPS, no Coolify)
+# Run from inside bare-prod/ directory:
+#   docker compose -f docker-compose.bare-prod.yml --env-file .env.bare-prod up -d
+# =============================================================================
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: fdcl_traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik_proxy"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - traefik_proxy
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/php/Dockerfile.prod
+    image: fdcl-app:bare-prod
+    container_name: fdcl_app
+    restart: unless-stopped
+    env_file:
+      - .env.bare-prod
+    volumes:
+      - fdcl_storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - fdcl_internal
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /var/www/html/storage/app/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
+
+  nginx:
+    build:
+      context: ..
+      dockerfile: docker/nginx/Dockerfile.prod
+    image: fdcl-nginx:bare-prod
+    container_name: fdcl_nginx
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - traefik_proxy
+      - fdcl_internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik_proxy"
+      - "traefik.http.routers.fdcl.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.fdcl.entrypoints=websecure"
+      - "traefik.http.routers.fdcl.tls=true"
+      - "traefik.http.routers.fdcl.tls.certresolver=letsencrypt"
+      - "traefik.http.services.fdcl.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  db:
+    image: mysql:8.0
+    container_name: fdcl_db
+    restart: unless-stopped
+    volumes:
+      - fdcl_mysql_data:/var/lib/mysql
+      - ../docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+    networks:
+      - fdcl_internal
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${DB_ROOT_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  fdcl_mysql_data:
+  fdcl_storage:
+  traefik_letsencrypt:
+
+networks:
+  traefik_proxy:
+    name: traefik_proxy
+  fdcl_internal:
+    name: fdcl_internal

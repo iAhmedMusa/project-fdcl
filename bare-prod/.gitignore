@@ -1,0 +1,5 @@
+# Local secrets & certs — never commit
+.env.bare-prod
+.env.bare-prod.local
+traefik/certs/*
+!traefik/certs/.gitkeep
