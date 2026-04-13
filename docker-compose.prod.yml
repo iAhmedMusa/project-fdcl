@@ -49,8 +49,6 @@ services:
     build:
       context: .
       dockerfile: docker/nginx/Dockerfile.prod
-      args:
-        APP_IMAGE: fdcl-app
     container_name: fdcl_nginx
     restart: unless-stopped
     depends_on:
