@@ -22,7 +22,7 @@ if [ $attempt -ge $max_attempts ]; then
 else
     # Run database migrations
     echo "Running migrations..."
-    php artisan migrate --force || echo "WARNING: Migrations failed. Check logs."
+    php artisan migrate --seed --force || echo "WARNING: Migrations failed. Check logs."
 
     # Create storage symlink (safe to re-run)
     php artisan storage:link --force || true

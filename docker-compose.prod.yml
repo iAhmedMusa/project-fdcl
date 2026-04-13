@@ -8,8 +8,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - fdcl_network
     healthcheck:
       test: ["CMD-SHELL", "test -f /var/www/html/storage/app/ready || exit 1"]
       interval: 10s
@@ -23,20 +21,11 @@ services:
       dockerfile: docker/nginx/Dockerfile
     container_name: fdcl_nginx
     restart: unless-stopped
-    expose:
-      - "8080"                     # tells Coolify/Traefik which port to proxy to
     depends_on:
       app:
         condition: service_healthy
-    networks:
-      - fdcl_network
-    # labels:
-    #   - "traefik.http.routers.fdcl.entryPoints=web"
-    #   - "traefik.http.routers.fdcl.tls.certresolver=letsencrypt" # if using HTTPS
-    #   - "traefik.http.routers.fdcl-https.rule=Host(`focusdigitalcolorlab.com`)"
-    #   - "traefik.http.routers.fdcl-https.entryPoints=websecure"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/up || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost/up || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -55,8 +44,6 @@ services:
       MYSQL_USER: "${DB_USERNAME:-focuslab}"
       MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-rootsecret}"
-    networks:
-      - fdcl_network
     healthcheck:
       test:
         [
@@ -70,7 +57,3 @@ services:
 
 volumes:
   fdcl_mysql_data:
-
-networks:
-  fdcl_network:
-    driver: bridge

@@ -2,4 +2,4 @@ FROM nginx:alpine
 
 COPY docker/nginx/prod.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 8080
+EXPOSE 80
