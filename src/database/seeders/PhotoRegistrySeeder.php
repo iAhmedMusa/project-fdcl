@@ -13,14 +13,16 @@ class PhotoRegistrySeeder extends Seeder
     public function run(): void
     {
         // Create a demo customer
-        $customer = User::create([
-            'name' => 'Ahmed Musa',
-            'email' => 'customer@focusdigitalcolorlab.com',
-            'phone' => '01713194608',
-            'password' => Hash::make('Customer@1234'),
-            'address' => 'House 470, Road 06, Avenue 06, Mirpur DOHS',
-        ]);
-        $customer->assignRole('customer');
+        $customer = User::firstOrCreate(
+            ['email' => 'customer@focusdigitalcolorlab.com'],
+            [
+                'name' => 'Ahmed Musa',
+                'phone' => '01713194608',
+                'password' => Hash::make('Customer@1234'),
+                'address' => 'House 470, Road 06, Avenue 06, Mirpur DOHS',
+            ]
+        );
+        $customer->syncRoles(['customer']);
 
         // Fixed registry codes for easy testing — no user or order attached yet.
         // A customer claims a registry only after placing a reprint order.
@@ -52,13 +54,15 @@ class PhotoRegistrySeeder extends Seeder
                 $this->generatePlaceholderImage($path, $entry['color'], $entry['code']);
             }
 
-            PhotoRegistry::create([
-                'registry_code' => $entry['code'],
-                'user_id' => null,
-                'photo_paths' => [$path],
-                'notes' => 'Demo '.$entry['label'],
-                'expires_at' => now()->addYear(),
-            ]);
+            PhotoRegistry::firstOrCreate(
+                ['registry_code' => $entry['code']],
+                [
+                    'user_id' => null,
+                    'photo_paths' => [$path],
+                    'notes' => 'Demo '.$entry['label'],
+                    'expires_at' => now()->addYear(),
+                ]
+            );
         }
     }
 

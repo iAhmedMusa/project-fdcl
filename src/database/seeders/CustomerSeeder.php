@@ -74,15 +74,17 @@ class CustomerSeeder extends Seeder
         ];
 
         foreach ($customers as $data) {
-            $customer = User::create([
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'email' => $data['email'],
-                'password' => Hash::make('Customer@1234'),
-                'address' => $data['address'],
-                'is_active' => true,
-            ]);
-            $customer->assignRole('customer');
+            $customer = User::firstOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'phone' => $data['phone'],
+                    'password' => Hash::make('Customer@1234'),
+                    'address' => $data['address'],
+                    'is_active' => true,
+                ]
+            );
+            $customer->syncRoles(['customer']);
         }
     }
 }

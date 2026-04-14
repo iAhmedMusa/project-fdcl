@@ -105,6 +105,10 @@ class ProductSeeder extends Seeder
             $product['updated_at'] = $now;
         }
 
-        Product::insert($products);
+        Product::upsert(
+            $products,
+            uniqueBy: ['name', 'category'],
+            update: ['size_label', 'width_mm', 'height_mm', 'price', 'copies_per_sheet', 'is_active', 'updated_at']
+        );
     }
 }

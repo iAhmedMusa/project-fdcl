@@ -12,35 +12,41 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        Role::create(['name' => 'customer']);
-        Role::create(['name' => 'staff']);
-        Role::create(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'customer']);
+        Role::firstOrCreate(['name' => 'staff']);
+        Role::firstOrCreate(['name' => 'admin']);
 
         // Get locations
-        $shantinagar = Location::where('name', 'Shantinagar')->first();
+        $baileyRoad = Location::where('name', 'Bailey Road')->first();
         $gulshan = Location::where('name', 'Gulshan')->first();
 
-        $admin = User::create([
-            'name' => 'Faiz Ullah',
-            'email' => 'admin@focusdigitalcolorlab.com',
-            'password' => Hash::make('Admin@1234'),
-        ]);
-        $admin->assignRole('admin');
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@focusdigitalcolorlab.com'],
+            [
+                'name' => 'Faiz Ullah',
+                'password' => Hash::make('Admin@1234'),
+            ]
+        );
+        $admin->syncRoles(['admin']);
 
-        $staffShantinagar = User::create([
-            'name' => 'Staff Shantinagar',
-            'email' => 'staff.shantinagar@focusdigitalcolorlab.com',
-            'password' => Hash::make('Staff@1234'),
-            'location_id' => $shantinagar?->id,
-        ]);
-        $staffShantinagar->assignRole('staff');
+        $staffBaileyRoad = User::firstOrCreate(
+            ['email' => 'staff.baileyroad@focusdigitalcolorlab.com'],
+            [
+                'name' => 'Staff Bailey Road',
+                'password' => Hash::make('Staff@1234'),
+                'location_id' => $baileyRoad?->id,
+            ]
+        );
+        $staffBaileyRoad->syncRoles(['staff']);
 
-        $staffGulshan = User::create([
-            'name' => 'Staff Gulshan',
-            'email' => 'staff.gulshan@focusdigitalcolorlab.com',
-            'password' => Hash::make('Staff@1234'),
-            'location_id' => $gulshan?->id,
-        ]);
-        $staffGulshan->assignRole('staff');
+        $staffGulshan = User::firstOrCreate(
+            ['email' => 'staff.gulshan@focusdigitalcolorlab.com'],
+            [
+                'name' => 'Staff Gulshan',
+                'password' => Hash::make('Staff@1234'),
+                'location_id' => $gulshan?->id,
+            ]
+        );
+        $staffGulshan->syncRoles(['staff']);
     }
 }
