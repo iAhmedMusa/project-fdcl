@@ -48,7 +48,7 @@ export default function Locations() {
                         Visit Us Today
                     </h2>
                     <p className="mx-auto mt-4 max-w-2xl text-lg text-text-secondary dark:text-gray-300">
-                        Conveniently located in Shantinagar and Gulshan. Both studios offer the same premium services and fast turnaround.
+                        Conveniently located in Bailey Road and Gulshan. Both studios offer the same premium services and fast turnaround.
                     </p>
                 </div>
 
