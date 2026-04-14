@@ -1,0 +1,13 @@
+working formate for deployment:
+
+docker/nginx/Dockerfile.prod
+prod.conf
+
+docker/php/Dockerfile.prod
+entrypoint.sh
+
+mainly
+
+docker-compose.prod.yml
+
+
