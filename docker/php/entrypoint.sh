@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Running Laravel production bootstrap..."
+echo "Running Laravel Staging bootstrap..."
 
 # Wait for MySQL to be ready (up to 120 seconds)
 echo "Waiting for database connection..."
