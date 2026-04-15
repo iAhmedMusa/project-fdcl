@@ -9,6 +9,7 @@ export default function OrderDetail({ order }) {
     const [pendingStatus, setPendingStatus] = useState(null);
     const [photoFiles, setPhotoFiles] = useState({});
     const [uploadingPhotos, setUploadingPhotos] = useState({});
+    const [uploadProgress, setUploadProgress] = useState({});
 
     const { data, setData, post, processing, errors } = useForm({
         amount: order.balance.toFixed(2),
@@ -51,6 +52,7 @@ export default function OrderDetail({ order }) {
         if (!file) return;
 
         setUploadingPhotos((prev) => ({ ...prev, [itemId]: true }));
+        setUploadProgress((prev) => ({ ...prev, [itemId]: 0 }));
         const formData = new FormData();
         formData.append('photo', file);
         formData.append('item_id', itemId);
@@ -58,10 +60,14 @@ export default function OrderDetail({ order }) {
         router.post(`/staff/orders/${order.id}/photos`, formData, {
             forceFormData: true,
             preserveScroll: true,
+            onProgress: (e) => setUploadProgress((prev) => ({ ...prev, [itemId]: e.percentage })),
             onSuccess: () => {
                 setPhotoFiles((prev) => { const n = { ...prev }; delete n[itemId]; return n; });
             },
-            onFinish: () => setUploadingPhotos((prev) => ({ ...prev, [itemId]: false })),
+            onFinish: () => {
+                setUploadingPhotos((prev) => ({ ...prev, [itemId]: false }));
+                setUploadProgress((prev) => { const n = { ...prev }; delete n[itemId]; return n; });
+            },
         });
     };
 
@@ -237,6 +243,20 @@ export default function OrderDetail({ order }) {
                                                             </Button>
                                                         </div>
                                                     )}
+                                                    {uploadProgress[item.id] != null && (
+                                                        <div className="mt-2 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                                                            <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-primary">
+                                                                <span>Uploading photo...</span>
+                                                                <span>{uploadProgress[item.id]}%</span>
+                                                            </div>
+                                                            <div className="w-full rounded-full bg-primary/20 h-2 overflow-hidden">
+                                                                <div
+                                                                    className="h-2 rounded-full bg-primary transition-all duration-200"
+                                                                    style={{ width: `${uploadProgress[item.id]}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -278,22 +298,25 @@ export default function OrderDetail({ order }) {
                                                         <div key={i} className="group relative">
                                                             <div className="h-28 w-24 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800">
                                                                 <img
-                                                                    src={`/storage/${photo}`}
+                                                                    // src={`/storage/${photo}`}
+                                                                    src={photo}
                                                                     alt={`Photo ${i + 1}`}
                                                                     className="h-full w-full object-cover"
                                                                 />
                                                             </div>
                                                             {/* Download overlay */}
-                                                            <a
-                                                                href={`/storage/${photo}`}
-                                                                download
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    window.location.href = `/staff/photos/download?path=${encodeURIComponent(photo)}`;
+                                                                }}
                                                                 className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                 title="Download photo"
                                                             >
                                                                 <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                                                                 </svg>
-                                                            </a>
+                                                            </button>
                                                         </div>
                                                     ))}
                                                 </div>

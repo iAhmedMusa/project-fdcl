@@ -26,6 +26,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
     const [deliveryMethod, setDeliveryMethod] = useState('pickup');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
@@ -114,8 +115,9 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
             router.post('/order/reprint', formData, {
                 forceFormData: true,
+                onProgress: (e) => setUploadProgress(e.percentage),
                 onError: (errs) => setErrors(errs),
-                onFinish: () => setSubmitting(false),
+                onFinish: () => { setSubmitting(false); setUploadProgress(null); },
             });
         }
     }
@@ -237,7 +239,8 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                                     key={i}
                                                     className="h-16 w-16 rounded border border-green-200 bg-white"
                                                     style={{
-                                                        backgroundImage: `url(/storage/${photo})`,
+                                                        // backgroundImage: `url(/storage/${photo})`,
+                                                        backgroundImage: `url(${photo})`,
                                                         backgroundSize: 'cover',
                                                         backgroundPosition: 'center',
                                                     }}
@@ -473,6 +476,22 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                 <p className="mt-1 text-xs text-gray-400">
                                     {selectedProductData?.name} ({selectedProductData?.size_label}) × {quantity}
                                 </p>
+                            </div>
+                        )}
+
+                        {/* Upload progress */}
+                        {uploadProgress !== null && (
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                                <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-primary">
+                                    <span>Uploading photo...</span>
+                                    <span>{uploadProgress}%</span>
+                                </div>
+                                <div className="w-full rounded-full bg-primary/20 h-2 overflow-hidden">
+                                    <div
+                                        className="h-2 rounded-full bg-primary transition-all duration-200"
+                                        style={{ width: `${uploadProgress}%` }}
+                                    />
+                                </div>
                             </div>
                         )}
 

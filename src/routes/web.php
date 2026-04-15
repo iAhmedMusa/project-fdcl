@@ -98,6 +98,7 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->group(function () {
     Route::patch('/appointments/{appointment}/status', [StaffAppointmentController::class, 'updateStatus'])->name('staff.appointments.status');
     // Photo Storage
     Route::get('/photos', [PhotoStorageController::class, 'index'])->name('staff.photos.index');
+    Route::get('/photos/download', [PhotoStorageController::class, 'download'])->name('staff.photos.download');
     Route::get('/photos/{code}', [PhotoStorageController::class, 'show'])->name('staff.photos.show');
 });
 

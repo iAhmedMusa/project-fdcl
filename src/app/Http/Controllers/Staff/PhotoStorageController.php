@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use App\Models\PhotoRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PhotoStorageController extends Controller
 {
@@ -84,7 +87,7 @@ class PhotoStorageController extends Controller
             'registry' => [
                 'id' => $registry->id,
                 'registry_code' => $registry->registry_code,
-                'photos' => $registry->photo_paths ?? [],
+                'photos' => array_map(fn ($p) => Storage::url($p), array_filter($registry->photo_paths ?? [])),
                 'notes' => $registry->notes,
                 'created_at' => $registry->created_at->format('M d, Y \a\t H:i'),
                 'expires_at' => $registry->expires_at?->format('M d, Y'),
@@ -121,6 +124,33 @@ class PhotoStorageController extends Controller
                     ];
                 }),
             ],
+        ]);
+    }
+
+    public function download(Request $request): StreamedResponse
+    {
+        $path = $request->query('path');
+
+        abort_if(empty($path), 400);
+
+        // Strip bucket prefix if a full B2/S3 URL was passed
+        $bucket = config('filesystems.disks.s3.bucket');
+        if (str_contains($path, $bucket.'/')) {
+            $path = substr($path, strpos($path, $bucket.'/') + strlen($bucket.'/'));
+        }
+
+        // Strip /storage/ prefix if local public disk URL was passed
+        if (str_starts_with($path, '/storage/')) {
+            $path = ltrim(substr($path, strlen('/storage/')), '/');
+        }
+
+        abort_unless(Storage::exists($path), 404);
+
+        $filename = basename($path);
+        $mime = Storage::mimeType($path) ?: 'application/octet-stream';
+
+        return Storage::download($path, $filename, [
+            'Content-Type' => $mime,
         ]);
     }
 }

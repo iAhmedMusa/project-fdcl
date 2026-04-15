@@ -62,7 +62,8 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                                 key={i}
                                                 className="h-16 w-14 rounded border bg-gray-100 object-cover overflow-hidden"
                                                 style={{
-                                                    backgroundImage: `url(/storage/${photo})`,
+                                                    // backgroundImage: `url(/storage/${photo})`,
+                                                    backgroundImage: `url(${photo})`,
                                                     backgroundSize: 'cover',
                                                     backgroundPosition: 'center',
                                                 }}

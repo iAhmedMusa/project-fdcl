@@ -136,6 +136,7 @@ export default function CreateOrder({ products, locations }) {
 
     // ── Submission ──────────────────────────────────────────
     const [submitting, setSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
 
     const dropdownRef = useRef(null);
@@ -504,14 +505,16 @@ export default function CreateOrder({ products, locations }) {
 
             router.post(route('staff.orders.store'), formData, {
                 forceFormData: true,
+                onProgress: (e) => setUploadProgress(e.percentage),
                 onError: (errs) => {
                     setErrors(errs);
                     setSubmitting(false);
+                    setUploadProgress(null);
                     if (errs['reprint_items.0.registry_code'] || errs['reprint_items.0.photo_id']) {
                         if (shareConfirmation) setConfirmShare(false);
                     }
                 },
-                onFinish: () => setSubmitting(false),
+                onFinish: () => { setSubmitting(false); setUploadProgress(null); },
             });
         } else {
             router.post(route('staff.orders.store'), data, {
@@ -911,7 +914,8 @@ export default function CreateOrder({ products, locations }) {
                                                                 {registry.photos && registry.photos.length > 0 && (
                                                                     <div className="mb-2 aspect-square overflow-hidden rounded border bg-gray-100">
                                                                         <img
-                                                                            src={`/storage/${registry.photos[0]}`}
+                                                                            // src={`/storage/${registry.photos[0]}`}
+                                                                            src={registry.photos[0]}
                                                                             alt=""
                                                                             className="h-full w-full object-cover"
                                                                         />
@@ -1002,7 +1006,8 @@ export default function CreateOrder({ products, locations }) {
                                                                                     <div
                                                                                         key={i}
                                                                                         className="h-16 w-16 rounded border border-green-200 bg-white bg-cover bg-center"
-                                                                                        style={{ backgroundImage: `url(/storage/${photo})` }}
+                                                                                        // style={{ backgroundImage: `url(/storage/${photo})` }}
+                                                                        style={{ backgroundImage: `url(${photo})` }}
                                                                                     />
                                                                                 ))}
                                                                             </div>
@@ -2041,6 +2046,22 @@ export default function CreateOrder({ products, locations }) {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Upload progress */}
+                            {uploadProgress !== null && (
+                                <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                                    <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-primary">
+                                        <span>Uploading photo...</span>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <div className="w-full rounded-full bg-primary/20 h-2 overflow-hidden">
+                                        <div
+                                            className="h-2 rounded-full bg-primary transition-all duration-200"
+                                            style={{ width: `${uploadProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Submit */}
                             <div className="flex justify-end gap-3">
