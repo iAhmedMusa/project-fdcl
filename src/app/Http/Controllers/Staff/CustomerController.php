@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -99,7 +100,7 @@ class CustomerController extends Controller
             ->map(fn ($r) => [
                 'id' => $r->id,
                 'code' => $r->registry_code,
-                'photos' => $r->photo_paths ?? [],
+                'photos' => array_map(fn ($p) => Storage::url($p), array_filter($r->photo_paths ?? [])),
                 'notes' => $r->notes,
                 'created_at' => $r->created_at->format('M d, Y'),
                 'expires_at' => $r->expires_at?->format('M d, Y'),

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\PhotoRegistry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,7 +51,7 @@ class DashboardController extends Controller
             ->map(function ($registry) {
                 return [
                     'code' => $registry->registry_code,
-                    'photos' => $registry->photo_paths ?? [],
+                    'photos' => array_map(fn ($p) => Storage::url($p), array_filter($registry->photo_paths ?? [])),
                     'notes' => $registry->notes,
                     'created_at' => $registry->created_at->format('M d, Y'),
                     'expires_at' => $registry->expires_at?->format('M d, Y'),
@@ -99,7 +100,7 @@ class DashboardController extends Controller
                         'quantity' => $item->quantity,
                         'unit_price' => (float) $item->unit_price,
                         'subtotal' => (float) $item->subtotal,
-                        'photo_paths' => $item->photo_paths ?? [],
+                        'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($item->photo_paths ?? [])),
                         'photo_source' => $item->photo_source,
                         'item_specific_notes' => $item->item_specific_notes,
                     ];
@@ -117,7 +118,7 @@ class DashboardController extends Controller
                 }),
                 'photo_registry' => $order->photoRegistries->first() ? [
                     'registry_code' => $order->photoRegistries->first()->registry_code,
-                    'photo_paths' => $order->photoRegistries->first()->photo_paths ?? [],
+                    'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($order->photoRegistries->first()->photo_paths ?? [])),
                 ] : null,
             ],
         ]);

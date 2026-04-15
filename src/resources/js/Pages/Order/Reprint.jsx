@@ -166,7 +166,8 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                                     key={i}
                                                     className="aspect-square rounded border border-gray-300 bg-gray-100"
                                                     style={{
-                                                        backgroundImage: `url(/storage/${photo})`,
+                                                        // backgroundImage: `url(/storage/${photo})`,
+                                                        backgroundImage: `url(${photo})`,
                                                         backgroundSize: 'cover',
                                                         backgroundPosition: 'center',
                                                     }}

@@ -10,6 +10,7 @@ use App\Services\OrderNumberGenerator;
 use App\Services\PhotoStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -181,7 +182,7 @@ class OrderController extends Controller
                         'quantity' => $item->quantity,
                         'unit_price' => (float) $item->unit_price,
                         'subtotal' => (float) $item->subtotal,
-                        'photo_paths' => $item->photo_paths ?? [],
+                        'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($item->photo_paths ?? [])),
                         'photo_source' => $item->photo_source,
                         'item_specific_notes' => $item->item_specific_notes,
                         'registry_code' => $registryCode,
@@ -200,7 +201,7 @@ class OrderController extends Controller
                 }),
                 'photo_registry' => $order->photoRegistries->first() ? [
                     'registry_code' => $order->photoRegistries->first()->registry_code,
-                    'photo_paths' => $order->photoRegistries->first()->photo_paths ?? [],
+                    'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($order->photoRegistries->first()->photo_paths ?? [])),
                 ] : null,
             ],
         ]);

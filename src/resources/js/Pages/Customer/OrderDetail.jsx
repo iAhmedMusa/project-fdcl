@@ -108,7 +108,8 @@ export default function OrderDetail({ auth, order }) {
                                             <div
                                                 key={i}
                                                 className="h-12 w-12 rounded border bg-muted"
-                                                style={{ backgroundImage: `url(/storage/${path})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                                                // style={{ backgroundImage: `url(/storage/${path})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+                                                style={{ backgroundImage: `url(${path})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
                                             />
                                         ))}
                                     </div>

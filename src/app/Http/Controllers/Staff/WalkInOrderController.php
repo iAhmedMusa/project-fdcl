@@ -19,6 +19,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -375,7 +376,7 @@ class WalkInOrderController extends Controller
                 return [
                     'id' => $registry->id,
                     'code' => $registry->registry_code,
-                    'photos' => $registry->photo_paths ?? [],
+                    'photos' => array_map(fn ($p) => Storage::url($p), array_filter($registry->photo_paths ?? [])),
                     'created_at' => $registry->created_at->format('M d, Y'),
                     'order_number' => $firstOrder?->order_number,
                 ];
