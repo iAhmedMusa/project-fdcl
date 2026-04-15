@@ -371,7 +371,8 @@ export default function CustomerShow({ customer, orders, photoRegistries = [] })
                                                         key={i}
                                                         className="h-14 w-12 rounded border bg-muted overflow-hidden"
                                                         style={{
-                                                            backgroundImage: `url(/storage/${photo})`,
+                                                            // backgroundImage: `url(/storage/${photo})`,
+                                                            backgroundImage: `url(${photo})`,
                                                             backgroundSize: 'cover',
                                                             backgroundPosition: 'center',
                                                         }}

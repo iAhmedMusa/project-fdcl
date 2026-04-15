@@ -17,13 +17,15 @@ class PhotoStorage
             $directory = 'photos';
         }
 
-        return $file->storeAs($directory, $filename, 'public');
+        // return $file->storeAs($directory, $filename, 'public');
+        return $file->storeAs($directory, $filename, config('filesystems.default'));
     }
 
     public function storeWithOrderNumber(UploadedFile $file, string $orderNumber): string
     {
         $filename = time().'_'.$file->getClientOriginalName();
 
-        return $file->storeAs('orders/'.$orderNumber, $filename, 'public');
+        // return $file->storeAs('orders/'.$orderNumber, $filename, 'public');
+        return $file->storeAs('orders/'.$orderNumber, $filename, config('filesystems.default'));
     }
 }

@@ -18,6 +18,7 @@ export default function Frame({ products, locations }) {
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
     const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -92,10 +93,12 @@ export default function Frame({ products, locations }) {
 
             router.post('/order/frame', formData, {
                 forceFormData: true,
+                onProgress: (e) => setUploadProgress(e.percentage),
                 onError: (errs) => setErrors(errs),
                 onFinish: () => {
                     localStorage.removeItem(STORAGE_KEY);
                     setSubmitting(false);
+                    setUploadProgress(null);
                 },
             });
         } else {
@@ -348,6 +351,21 @@ export default function Frame({ products, locations }) {
                                 </div>
                             </div>
                         </div>
+
+                        {uploadProgress !== null && (
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                                <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-primary">
+                                    <span>Uploading photo...</span>
+                                    <span>{uploadProgress}%</span>
+                                </div>
+                                <div className="w-full rounded-full bg-primary/20 h-2 overflow-hidden">
+                                    <div
+                                        className="h-2 rounded-full bg-primary transition-all duration-200"
+                                        style={{ width: `${uploadProgress}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <button
                             type="submit"
