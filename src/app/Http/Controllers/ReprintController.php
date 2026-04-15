@@ -141,6 +141,7 @@ class ReprintController extends Controller
                 'unit_price' => $product->price,
                 'subtotal' => $product->price * $validated['quantity'],
                 'photo_paths' => $photoPaths,
+                'reprint_source' => $hasRegistryCode ? 'registry' : 'upload',
             ]);
 
             if ($hasRegistryCode && $registry) {
