@@ -145,7 +145,7 @@ export default function LandingLayout({ children }) {
                                 </span>
                             </div>
                             <p className="mt-3 text-sm leading-relaxed text-text-secondary dark:text-gray-400 max-w-md">
-                                Premium photography studio in Dhaka. Professional passport photos, visa applications, custom prints — ready in 10 minutes.
+                                The Best Premium studio in Dhaka. Professional photography, Passport Size, All countries Visa photo sizes, custom prints — ready in 10 minutes.
                             </p>
                             <div className="mt-6 flex gap-6">
                                 <a

@@ -72,12 +72,14 @@ export default function Show({ registry }) {
                                         className="group relative aspect-square overflow-hidden rounded-lg border bg-gray-100"
                                     >
                                         <img
-                                            src={`/storage/${photo}`}
+                                            // src={`/storage/${photo}`}
+                                            src={photo}
                                             alt={`Photo ${index + 1}`}
                                             className="h-full w-full object-cover transition-transform group-hover:scale-105"
                                         />
                                         <a
-                                            href={`/storage/${photo}`}
+                                            // href={`/storage/${photo}`}
+                                            href={photo}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"

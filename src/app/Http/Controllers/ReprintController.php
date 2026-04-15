@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -68,7 +69,7 @@ class ReprintController extends Controller
             'registry' => [
                 'id' => $registry->id,
                 'code' => $registry->registry_code,
-                'photos' => $registry->photo_paths ?? [],
+                'photos' => array_map(fn ($p) => Storage::url($p), array_filter($registry->photo_paths ?? [])),
                 'created_at' => $registry->created_at->format('M d, Y'),
                 'existing_customer' => $existingCustomer ? [
                     'id' => $existingCustomer->id,
