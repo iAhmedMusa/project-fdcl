@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             CustomerSeeder::class,
             ProductSeeder::class,
-            PhotoRegistrySeeder::class,
+            // PhotoRegistrySeeder::class, // Optional: seed with demo registry entries and placeholder images for testing
         ]);
     }
 }
