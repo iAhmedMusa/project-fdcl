@@ -175,8 +175,9 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                     ? 'bg-primary text-primary-foreground'
                                     : 'text-muted-foreground hover:bg-accent'
                             } ${!link.url ? 'pointer-events-none opacity-50' : ''}`}
-                            dangerouslySetInnerHTML={{ __html: link.label }}
-                        />
+                        >
+                            {link.label.replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')}
+                        </Link>
                     ))}
                 </div>
             )}

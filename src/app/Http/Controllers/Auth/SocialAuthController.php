@@ -38,6 +38,12 @@ class SocialAuthController extends Controller
             }
         }
 
+        if (! $user->is_active) {
+            return redirect()->route('login')->withErrors([
+                'login' => trans('auth.failed'),
+            ]);
+        }
+
         Auth::login($user, remember: true);
 
         return redirect(route('customer.dashboard'));
