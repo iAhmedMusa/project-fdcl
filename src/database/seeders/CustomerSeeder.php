@@ -12,7 +12,13 @@ class CustomerSeeder extends Seeder
     {
         $customers = [
             [
-                'name' => 'Ahmed Ayaan',
+                'name' => 'Ahmed Musa',
+                'phone' => '01713194608',
+                'email' => 'ahmed@focusdigitalcolorlab.com',
+                'address' => 'House 470, Road 06, Avenue 06, Mirpur DOHS',
+            ],
+            [
+                'name' => 'Ahmed Ayaan Zulqarnain',
                 'phone' => '01515261283',
                 'email' => 'ayaan@focusdigitalcolorlab.com',
                 'address' => 'House 470, Road 06, Avenue 06, Mirpur DOHS',
