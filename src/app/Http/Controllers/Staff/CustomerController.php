@@ -67,6 +67,8 @@ class CustomerController extends Controller
 
     public function show(User $customer): Response
     {
+        abort_if(! $customer->hasRole('customer'), 403);
+
         $orders = Order::with('location')
             ->where('user_id', $customer->id)
             ->orderBy('created_at', 'desc')
@@ -127,6 +129,8 @@ class CustomerController extends Controller
 
     public function update(Request $request, User $customer): RedirectResponse
     {
+        abort_if(! $customer->hasRole('customer'), 403);
+
         $validated = $request->validate([
             'name' => 'required|string|max:100',
             'phone' => 'required|string|max:20',
@@ -146,6 +150,8 @@ class CustomerController extends Controller
 
     public function enableLogin(Request $request, User $customer): RedirectResponse
     {
+        abort_if(! $customer->hasRole('customer'), 403);
+
         $validated = $request->validate([
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($customer->id)],
         ]);
@@ -162,6 +168,8 @@ class CustomerController extends Controller
 
     public function resetPassword(User $customer): RedirectResponse
     {
+        abort_if(! $customer->hasRole('customer'), 403);
+
         if (str_ends_with($customer->email, '@fdcl.local')) {
             return back()->with('error', 'Enable login first before resetting the password.');
         }
@@ -175,6 +183,8 @@ class CustomerController extends Controller
 
     public function toggleActive(User $customer): RedirectResponse
     {
+        abort_if(! $customer->hasRole('customer'), 403);
+
         if (str_ends_with($customer->email, '@fdcl.local')) {
             return back()->with('error', 'Enable login access first before toggling it.');
         }

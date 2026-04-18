@@ -285,8 +285,9 @@ export default function CustomersIndex({ customers, filters }) {
                                         ? 'bg-primary font-medium text-primary-foreground'
                                         : 'border bg-card text-muted-foreground hover:bg-accent'
                                 } ${!link.url ? 'cursor-not-allowed opacity-40' : ''}`}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                            />
+                            >
+                                {link.label.replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')}
+                            </button>
                         ))}
                     </div>
                 </div>

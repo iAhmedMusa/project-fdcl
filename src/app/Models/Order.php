@@ -76,9 +76,9 @@ class Order extends Model
 
     public function hasPhoto(): bool
     {
-        return $this->photoRegistries()->exists() &&
-            $this->photoRegistries()->first() !== null &&
-            ! empty($this->photoRegistries()->first()->photo_paths);
+        $registry = $this->photoRegistries()->first();
+
+        return $registry !== null && ! empty($registry->photo_paths);
     }
 
     protected function getIsAwaitingPhotoAttribute(): bool
