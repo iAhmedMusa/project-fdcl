@@ -18,7 +18,7 @@ services:
       LOG_CHANNEL: stderr
       LOG_LEVEL: "${LOG_LEVEL:-warning}"
       DB_CONNECTION: mysql
-      DB_HOST: db
+      DB_HOST: "${DB_HOST:-db}"
       DB_PORT: "${DB_PORT:-3306}"
       DB_DATABASE: "${DB_DATABASE}"
       DB_USERNAME: "${DB_USERNAME}"
@@ -49,7 +49,7 @@ services:
     volumes:
       - fdcl_storage:/var/www/html/storage
     healthcheck:
-      test: ["CMD-SHELL", "test -f /var/www/html/storage/app/ready || exit 1"]
+      test: [ "CMD-SHELL", "test -f /var/www/html/storage/app/ready || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -67,7 +67,7 @@ services:
       app:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost/up || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost/up || exit 1" ]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -90,7 +90,8 @@ services:
       test:
         [
           "CMD-SHELL",
-          "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} || exit 1",
+          "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} ||
+            exit 1",
         ]
       interval: 10s
       timeout: 5s
