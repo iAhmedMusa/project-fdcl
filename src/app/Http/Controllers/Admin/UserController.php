@@ -17,6 +17,7 @@ class UserController extends Controller
     public function index(Request $request): Response
     {
         $query = User::with('roles', 'location')
+            ->withCount('orders')
             ->orderBy('created_at', 'desc');
 
         // Filter by role
@@ -52,7 +53,7 @@ class UserController extends Controller
                 'role' => $user->roles->first()?->name ?? 'customer',
                 'location' => $user->location ? ['id' => $user->location->id, 'name' => $user->location->name] : null,
                 'created_at' => $user->created_at->format('M d, Y'),
-                'orders_count' => $user->orders()->count(),
+                'orders_count' => $user->orders_count,
             ];
         });
 
