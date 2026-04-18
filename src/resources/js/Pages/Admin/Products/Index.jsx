@@ -201,8 +201,9 @@ export default function ProductsIndex({ products, filters }) {
                                         ? 'bg-primary text-primary-foreground'
                                         : 'bg-card text-foreground hover:bg-accent'
                                 } ${!link.url ? 'cursor-not-allowed opacity-50' : ''}`}
-                                dangerouslySetInnerHTML={{ __html: link.label }}
-                            />
+                            >
+                                {link.label.replace(/&laquo;/g, '«').replace(/&raquo;/g, '»')}
+                            </button>
                         ))}
                     </div>
                 )}
