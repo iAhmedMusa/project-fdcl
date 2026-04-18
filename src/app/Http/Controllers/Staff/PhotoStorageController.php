@@ -144,6 +144,17 @@ class PhotoStorageController extends Controller
             $path = ltrim(substr($path, strlen('/storage/')), '/');
         }
 
+        // Prevent path traversal: reject any .. sequences and require known prefix
+        abort_if(str_contains($path, '..'), 400);
+        $allowed = false;
+        foreach (['orders/', 'photos/'] as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                $allowed = true;
+                break;
+            }
+        }
+        abort_unless($allowed, 400);
+
         abort_unless(Storage::exists($path), 404);
 
         $filename = basename($path);
