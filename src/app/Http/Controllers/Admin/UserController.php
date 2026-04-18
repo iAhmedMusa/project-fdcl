@@ -131,7 +131,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
-            'password' => Hash::make('Staff@1122'),
+            'password' => Hash::make('Staff@1234'),
             'is_active' => true,
             'location_id' => $validated['location_id'] ?? null,
         ]);
@@ -139,7 +139,7 @@ class UserController extends Controller
         $user->assignRole($validated['role']);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User created. Default password: Staff@1122 — ask them to change it after first login.');
+            ->with('success', 'User created. Default password: Staff@1234 — ask them to change it after first login.');
     }
 
     public function toggleActive(User $user): RedirectResponse
