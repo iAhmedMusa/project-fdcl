@@ -5,9 +5,10 @@ import { useEffect, useState } from 'react';
 
 const navLinks = [
     { label: 'Services', href: '#services' },
+    { label: 'Gallery', href: '#gallery' },
     { label: 'About', href: '#about' },
     { label: 'Locations', href: '#locations' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'FAQ', href: '#faq' },
 ];
 
 function smoothScroll(e, href) {
@@ -75,7 +76,7 @@ export default function LandingLayout({ children }) {
                                 href="/order"
                                 className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-primary/80 hover:shadow-md"
                             >
-                                Order Now
+                                Get Your Photo
                             </Link>
                         </div>
 
@@ -120,7 +121,7 @@ export default function LandingLayout({ children }) {
                                     className="rounded-lg bg-primary px-3 py-2.5 text-center text-sm font-bold text-white shadow-sm"
                                     onClick={() => setMobileOpen(false)}
                                 >
-                                    Order Now
+                                    Get Your Photo
                                 </Link>
                             </div>
                         </div>
@@ -130,52 +131,71 @@ export default function LandingLayout({ children }) {
 
             <main>{children}</main>
 
-            <footer className="bg-white dark:bg-gray-800 border-t border-border dark:border-gray-700">
-                <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-                    <div className="grid gap-8 md:grid-cols-4">
-                        <div className="md:col-span-2">
+            <footer className="bg-gray-950 border-t border-white/10">
+                <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+                    <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+                        {/* Brand */}
+                        <div className="lg:col-span-2">
                             <div className="flex items-center gap-3">
                                 <img
                                     src="/images/logo.png"
-                                    alt="FDCL Logo"
+                                    alt="Focus Digital Color Lab Logo"
                                     className="h-10 w-10 rounded-full"
                                 />
-                                <span className="font-poppins text-lg font-bold text-text-primary dark:text-white">
-                                    Focus Digital Color Lab
-                                </span>
+                                <div>
+                                    <span className="block text-base font-bold text-white">
+                                        Focus Digital Color Lab
+                                    </span>
+                                    <span className="block text-xs font-medium tracking-widest text-primary uppercase">
+                                        Premium Photo Studio · Dhaka
+                                    </span>
+                                </div>
                             </div>
-                            <p className="mt-3 text-sm leading-relaxed text-text-secondary dark:text-gray-400 max-w-md">
-                                The Best Premium studio in Dhaka. Professional photography, Passport Size, All countries Visa photo sizes, custom prints — ready in 10 minutes.
+                            <p className="mt-4 text-sm leading-relaxed text-gray-400 max-w-md">
+                                Dhaka's most trusted premium photo studio since 2009. Professional passport photos, visa photos, photo albums, frames, and mug prints — ready in 10 minutes. Serving Gulshan, Bailey Road, and all of Dhaka.
                             </p>
-                            <div className="mt-6 flex gap-6">
+                            <div className="mt-5 flex flex-wrap gap-4">
                                 <a
-                                    href="tel:01713140768"
-                                    className="flex items-center gap-2 text-sm text-text-secondary dark:text-gray-400 transition-colors hover:text-primary"
+                                    href="tel:+8801713140768"
+                                    className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
                                 >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                                     </svg>
-                                    01713-140768
+                                    +880 1713-140768
+                                </a>
+                                <a
+                                    href="https://wa.me/8801973140768"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 text-sm text-green-400 transition-colors hover:text-green-300"
+                                >
+                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                    </svg>
+                                    WhatsApp
                                 </a>
                             </div>
                         </div>
 
+                        {/* Services */}
                         <div>
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                                Quick Links
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4">
+                                Our Services
                             </h3>
-                            <ul className="mt-4 space-y-2.5">
+                            <ul className="space-y-2.5">
                                 {[
-                                    { label: 'Services', href: '#services' },
-                                    { label: 'About', href: '#about' },
-                                    { label: 'Locations', href: '#locations' },
-                                    { label: 'Contact', href: '#contact' },
+                                    { label: 'Passport Photo', href: '/order/photo-studio' },
+                                    { label: 'Visa Photo', href: '/order/photo-studio' },
+                                    { label: 'Photo Reprint', href: '/login' },
+                                    { label: 'Photo Album', href: '/album' },
+                                    { label: 'Photo Frame', href: '/frame' },
+                                    { label: 'Mug Print', href: '/mug' },
                                 ].map((link) => (
                                     <li key={link.label}>
                                         <a
                                             href={link.href}
-                                            onClick={(e) => smoothScroll(e, link.href)}
-                                            className="text-sm text-text-secondary dark:text-gray-400 transition-colors hover:text-text-primary dark:hover:text-white"
+                                            className="text-sm text-gray-400 transition-colors hover:text-white"
                                         >
                                             {link.label}
                                         </a>
@@ -184,24 +204,52 @@ export default function LandingLayout({ children }) {
                             </ul>
                         </div>
 
+                        {/* Locations */}
                         <div>
-                            <h3 className="text-sm font-semibold uppercase tracking-wider text-primary">
-                                Locations
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4">
+                                Studio Locations
                             </h3>
-                            <div className="mt-4 space-y-3 text-sm text-text-secondary dark:text-gray-400">
-                                <p className="font-medium text-text-primary dark:text-white">Bailey Road</p>
-                                <p>Shantinagar Moar, Bailey Road, Dhaka 1217</p>
-                                <p className="font-medium text-text-primary dark:text-white mt-4">Gulshan</p>
-                                <p>House 5, Road 21, Dhaka 1212</p>
+                            <div className="space-y-4 text-sm text-gray-400">
+                                <div>
+                                    <p className="font-semibold text-white">Bailey Road Studio</p>
+                                    <p className="mt-1">Shantinagar Moar, Bailey Road</p>
+                                    <p>Dhaka 1217</p>
+                                    <a
+                                        href="https://maps.app.goo.gl/UDVbk2jqn4XVSEbVA"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-1 inline-block text-xs text-primary hover:text-primary/80"
+                                    >
+                                        Open in Maps →
+                                    </a>
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-white">Gulshan Studio</p>
+                                    <p className="mt-1">House 5, Road 21, Gulshan-1</p>
+                                    <p>Dhaka 1212</p>
+                                    <a
+                                        href="https://maps.app.goo.gl/uLh3GKExPgmbjY8H8"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-1 inline-block text-xs text-primary hover:text-primary/80"
+                                    >
+                                        Open in Maps →
+                                    </a>
+                                </div>
+                                <div className="rounded-lg bg-white/5 p-3 text-xs">
+                                    <p className="font-medium text-white">Opening Hours</p>
+                                    <p className="mt-1">Sat–Thu: 9:30 AM – 9:00 PM</p>
+                                    <p>Friday: 3:00 PM – 9:00 PM</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="border-t border-border dark:border-gray-700">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        <p className="text-center text-xs text-text-muted dark:text-gray-500">
-                            © {new Date().getFullYear()} Focus Digital Color Lab. All rights reserved.
+                <div className="border-t border-white/10">
+                    <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <p className="text-xs text-gray-500">
+                            © {new Date().getFullYear()} Focus Digital Color Lab. Premium Photo Studio in Dhaka, Bangladesh.
                         </p>
                     </div>
                 </div>
