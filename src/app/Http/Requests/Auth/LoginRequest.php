@@ -57,6 +57,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (! $user->is_active) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'login' => trans('auth.failed'),
+            ]);
+        }
+
         Auth::login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
     }
