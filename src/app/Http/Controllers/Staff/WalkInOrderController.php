@@ -427,7 +427,6 @@ class WalkInOrderController extends Controller
                 ];
             }),
             'paper_type' => $order->paper_type,
-            'paper_type' => $order->paper_type,
         ];
 
         // Get the reprint item if exists
