@@ -68,12 +68,26 @@ export default function Hero() {
 
                     {/* ── Text — always first in DOM → first on mobile ── */}
                     <div>
-                        {/* Location badge */}
-                        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary dark:border-primary/30 dark:bg-primary/10 sm:px-4 sm:py-1.5 sm:text-sm">
-                            <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.01a7.76 7.76 0 00.453-.246 14.87 14.87 0 002.253-1.682C14.96 15.226 17.5 12.073 17.5 8c0-4.142-3.358-7.5-7.5-7.5S2.5 3.858 2.5 8c0 4.073 2.54 7.226 4.46 9.092a14.87 14.87 0 002.253 1.682 7.76 7.76 0 00.462.257l.018.01.006.003.002.001zM10 11a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                            </svg>
-                            Gulshan &amp; Bailey Road, Dhaka
+                        {/* Trust badges */}
+                        <div className="mb-6 flex flex-wrap gap-2 sm:mb-8">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 sm:px-4 sm:py-2 sm:text-sm">
+                                <svg className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fillRule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 00-.584.859 6.753 6.753 0 006.138 5.6 6.73 6.73 0 002.743 1.346A6.707 6.707 0 019.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 00-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 00.75-.75 2.25 2.25 0 00-2.25-2.25h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 01-1.112-3.173 6.73 6.73 0 002.743-1.347 6.753 6.753 0 006.139-5.6.75.75 0 00-.585-.858 47.077 47.077 0 00-3.07-.543V2.62a.75.75 0 00-.658-.744 49.798 49.798 0 00-6.093-.377 49.77 49.77 0 00-6.093.377.75.75 0 00-.657.744zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 013.16 5.337a45.6 45.6 0 012.006-.343v.256zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 01-2.863 3.207 6.72 6.72 0 00.857-3.294z" clipRule="evenodd" />
+                                </svg>
+                                15+ Years Experience
+                            </div>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 sm:px-4 sm:py-2 sm:text-sm">
+                                <svg className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.01a7.76 7.76 0 00.453-.246 14.87 14.87 0 002.253-1.682C14.96 15.226 17.5 12.073 17.5 8c0-4.142-3.358-7.5-7.5-7.5S2.5 3.858 2.5 8c0 4.073 2.54 7.226 4.46 9.092a14.87 14.87 0 002.253 1.682 7.76 7.76 0 00.462.257l.018.01.006.003.002.001zM10 11a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                                </svg>
+                                2 Prime Locations
+                            </div>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 sm:px-4 sm:py-2 sm:text-sm">
+                                <svg className="h-3.5 w-3.5 shrink-0 text-primary sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                10-Minute Delivery
+                            </div>
                         </div>
 
                         <h1 className="mb-4 font-bold tracking-tight text-gray-900 dark:text-white sm:mb-6">

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 const galleryPhotos = [
     { src: '/images/studio/studio-04.jpg', alt: 'Focus Digital Color Lab Bailey Road studio exterior, Dhaka', caption: 'Bailey Road Studio' },
@@ -124,7 +124,7 @@ export default function Gallery() {
                 </div>
 
                 {/* Desktop: masonry grid */}
-                <div className="hidden sm:columns-3 lg:columns-4 sm:gap-3">
+                <div className="hidden sm:block sm:columns-3 lg:columns-4 sm:gap-3">
                     {galleryPhotos.map((photo, idx) => (
                         <div
                             key={idx}
@@ -150,7 +150,7 @@ export default function Gallery() {
                         Fujifilm Professional Lab Equipment · Godox Studio Lighting · Canon DSLR Cameras
                     </p>
                     <p className="mt-2 text-gray-400">
-                        Professional-grade equipment at both our Bailey Road and Gulshan locations in Dhaka
+                        Professional-grade equipment at both our Bailey Road and Gulshan studio in Dhaka
                     </p>
                 </div>
             </div>
