@@ -139,7 +139,7 @@ export default function Frame({ products, locations }) {
                 <div className="max-w-xl">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Select Frame <span className="text-red-500">*</span></h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Select Frame <span className="text-red-500">*</span></h2>
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                                 {products.map((product) => {
                                     const isSelected = selectedProduct === product.id.toString();
@@ -151,14 +151,14 @@ export default function Frame({ products, locations }) {
                                             className={`rounded-lg border p-3 text-left transition-all ${
                                                 isSelected
                                                     ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                                                    : 'border-gray-200 bg-white hover:border-gray-300'
+                                                    : 'border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600'
                                             }`}
                                         >
-                                            <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-gray-900'}`}>
+                                            <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-gray-900 dark:text-gray-100'}`}>
                                                 {product.name}
                                             </p>
-                                            <p className="text-xs text-gray-500">{product.size_label}</p>
-                                            <p className="mt-1 text-sm font-semibold text-gray-900">৳{parseFloat(product.price).toFixed(0)}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">{product.size_label}</p>
+                                            <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-gray-100">৳{parseFloat(product.price).toFixed(0)}</p>
                                         </button>
                                     );
                                 })}
@@ -167,7 +167,7 @@ export default function Frame({ products, locations }) {
                         </div>
 
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Provide Your Photo <span className="text-red-500">*</span></h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Provide Your Photo <span className="text-red-500">*</span></h2>
 
                             <div className="flex gap-3">
                                 <button
@@ -176,14 +176,14 @@ export default function Frame({ products, locations }) {
                                     className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${
                                         activeTab === 'upload'
                                             ? 'border-primary bg-primary/5 text-primary'
-                                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                            : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600'
                                     }`}
                                 >
                                     <svg className="mx-auto mb-1.5 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
                                     </svg>
                                     Upload
-                                    <span className="block text-xs font-normal text-gray-400 mt-0.5">From your device</span>
+                                    <span className="block text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">From your device</span>
                                 </button>
                                 <button
                                     type="button"
@@ -191,14 +191,14 @@ export default function Frame({ products, locations }) {
                                     className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${
                                         activeTab === 'source'
                                             ? 'border-primary bg-primary/5 text-primary'
-                                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                            : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600'
                                     }`}
                                 >
                                     <svg className="mx-auto mb-1.5 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m4.243 4.243L6.75 7.5l4.243 4.243m4.5-4.5L21.75 7.5l-4.243 4.243" />
                                     </svg>
                                     Link
-                                    <span className="block text-xs font-normal text-gray-400 mt-0.5">Google Drive, USB, etc.</span>
+                                    <span className="block text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">Google Drive, USB, etc.</span>
                                 </button>
                             </div>
 
@@ -216,13 +216,13 @@ export default function Frame({ products, locations }) {
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="w-full rounded-lg border-2 border-dashed border-gray-300 p-8 text-center hover:border-gray-400"
+                                            className="w-full rounded-lg border-2 border-dashed border-gray-300 p-8 text-center hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
                                         >
-                                            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                                            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
                                             </svg>
-                                            <p className="mt-2 text-sm font-medium text-gray-600">Click to upload photo</p>
-                                            <p className="text-xs text-gray-400">JPG, PNG up to 10MB</p>
+                                            <p className="mt-2 text-sm font-medium text-gray-600 dark:text-gray-400">Click to upload photo</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500">JPG, PNG up to 10MB</p>
                                         </button>
                                     ) : (
                                         <div className="relative">
@@ -246,9 +246,9 @@ export default function Frame({ products, locations }) {
                                         onChange={(e) => setPhotoSource(e.target.value)}
                                         placeholder="Google Drive link, USB/Pendrive, WeTransfer, etc."
                                         rows={3}
-                                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                     />
-                                    <p className="mt-2 text-xs text-gray-500">
+                                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                         Provide link or describe how you will provide the photo.
                                     </p>
                                 </div>
@@ -256,23 +256,23 @@ export default function Frame({ products, locations }) {
                         </div>
 
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Note for Frame <span className="font-normal text-gray-400">(Optional)</span></h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Note for Frame <span className="font-normal text-gray-400">(Optional)</span></h2>
                             <textarea
                                 value={itemNotes}
                                 onChange={(e) => setItemNotes(e.target.value)}
                                 placeholder="Any special instructions for frame..."
                                 rows={3}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             />
                         </div>
 
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Quantity <span className="text-red-500">*</span></h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Quantity <span className="text-red-500">*</span></h2>
                             <div className="flex items-center gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50"
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                 >
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
@@ -284,12 +284,12 @@ export default function Frame({ products, locations }) {
                                     max="100"
                                     value={quantity}
                                     onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                                    className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setQuantity(Math.min(100, quantity + 1))}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50"
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                 >
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -299,11 +299,11 @@ export default function Frame({ products, locations }) {
                         </div>
 
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Pickup Location <span className="text-red-500">*</span></h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Pickup Location <span className="text-red-500">*</span></h2>
                             <select
                                 value={selectedLocation}
                                 onChange={(e) => setSelectedLocation(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             >
                                 <option value="">Select location...</option>
                                 {locations.map((loc) => (
@@ -316,37 +316,37 @@ export default function Frame({ products, locations }) {
                         </div>
 
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
                             <textarea
                                 value={specialInstructions}
                                 onChange={(e) => setSpecialInstructions(e.target.value)}
                                 placeholder="e.g. Matte paper, do not crop, specific colour notes..."
                                 rows={2}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             />
                         </div>
 
                         <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900">Order Summary</h2>
+                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Order Summary</h2>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Frame:</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Frame:</span>
                                     <span className="font-medium">
                                         {selectedProductData ? `${selectedProductData.name} × ${quantity}` : '-'}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Photo:</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Photo:</span>
                                     <span className="font-medium">
                                         {activeTab === 'upload' ? (uploadedFile ? 'Uploaded' : 'Not provided') : (photoSource ? 'Link provided' : 'Not provided')}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Total:</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Total:</span>
                                     <span className="font-bold text-lg">৳{total.toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Payment:</span>
+                                    <span className="text-gray-500 dark:text-gray-400">Payment:</span>
                                     <span className="font-medium text-amber-600">Pay at pickup</span>
                                 </div>
                             </div>
@@ -380,15 +380,15 @@ export default function Frame({ products, locations }) {
 
             {showLoginModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+                    <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-8 shadow-xl dark:bg-gray-800">
                         <div className="text-center">
                             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
                                 <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
                                 </svg>
                             </div>
-                            <h2 className="text-xl font-bold text-gray-900">Login Required</h2>
-                            <p className="mt-2 text-sm text-gray-600">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Login Required</h2>
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                                 You need an account to place an order. Please login or create an account to continue.
                             </p>
                         </div>
@@ -401,13 +401,13 @@ export default function Frame({ products, locations }) {
                             </Link>
                             <Link
                                 href={route('register') + '?intended=' + encodeURIComponent(window.location.pathname)}
-                                className="w-full rounded-lg border border-gray-300 py-3 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                                className="w-full rounded-lg border border-gray-300 py-3 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
                             >
                                 Create Account
                             </Link>
                             <button
                                 onClick={() => setShowLoginModal(false)}
-                                className="mt-2 text-sm text-gray-500 hover:text-gray-700"
+                                className="mt-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                             >
                                 Cancel
                             </button>
