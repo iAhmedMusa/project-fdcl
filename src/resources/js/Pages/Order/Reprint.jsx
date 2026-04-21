@@ -79,14 +79,14 @@ export default function Reprint({ products, locations, prefilledCode }) {
             <div className="mx-auto max-w-2xl px-4 py-8">
                 <div className="mb-8 text-center">
                     <h1 className="text-3xl font-bold text-navy">Reorder Your Photos</h1>
-                    <p className="mt-2 text-gray-600">
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">
                         Use your FDCL Photo ID or upload new photos
                     </p>
                 </div>
 
                 {/* Tabs */}
                 <div className="mb-8">
-                    <div className="flex border-b border-gray-200">
+                    <div className="flex border-b border-gray-200 dark:border-gray-700">
                         <button
                             onClick={() => {
                                 setActiveTab('id');
@@ -96,7 +96,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                             className={`flex-1 border-b-2 py-3 text-center text-sm font-semibold transition-colors ${
                                 activeTab === 'id'
                                     ? 'border-gold text-gold'
-                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
                             }`}
                         >
                             Use FDCL Photo ID
@@ -106,7 +106,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                             className={`flex-1 border-b-2 py-3 text-center text-sm font-semibold transition-colors ${
                                 activeTab === 'upload'
                                     ? 'border-gold text-gold'
-                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'
                             }`}
                         >
                             Upload New Photo
@@ -119,7 +119,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                     <div className="space-y-6">
                         <form onSubmit={handleLookup} className="space-y-4">
                             <div>
-                                <label className="mb-2 block text-sm font-semibold text-gray-700">
+                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                     FDCL Photo ID
                                 </label>
                                 <div className="flex gap-3">
@@ -129,7 +129,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                         onChange={(e) => setCode(e.target.value.toUpperCase())}
                                         placeholder="e.g., FDCL-4K8X2P"
                                         maxLength={20}
-                                        className="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-mono text-lg uppercase focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                        className="flex-1 rounded-lg border border-gray-300 px-4 py-3 font-mono text-lg uppercase focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                     />
                                     <button
                                         type="submit"
@@ -152,14 +152,14 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                     <p className="mt-1 font-mono text-2xl font-bold text-navy">
                                         {foundRegistry.code}
                                     </p>
-                                    <p className="mt-2 text-sm text-gray-600">
+                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                                         Created on {foundRegistry.created_at}
                                     </p>
                                 </div>
 
                                 {foundRegistry.photos.length > 0 && (
                                     <div className="mb-4">
-                                        <p className="mb-2 text-sm font-semibold text-gray-700">Photos:</p>
+                                        <p className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">Photos:</p>
                                         <div className="grid grid-cols-3 gap-2">
                                             {foundRegistry.photos.map((photo, i) => (
                                                 <div
@@ -179,14 +179,14 @@ export default function Reprint({ products, locations, prefilledCode }) {
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                             Print Size
                                         </label>
                                         <select
                                             value={selectedProduct}
                                             onChange={(e) => setSelectedProduct(e.target.value)}
                                             required
-                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                         >
                                             <option value="">Select size...</option>
                                             {products.map((product) => (
@@ -198,7 +198,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                     </div>
 
                                     <div>
-                                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                             Quantity
                                         </label>
                                         <input
@@ -207,19 +207,19 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                             max="100"
                                             value={quantity}
                                             onChange={(e) => setQuantity(parseInt(e.target.value))}
-                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="mb-2 block text-sm font-semibold text-gray-700">
+                                        <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                             Pickup Location
                                         </label>
                                         <select
                                             value={locationId}
                                             onChange={(e) => setLocationId(e.target.value)}
                                             required
-                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50"
+                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                         >
                                             <option value="">Select location...</option>
                                             {locations.map((loc) => (
@@ -264,8 +264,8 @@ export default function Reprint({ products, locations, prefilledCode }) {
 
                 {/* Tab 2: Upload New Photo */}
                 {activeTab === 'upload' && (
-                    <div className="rounded-lg bg-white p-6 shadow">
-                        <p className="text-center text-gray-600">
+                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                        <p className="text-center text-gray-600 dark:text-gray-400">
                             To upload new photos and place an order, please use our{' '}
                             <Link href="/order" className="font-semibold text-gold hover:text-gold-dark">
                                 Order Wizard
@@ -278,7 +278,7 @@ export default function Reprint({ products, locations, prefilledCode }) {
                 <div className="mt-8 text-center">
                     <Link
                         href={route('customer.dashboard')}
-                        className="text-sm text-gray-600 hover:text-navy"
+                        className="text-sm text-gray-600 hover:text-navy dark:text-gray-400"
                     >
                         ← Back to Dashboard
                     </Link>

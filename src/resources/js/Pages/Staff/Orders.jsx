@@ -294,7 +294,7 @@ export default function Orders({ orders, filters }) {
                                         <td className="whitespace-nowrap px-4 py-3.5">
                                             <Link
                                                 href={`/staff/orders/${order.order_number}`}
-                                                className="font-mono text-sm font-semibold text-navy hover:text-gold transition-colors"
+                                                className="font-mono text-sm font-semibold text-navy hover:text-gold transition-colors dark:text-amber-400 dark:hover:text-amber-300"
                                             >
                                                 {order.order_number}
                                             </Link>
@@ -387,7 +387,7 @@ export default function Orders({ orders, filters }) {
                             >
                                 <div className="mb-3 flex items-start justify-between">
                                     <div>
-                                        <span className="font-mono text-sm font-semibold text-navy">
+                                        <span className="font-mono text-sm font-semibold text-navy dark:text-amber-400">
                                             {order.order_number}
                                         </span>
                                         <div className="mt-0.5 text-xs text-muted-foreground">{order.created_at}</div>

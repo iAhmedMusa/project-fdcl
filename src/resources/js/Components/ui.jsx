@@ -2,9 +2,9 @@ export function Badge({ children, variant = 'default', className = '' }) {
     const variants = {
         default: 'bg-secondary text-secondary-foreground',
         secondary: 'bg-muted text-muted-foreground',
-        success: 'bg-emerald-50 text-emerald-700',
-        warning: 'bg-amber-50 text-amber-700',
-        destructive: 'bg-red-50 text-red-700',
+        success: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+        warning: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+        destructive: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
         outline: 'border text-foreground',
     };
 
@@ -122,24 +122,24 @@ export function Select({ children, className = '', ...props }) {
 export function StatusBadge({ status }) {
     const statusConfig = {
         pending: { label: 'Pending', color: 'bg-secondary text-secondary-foreground' },
-        processing: { label: 'Processing', color: 'bg-blue-50 text-blue-700' },
-        ready: { label: 'Ready', color: 'bg-amber-50 text-amber-700' },
-        delivered: { label: 'Delivered', color: 'bg-emerald-50 text-emerald-700' },
-        cancelled: { label: 'Cancelled', color: 'bg-red-50 text-red-700' },
+        processing: { label: 'Processing', color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+        ready: { label: 'Ready', color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+        delivered: { label: 'Delivered', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+        cancelled: { label: 'Cancelled', color: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
     };
 
     const config = statusConfig[status] || { label: status, color: 'bg-secondary text-secondary-foreground' };
     const dotColors = {
-        'bg-secondary text-secondary-foreground': 'bg-muted-foreground',
-        'bg-blue-50 text-blue-700': 'bg-blue-500',
-        'bg-amber-50 text-amber-700': 'bg-amber-500',
-        'bg-emerald-50 text-emerald-700': 'bg-emerald-500',
-        'bg-red-50 text-red-700': 'bg-red-500',
+        pending: 'bg-muted-foreground',
+        processing: 'bg-blue-500',
+        ready: 'bg-amber-500',
+        delivered: 'bg-emerald-500',
+        cancelled: 'bg-red-500',
     };
 
     return (
         <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${config.color}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${dotColors[config.color] || 'bg-muted-foreground'}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${dotColors[status] || 'bg-muted-foreground'}`} />
             {config.label}
         </span>
     );
@@ -147,9 +147,9 @@ export function StatusBadge({ status }) {
 
 export function PaymentBadge({ status }) {
     const config = {
-        unpaid: { label: 'Unpaid', color: 'bg-red-50 text-red-700' },
-        partial: { label: 'Partial', color: 'bg-amber-50 text-amber-700' },
-        paid: { label: 'Paid', color: 'bg-emerald-50 text-emerald-700' },
+        unpaid: { label: 'Unpaid', color: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+        partial: { label: 'Partial', color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+        paid: { label: 'Paid', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
     };
 
     const { label, color } = config[status] || { label: status, color: 'bg-muted text-muted-foreground' };
