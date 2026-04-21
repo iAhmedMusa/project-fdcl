@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import DashboardFilterBar from '@/Components/Admin/DashboardFilterBar';
@@ -59,6 +59,25 @@ export default function Dashboard({
     const fmt = (value) => `৳${Number(value).toLocaleString()}`;
 
     const [serviceLocFilter, setServiceLocFilter] = useState('');
+    const [smsBalance, setSmsBalance] = useState(null);
+    const [smsLoading, setSmsLoading] = useState(false);
+    const [smsError, setSmsError] = useState(false);
+    const [smsType, setSmsType] = useState('non-masking');
+
+    const fetchSmsBalance = useCallback(() => {
+        setSmsLoading(true);
+        setSmsError(false);
+        fetch('/admin/sms-balance')
+            .then((r) => r.json())
+            .then((data) => {
+                setSmsBalance(data.balance);
+                setSmsLoading(false);
+            })
+            .catch(() => {
+                setSmsError(true);
+                setSmsLoading(false);
+            });
+    }, []);
 
     const serviceRows = useMemo(() => {
         const filtered = serviceLocFilter
@@ -201,6 +220,56 @@ export default function Dashboard({
                             {stats.overdue_unpaid_count}
                         </p>
                         <p className="mt-1 text-xs text-muted-foreground">orders 7+ days unpaid</p>
+                    </div>
+                </div>
+
+                {/* ── SMS Balance ──────────────────────────────────────────── */}
+                <div className="mb-6">
+                    <div className="rounded-lg bg-card p-4 shadow-sm sm:max-w-sm">
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-medium text-muted-foreground">BulkSMS Balance</p>
+                            <button
+                                onClick={fetchSmsBalance}
+                                disabled={smsLoading}
+                                className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                            >
+                                Refresh
+                            </button>
+                        </div>
+
+                        <p className="text-2xl font-bold text-foreground mb-3">
+                            {smsLoading
+                                ? <span className="text-muted-foreground text-base">Loading…</span>
+                                : smsError
+                                    ? <span className="text-red-500 text-base">Failed</span>
+                                    : smsBalance !== null
+                                        ? smsBalance
+                                        : <span className="text-muted-foreground text-sm">—</span>
+                            }
+                        </p>
+
+                        <div className="flex gap-2 mb-3">
+                            <button
+                                onClick={() => setSmsType('masking')}
+                                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold border transition-colors ${smsType === 'masking' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
+                            >
+                                Masking
+                            </button>
+                            <button
+                                onClick={() => setSmsType('non-masking')}
+                                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold border transition-colors ${smsType === 'non-masking' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
+                            >
+                                Non-Masking
+                            </button>
+                        </div>
+
+                        {smsBalance !== null && !smsLoading && !smsError && (
+                            <p className="text-xs text-muted-foreground">
+                                ≈ <span className="font-bold text-foreground text-sm">
+                                    {Math.floor(parseFloat(smsBalance) / (smsType === 'masking' ? 0.55 : 0.35)).toLocaleString()}
+                                </span> SMS available
+                            </p>
+                        )}
                     </div>
                 </div>
 
