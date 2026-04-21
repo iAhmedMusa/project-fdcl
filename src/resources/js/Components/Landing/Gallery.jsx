@@ -1,3 +1,5 @@
+import { useCallback, useRef, useState } from 'react';
+
 const galleryPhotos = [
     { src: '/images/studio/studio-04.jpg', alt: 'Focus Digital Color Lab Bailey Road studio exterior, Dhaka', caption: 'Bailey Road Studio' },
     { src: '/images/studio/studio-24.jpg', alt: 'Focus Digital Color Lab Gulshan studio exterior, Dhaka', caption: 'Gulshan Studio' },
@@ -14,6 +16,34 @@ const galleryPhotos = [
 ];
 
 export default function Gallery() {
+    const [activeIdx, setActiveIdx] = useState(0);
+    const scrollRef = useRef(null);
+
+    const scrollTo = useCallback((idx) => {
+        const clamped = Math.max(0, Math.min(idx, galleryPhotos.length - 1));
+        setActiveIdx(clamped);
+        const container = scrollRef.current;
+        if (!container) return;
+        const card = container.children[clamped];
+        if (card) {
+            container.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+        }
+    }, []);
+
+    const handleScroll = useCallback(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+        const center = container.scrollLeft + container.clientWidth / 2;
+        let closest = 0;
+        let minDist = Infinity;
+        for (let i = 0; i < container.children.length; i++) {
+            const child = container.children[i];
+            const dist = Math.abs(child.offsetLeft + child.offsetWidth / 2 - center);
+            if (dist < minDist) { minDist = dist; closest = i; }
+        }
+        setActiveIdx(closest);
+    }, []);
+
     return (
         <section id="gallery" className="bg-gray-950 px-4 py-20 sm:px-6 lg:py-24">
             <div className="mx-auto max-w-7xl">
@@ -34,8 +64,67 @@ export default function Gallery() {
                     </p>
                 </div>
 
-                {/* Masonry-style grid */}
-                <div className="columns-2 gap-3 sm:columns-3 lg:columns-4">
+                {/* Mobile: horizontal carousel */}
+                <div className="relative sm:hidden">
+                    <button
+                        onClick={() => scrollTo(activeIdx - 1)}
+                        className="absolute -left-1 top-1/2 z-10 flex h-9 w-8 -translate-y-1/2 items-center justify-center rounded-xl border border-white/10 bg-white/20 text-white shadow-md shadow-black/5 backdrop-blur-xl transition-all duration-200 hover:bg-white/35 hover:border-white/25 cursor-pointer"
+                        aria-label="Previous photo"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => scrollTo(activeIdx + 1)}
+                        className="absolute -right-1 top-1/2 z-10 flex h-9 w-8 -translate-y-1/2 items-center justify-center rounded-xl border border-white/10 bg-white/20 text-white shadow-md shadow-black/5 backdrop-blur-xl transition-all duration-200 hover:bg-white/35 hover:border-white/25 cursor-pointer"
+                        aria-label="Next photo"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
+
+                    <div
+                        ref={scrollRef}
+                        onScroll={handleScroll}
+                        className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    >
+                        {galleryPhotos.map((photo, idx) => (
+                            <div
+                                key={idx}
+                                className="relative w-[72vw] shrink-0 snap-center overflow-hidden rounded-2xl cursor-pointer"
+                            >
+                                <img
+                                    src={photo.src}
+                                    alt={photo.alt}
+                                    className="h-48 w-full object-cover"
+                                    loading="lazy"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                                <div className="absolute bottom-0 left-0 right-0 p-3">
+                                    <p className="text-xs font-semibold text-white">{photo.caption}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-3 flex justify-center gap-1.5">
+                        {galleryPhotos.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => scrollTo(idx)}
+                                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                                    idx === activeIdx ? 'w-5 bg-primary' : 'w-1.5 bg-white/30'
+                                }`}
+                                aria-label={`Go to photo ${idx + 1}`}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Desktop: masonry grid */}
+                <div className="hidden sm:block sm:columns-3 lg:columns-4 sm:gap-3">
                     {galleryPhotos.map((photo, idx) => (
                         <div
                             key={idx}
@@ -61,7 +150,7 @@ export default function Gallery() {
                         Fujifilm Professional Lab Equipment · Godox Studio Lighting · Canon DSLR Cameras
                     </p>
                     <p className="mt-2 text-gray-400">
-                        Professional-grade equipment at both our Bailey Road and Gulshan locations in Dhaka
+                        Professional-grade equipment at both our Bailey Road and Gulshan studio in Dhaka
                     </p>
                 </div>
             </div>

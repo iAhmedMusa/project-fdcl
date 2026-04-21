@@ -24,7 +24,7 @@ export default function Show({ registry }) {
             <div className="mb-6">
                 <Link
                     href="/staff/photos"
-                    className="inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-700"
+                    className="inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
@@ -36,8 +36,8 @@ export default function Show({ registry }) {
             {/* Header */}
             <div className="mb-6 flex items-start justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{registry.registry_code}</h1>
-                    <p className="mt-1 text-sm text-gray-500">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{registry.registry_code}</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                         Created {registry.created_at}
                         {registry.is_expired && (
                             <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">

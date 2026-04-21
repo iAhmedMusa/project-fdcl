@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 
 export default function PhotoReprint({ products, locations, prefilledCode }) {
     const { auth } = usePage().props;
@@ -193,7 +193,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                     type="text"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value.toUpperCase())}
-                                    placeholder="Enter Photo ID (e.g. FDL-2024-001)"
+                                    placeholder="Enter your Photo ID"
                                     className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 />
                                 <button

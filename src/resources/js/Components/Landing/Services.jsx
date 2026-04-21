@@ -1,3 +1,4 @@
+import { useState, useRef, useCallback } from 'react';
 import { Link } from '@inertiajs/react';
 import FadeIn from '@/Components/FadeIn';
 
@@ -115,6 +116,34 @@ const services = [
 ];
 
 export default function Services() {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const scrollRef = useRef(null);
+
+    const scrollTo = useCallback((index) => {
+        const clamped = Math.max(0, Math.min(index, services.length - 1));
+        setActiveIndex(clamped);
+        const container = scrollRef.current;
+        if (!container) return;
+        const card = container.children[clamped];
+        if (card) {
+            container.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+        }
+    }, []);
+
+    const handleScroll = useCallback(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+        const center = container.scrollLeft + container.clientWidth / 2;
+        let closest = 0;
+        let minDist = Infinity;
+        for (let i = 0; i < container.children.length; i++) {
+            const child = container.children[i];
+            const dist = Math.abs(child.offsetLeft + child.offsetWidth / 2 - center);
+            if (dist < minDist) { minDist = dist; closest = i; }
+        }
+        setActiveIndex(closest);
+    }, []);
+
     return (
         <section id="services" className="bg-white px-4 py-20 dark:bg-gray-950 sm:px-6 lg:py-24">
             <div className="mx-auto max-w-7xl">
@@ -139,54 +168,94 @@ export default function Services() {
                     </div>
                 </FadeIn>
 
-                <div className="mt-14 flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    {services.map((service, index) => (
-                        <FadeIn key={service.title} delay={index * 80} className="shrink-0 w-[82vw] snap-start sm:w-auto">
-                        <div
-                            className="group relative h-full rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary/30 sm:p-7"
-                        >
-                            {service.badge && (
-                                <div className="absolute right-4 top-4 rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-white">
-                                    {service.badge}
+                <div className="relative mt-14">
+                    <button
+                        onClick={() => scrollTo(activeIndex - 1)}
+                        className="absolute -left-2 top-1/2 z-10 flex h-10 w-9 -translate-y-1/2 items-center justify-center rounded-xl border border-white/10 bg-white/20 text-gray-700 shadow-md shadow-black/5 backdrop-blur-xl transition-all duration-200 hover:bg-white/35 hover:border-white/25 hover:text-primary sm:hidden cursor-pointer dark:border-white/5 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/15 dark:hover:text-primary dark:shadow-black/20"
+                        aria-label="Previous service"
+                    >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={() => scrollTo(activeIndex + 1)}
+                        className="absolute -right-2 top-1/2 z-10 flex h-10 w-9 -translate-y-1/2 items-center justify-center rounded-xl border border-white/10 bg-white/20 text-gray-700 shadow-md shadow-black/5 backdrop-blur-xl transition-all duration-200 hover:bg-white/35 hover:border-white/25 hover:text-primary sm:hidden cursor-pointer dark:border-white/5 dark:bg-white/5 dark:text-white/80 dark:hover:bg-white/15 dark:hover:text-primary dark:shadow-black/20"
+                        aria-label="Next service"
+                    >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                    </button>
+
+                    <div
+                        ref={scrollRef}
+                        onScroll={handleScroll}
+                        className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:pb-0 lg:grid-cols-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    >
+                        {services.map((service, index) => (
+                            <FadeIn key={service.title} delay={index * 80} className="shrink-0 w-[82vw] snap-start sm:w-auto">
+                            <div
+                                className="group relative h-full rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:border-primary/20 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary/30 sm:p-7"
+                            >
+                                {service.badge && (
+                                    <div className="absolute right-4 top-4 rounded-full bg-primary px-2.5 py-0.5 text-xs font-bold text-white">
+                                        {service.badge}
+                                    </div>
+                                )}
+
+                                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/15 dark:bg-primary/20">
+                                    {service.icon}
                                 </div>
-                            )}
 
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/15 dark:bg-primary/20">
-                                {service.icon}
-                            </div>
+                                <h3 className="mt-5 text-lg font-bold text-gray-900 dark:text-white">
+                                    {service.title}
+                                </h3>
+                                <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                                    {service.description}
+                                </p>
 
-                            <h3 className="mt-5 text-lg font-bold text-gray-900 dark:text-white">
-                                {service.title}
-                            </h3>
-                            <p className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                                {service.description}
-                            </p>
+                                <ul className="mt-4 space-y-2">
+                                    {service.features.map((feature) => (
+                                        <li key={feature} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                            <svg className="h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            {feature}
+                                        </li>
+                                    ))}
+                                </ul>
 
-                            <ul className="mt-4 space-y-2">
-                                {service.features.map((feature) => (
-                                    <li key={feature} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                        <svg className="h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                {service.bookingLink && (
+                                    <Link
+                                        href={service.bookingLink}
+                                        className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white dark:bg-primary/20 dark:hover:bg-primary cursor-pointer"
+                                    >
+                                        {service.ctaLabel}
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                                         </svg>
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
+                                    </Link>
+                                )}
+                            </div>
+                            </FadeIn>
+                        ))}
+                    </div>
 
-                            {service.bookingLink && (
-                                <Link
-                                    href={service.bookingLink}
-                                    className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white dark:bg-primary/20 dark:hover:bg-primary cursor-pointer"
-                                >
-                                    {service.ctaLabel}
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                                    </svg>
-                                </Link>
-                            )}
-                        </div>
-                        </FadeIn>
-                    ))}
+                    <div className="mt-4 flex justify-center gap-2 sm:hidden">
+                        {services.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => scrollTo(index)}
+                                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                                    index === activeIndex
+                                        ? 'w-6 bg-primary'
+                                        : 'w-2 bg-gray-300 dark:bg-gray-600'
+                                }`}
+                                aria-label={`Go to service ${index + 1}`}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>

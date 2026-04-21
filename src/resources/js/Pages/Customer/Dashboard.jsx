@@ -3,16 +3,16 @@ import CustomerLayout from '@/Layouts/CustomerLayout';
 
 const STATUS_COLORS = {
     pending: 'bg-secondary text-secondary-foreground',
-    processing: 'bg-blue-50 text-blue-700',
-    ready: 'bg-amber-50 text-amber-700',
-    delivered: 'bg-green-50 text-green-700',
-    cancelled: 'bg-red-50 text-red-700',
+    processing: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    ready: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    delivered: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    cancelled: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
 const PAYMENT_COLORS = {
-    unpaid: 'bg-red-50 text-red-700',
-    partial: 'bg-amber-50 text-amber-700',
-    paid: 'bg-green-50 text-green-700',
+    unpaid: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    partial: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    paid: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
 };
 
 export default function Dashboard({ auth, orders, photoRegistries }) {
@@ -27,7 +27,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                 </div>
                 <Link
                     href="/order"
-                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                    className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
                 >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -40,7 +40,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
             {photoRegistries?.length > 0 && (
                 <div className="mb-6">
                     <div className="mb-3 flex items-center justify-between">
-                        <h2 className="text-sm font-semibold text-gray-900">My Studio Photos</h2>
+                        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">My Studio Photos</h2>
                         <Link
                             href="/order/reprint"
                             className="text-xs text-primary hover:underline"
@@ -60,7 +60,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                         {registry.photos.slice(0, 3).map((photo, i) => (
                                             <div
                                                 key={i}
-                                                className="h-16 w-14 rounded border bg-gray-100 object-cover overflow-hidden"
+                                                className="h-16 w-14 rounded border bg-gray-100 object-cover overflow-hidden dark:bg-gray-700"
                                                 style={{
                                                     // backgroundImage: `url(/storage/${photo})`,
                                                     backgroundImage: `url(${photo})`,
@@ -70,7 +70,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                             />
                                         ))}
                                         {registry.photos.length > 3 && (
-                                            <div className="flex h-16 w-14 items-center justify-center rounded border bg-gray-50 text-xs text-gray-400">
+                                            <div className="flex h-16 w-14 items-center justify-center rounded border bg-gray-50 text-xs text-gray-400 dark:bg-gray-700 dark:text-gray-500">
                                                 +{registry.photos.length - 3}
                                             </div>
                                         )}
@@ -82,7 +82,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                         <p className="font-mono text-xs font-semibold text-primary">{registry.code}</p>
                                         <p className="mt-0.5 text-xs text-muted-foreground">{registry.created_at}</p>
                                         {registry.notes && (
-                                            <p className="mt-0.5 truncate text-xs text-gray-500">{registry.notes}</p>
+                                            <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{registry.notes}</p>
                                         )}
                                         {registry.is_expired && (
                                             <p className="mt-0.5 text-xs text-red-500">Expired</p>
@@ -105,7 +105,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
 
             {/* ── Orders ─────────────────────────────────────────────── */}
             <div className="mb-3">
-                <h2 className="text-sm font-semibold text-gray-900">My Orders</h2>
+                <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">My Orders</h2>
             </div>
 
             {orders.data.length === 0 ? (
