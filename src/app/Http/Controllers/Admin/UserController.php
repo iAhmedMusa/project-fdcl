@@ -121,11 +121,13 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
+            'phone' => ['nullable', 'string', 'max:20', 'regex:/^(\+8801|8801|01)[3-9]\d{8}$/'],
             'address' => 'nullable|string|max:500',
             'role' => 'required|in:staff,admin',
             'location_id' => 'nullable|exists:locations,id',
         ]);
+
+        $validated['phone'] = User::normalizePhone($validated['phone'] ?? null);
 
         $user = User::create([
             'name' => $validated['name'],

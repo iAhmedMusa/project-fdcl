@@ -46,6 +46,7 @@ const navigation = [
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
             </svg>
         ),
+        warnOnNoPhone: true,
     },
 ];
 
@@ -113,6 +114,7 @@ export default function CustomerLayout({ children }) {
                 <nav className="flex-1 space-y-1 px-2 py-4">
                     {navigation.map((item) => {
                         const active = isActive(item);
+                        const showWarn = item.warnOnNoPhone && !user.phone;
                         return (
                             <Link
                                 key={item.name}
@@ -128,8 +130,16 @@ export default function CustomerLayout({ children }) {
                                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                 }`}
                             >
-                                {item.icon}
+                                <span className="relative">
+                                    {item.icon}
+                                    {showWarn && !active && (
+                                        <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-yellow-500" />
+                                    )}
+                                </span>
                                 {!collapsed && item.name}
+                                {!collapsed && showWarn && !active && (
+                                    <span className="ml-auto h-2 w-2 rounded-full bg-yellow-500" />
+                                )}
                             </Link>
                         );
                     })}
@@ -244,17 +254,23 @@ export default function CustomerLayout({ children }) {
                     <div className="flex items-center justify-around">
                         {navigation.map((item) => {
                             const active = isActive(item);
+                            const showWarn = item.warnOnNoPhone && !user.phone;
                             return (
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 px-2 pt-1.5 pb-2 text-[10px] font-medium transition-colors ${
+                                    className={`relative flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 px-2 pt-1.5 pb-2 text-[10px] font-medium transition-colors ${
                                         active
                                             ? 'text-primary'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
-                                    {item.mobileIcon}
+                                    <span className="relative">
+                                        {item.mobileIcon}
+                                        {showWarn && !active && (
+                                            <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-yellow-500" />
+                                        )}
+                                    </span>
                                     <span>{item.name}</span>
                                     {active && (
                                         <span className="absolute bottom-0 h-0.5 w-6 rounded-full bg-primary" />
