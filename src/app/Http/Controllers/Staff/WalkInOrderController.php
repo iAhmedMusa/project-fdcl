@@ -53,7 +53,7 @@ class WalkInOrderController extends Controller
         $validated = $request->validate([
             'customer_id' => 'nullable|exists:users,id',
             'customer_name' => 'required_without:customer_id|string|max:100',
-            'customer_phone' => 'required_without:customer_id|string|max:20',
+            'customer_phone' => ['required_without:customer_id', 'string', 'max:20', 'regex:/^(\+8801|8801|01)[3-9]\d{8}$/'],
             'customer_email' => 'nullable|email|max:150',
             'location_id' => 'required|exists:locations,id',
             'delivery_method' => 'required|in:pickup,home',
@@ -100,7 +100,7 @@ class WalkInOrderController extends Controller
 
                 $customer = User::create([
                     'name' => $validated['customer_name'],
-                    'phone' => $validated['customer_phone'],
+                    'phone' => User::normalizePhone($validated['customer_phone']),
                     'email' => $email,
                     'password' => Hash::make(Str::random(32)),
                     'is_active' => true,
