@@ -4,10 +4,10 @@ import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-function IconMail() {
+function IconPhone() {
     return (
         <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0l-9.75 6.75L2.25 6.75" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
         </svg>
     );
 }
@@ -44,23 +44,6 @@ function GoogleIcon() {
     );
 }
 
-function Field({ id, label, icon, error, children }) {
-    return (
-        <div className="space-y-1.5">
-            <label htmlFor={id} className="block text-sm font-medium text-foreground">
-                {label}
-            </label>
-            <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
-                    {icon}
-                </div>
-                {children}
-            </div>
-            {error && <p className="text-xs text-destructive">{error}</p>}
-        </div>
-    );
-}
-
 export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -82,7 +65,9 @@ export default function Login({ status, canResetPassword }) {
                 {/* Header */}
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">Sign in to your account to continue</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Sign in to track and manage your photo orders
+                    </p>
                 </div>
 
                 {status && (
@@ -94,7 +79,7 @@ export default function Login({ status, canResetPassword }) {
                 {/* Google */}
                 <a
                     href={route('auth.google')}
-                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
                 >
                     <GoogleIcon />
                     Continue with Google
@@ -105,46 +90,70 @@ export default function Login({ status, canResetPassword }) {
                         <div className="w-full border-t border-border" />
                     </div>
                     <div className="relative flex justify-center text-xs">
-                        <span className="bg-background px-3 text-muted-foreground">or sign in with email</span>
+                        <span className="bg-background px-3 text-muted-foreground">or sign in with phone</span>
                     </div>
                 </div>
 
                 {/* Form */}
                 <form onSubmit={submit} className="space-y-4">
-                    <Field id="login" label="Email or phone number" icon={<IconMail />} error={errors.login}>
-                        <input
-                            id="login"
-                            type="text"
-                            name="login"
-                            value={data.login}
-                            autoComplete="username"
-                            autoFocus
-                            onChange={(e) => setData('login', e.target.value)}
-                            className="block w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
-                            placeholder="you@example.com or +880 1XXX-XXXXXX"
-                        />
-                    </Field>
+                    {/* Phone / login */}
+                    <div className="space-y-1.5">
+                        <label htmlFor="login" className="block text-sm font-medium text-foreground">
+                            Phone number
+                        </label>
+                        <div className="relative">
+                            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                                <IconPhone />
+                            </div>
+                            <input
+                                id="login"
+                                type="text"
+                                name="login"
+                                value={data.login}
+                                autoComplete="username"
+                                autoFocus
+                                onChange={(e) => setData('login', e.target.value)}
+                                className="block w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+                                placeholder="01XXXXXXXXX"
+                                required
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">You can also use your email address</p>
+                        {errors.login && <p className="text-xs text-destructive">{errors.login}</p>}
+                    </div>
 
-                    <Field id="password" label="Password" icon={<IconLock />} error={errors.password}>
-                        <input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            name="password"
-                            value={data.password}
-                            autoComplete="current-password"
-                            onChange={(e) => setData('password', e.target.value)}
-                            className="block w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
-                            placeholder="••••••••"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground"
-                            tabIndex={-1}
-                        >
-                            <IconEye open={showPassword} />
-                        </button>
-                    </Field>
+                    {/* Password */}
+                    <div className="space-y-1.5">
+                        <label htmlFor="password" className="block text-sm font-medium text-foreground">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+                                <IconLock />
+                            </div>
+                            <input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                name="password"
+                                value={data.password}
+                                autoComplete="current-password"
+                                onChange={(e) => setData('password', e.target.value)}
+                                className="block w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+                                placeholder="••••••••"
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-3 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+                                tabIndex={-1}
+                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            >
+                                <IconEye open={showPassword} />
+                            </button>
+                        </div>
+                        {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                    </div>
 
                     <div className="flex items-center justify-between">
                         <label className="flex cursor-pointer items-center gap-2">
@@ -168,16 +177,15 @@ export default function Login({ status, canResetPassword }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-60"
+                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-60 cursor-pointer"
                     >
                         {processing ? (
                             <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
-                        ) : (
-                            'Sign in'
-                        )}
+                        ) : null}
+                        {processing ? 'Signing in…' : 'Sign in'}
                     </button>
 
                     <p className="text-center text-sm text-muted-foreground">
