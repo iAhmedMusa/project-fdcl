@@ -25,6 +25,8 @@ services:
       DB_PASSWORD: "${DB_PASSWORD}"
       SESSION_DRIVER: database
       SESSION_LIFETIME: "${SESSION_LIFETIME:-120}"
+      SESSION_DOMAIN: "${SESSION_DOMAIN:-focusdigitalcolorlab.com}"
+      SESSION_SECURE_COOKIE: "${SESSION_SECURE_COOKIE:-true}"
       CACHE_STORE: database
       QUEUE_CONNECTION: database
       MAIL_MAILER: "${MAIL_MAILER:-smtp}"
