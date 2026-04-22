@@ -45,6 +45,8 @@ services:
       AWS_BUCKET: "${AWS_BUCKET:-fdcl-photos}"
       AWS_ENDPOINT: "${AWS_ENDPOINT:-https://s3.eu-central-003.backblazeb2.com}"
       AWS_USE_PATH_STYLE_ENDPOINT: "${AWS_USE_PATH_STYLE_ENDPOINT:-true}"
+      BULKSMS_API_KEY: "${BULKSMS_API_KEY}"
+      BULKSMS_SENDER_ID: "${BULKSMS_SENDER_ID}"
 
     volumes:
       - fdcl_storage:/var/www/html/storage
