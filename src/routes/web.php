@@ -106,6 +106,7 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/sms-balance', [DashboardController::class, 'smsBalance'])->name('admin.sms-balance');
 
     // Orders
     Route::get('/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.orders.index');
