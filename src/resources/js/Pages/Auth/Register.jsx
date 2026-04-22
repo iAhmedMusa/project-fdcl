@@ -104,14 +104,20 @@ export default function Register() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [phoneTouched, setPhoneTouched] = useState(false);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
+    const { data, setData, post, processing, errors, reset, transform } = useForm({
+        first_name: '',
+        last_name: '',
         phone: '',
         email: '',
         password: '',
         password_confirmation: '',
         address: '',
     });
+
+    transform((d) => ({
+        ...d,
+        name: `${d.first_name} ${d.last_name}`.trim(),
+    }));
 
     const phoneClientError =
         phoneTouched && data.phone && !isValidPhone(data.phone)
@@ -156,21 +162,36 @@ export default function Register() {
 
                 {/* Form */}
                 <form onSubmit={submit} className="space-y-4">
-                    {/* Full name */}
-                    <Field id="name" label="Full name" icon={<IconUser />} error={errors.name}>
-                        <input
-                            id="name"
-                            type="text"
-                            name="name"
-                            value={data.name}
-                            autoComplete="name"
-                            autoFocus
-                            onChange={(e) => setData('name', e.target.value)}
-                            className={inputCls(true, false)}
-                            placeholder="Your full name"
-                            required
-                        />
-                    </Field>
+                    {/* Name row */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <Field id="first_name" label="First name" icon={<IconUser />} error={errors.name}>
+                            <input
+                                id="first_name"
+                                type="text"
+                                name="first_name"
+                                value={data.first_name}
+                                autoComplete="given-name"
+                                autoFocus
+                                onChange={(e) => setData('first_name', e.target.value)}
+                                className={inputCls(true, false)}
+                                placeholder="First name"
+                                required
+                            />
+                        </Field>
+                        <Field id="last_name" label="Last name" icon={<IconUser />} error={null}>
+                            <input
+                                id="last_name"
+                                type="text"
+                                name="last_name"
+                                value={data.last_name}
+                                autoComplete="family-name"
+                                onChange={(e) => setData('last_name', e.target.value)}
+                                className={inputCls(true, false)}
+                                placeholder="Last name"
+                                required
+                            />
+                        </Field>
+                    </div>
 
                     {/* Phone — primary */}
                     <Field id="phone" label="Phone number" icon={<IconPhone />} error={errors.phone || phoneClientError}>
