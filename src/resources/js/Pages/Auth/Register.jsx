@@ -189,8 +189,8 @@ export default function Register() {
                         />
                     </Field>
 
-                    {/* Email — sits below phone naturally */}
-                    <Field id="email" label="Email address" icon={<IconMail />} error={errors.email}>
+                    {/* Email — optional */}
+                    <Field id="email" label="Email address (optional)" icon={<IconMail />} error={errors.email}>
                         <input
                             id="email"
                             type="email"

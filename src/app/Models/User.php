@@ -38,6 +38,30 @@ class User extends Authenticatable
         ];
     }
 
+    public static function normalizePhone(?string $phone): ?string
+    {
+        if (! $phone) {
+            return null;
+        }
+
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (preg_match('/^8801[3-9]\d{8}$/', $phone)) {
+            $phone = '0' . substr($phone, 3);
+        }
+
+        if (preg_match('/^01[3-9]\d{8}$/', $phone)) {
+            return $phone;
+        }
+
+        return $phone ?: null;
+    }
+
+    public function setPhoneAttribute($value): void
+    {
+        $this->attributes['phone'] = self::normalizePhone($value);
+    }
+
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
