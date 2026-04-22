@@ -43,7 +43,7 @@ class SmsService
 
             $body = $response->json();
 
-            if ($response->successful() && isset($body['response_code']) && $body['response_code'] === 0) {
+            if ($response->successful() && isset($body['response_code']) && in_array((int) $body['response_code'], [0, 202])) {
                 Log::info('SMS sent successfully', ['phone' => $phone]);
                 return true;
             }
@@ -67,6 +67,20 @@ class SmsService
     public function sendOtp(string $phone, string $otp): bool
     {
         $message = "Your Focus Digital Color Lab verification code is: {$otp}. We are happy to have you.";
+        return $this->send($phone, $message);
+    }
+
+    public function sendInvoiceLink(string $phone, string $url, string $orderNumber, ?string $name = null): bool
+    {
+        $greeting = $name ? "Hi {$name}," : 'Hi,';
+        $message  = "{$greeting} thanks for choosing Focus Digital Color Lab! your order {$orderNumber} is placed. View your invoice at: {$url}. We appreciate your business!";
+        return $this->send($phone, $message);
+    }
+
+    public function sendOrderReady(string $phone, string $url, string $orderNumber,  ?string $name = null): bool
+    {
+        $greeting = $name ? "Dear {$name}," : 'Dear,';
+        $message = "{$greeting} your order {$orderNumber} is ready for pickup! View invoice: {$url}";
         return $this->send($phone, $message);
     }
 
