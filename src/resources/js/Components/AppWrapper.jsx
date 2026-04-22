@@ -1,8 +1,10 @@
 import { Toaster } from 'react-hot-toast';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 
 export default function AppWrapper({ children }) {
     return (
+        <LanguageProvider>
         <ThemeProvider>
             <Toaster
                 position="top-right"
@@ -28,5 +30,6 @@ export default function AppWrapper({ children }) {
             />
             {children}
         </ThemeProvider>
+        </LanguageProvider>
     );
 }
