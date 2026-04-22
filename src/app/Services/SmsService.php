@@ -80,11 +80,17 @@ class SmsService
         }
 
         try {
-            $response = Http::get($url, [
+            $response = Http::timeout(10)->get($url, [
                 'api_key' => $apiKey,
             ]);
 
             if ($response->successful()) {
+                $data = $response->json();
+
+                if (is_array($data) && isset($data['balance'])) {
+                    return (float) $data['balance'];
+                }
+
                 return (float) $response->body();
             }
         } catch (\Exception $e) {
