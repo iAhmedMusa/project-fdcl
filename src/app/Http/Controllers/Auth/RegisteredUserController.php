@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Otp;
 use App\Models\User;
+use App\Services\SmsService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,51 +27,57 @@ class RegisteredUserController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    /**
-     * @throws ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
-        $method = $request->input('method', 'email');
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'phone'    => ['required', 'string', 'max:20', 'regex:/^(\+8801|8801|01)[3-9]\d{8}$/', 'unique:'.User::class],
+            'email'    => 'nullable|string|lowercase|email|max:255|unique:'.User::class,
+            'address'  => 'nullable|string|max:500',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
 
-        if ($method === 'phone') {
-            $request->validate([
-                'name'     => 'required|string|max:255',
-                'phone'    => 'required|string|max:20|unique:'.User::class,
-                'address'  => 'nullable|string|max:500',
-                'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            ]);
+        $phone = User::normalizePhone($request->phone);
 
-            $user = User::create([
-                'name'     => $request->name,
-                'phone'    => $request->phone,
-                'address'  => $request->address,
-                'password' => Hash::make($request->password),
-            ]);
-        } else {
-            $request->validate([
-                'name'     => 'required|string|max:255',
-                'email'    => 'required|string|lowercase|email|max:255|unique:'.User::class,
-                'phone'    => 'nullable|string|max:20',
-                'address'  => 'nullable|string|max:500',
-                'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            ]);
+        $payload = [
+            'name' => $request->name,
+            'phone' => $phone,
+            'email' => $request->email ?: null,
+            'address' => $request->address,
+            'password' => $request->password,
+        ];
 
-            $user = User::create([
-                'name'     => $request->name,
-                'email'    => $request->email,
-                'phone'    => $request->phone,
-                'address'  => $request->address,
-                'password' => Hash::make($request->password),
+        return $this->initiateOtpVerification($request, $phone, $payload);
+    }
+
+    private function initiateOtpVerification(Request $request, string $phone, array $payload): RedirectResponse
+    {
+        Otp::where('phone', $phone)
+            ->whereNull('verified_at')
+            ->delete();
+
+        $otpCode = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $expiresAt = now()->addMinutes(5);
+
+        $sent = app(SmsService::class)->sendOtp($phone, $otpCode);
+
+        if (! $sent) {
+            throw ValidationException::withMessages([
+                'phone' => 'We could not send the verification code right now. Please try again in a few minutes.',
             ]);
         }
 
-        $user->assignRole('customer');
+        Otp::create([
+            'phone' => $phone,
+            'otp_code' => $otpCode,
+            'payload' => $payload,
+            'expires_at' => $expiresAt,
+            'attempts' => 0,
+        ]);
 
-        event(new Registered($user));
+        $request->session()->put('otp_phone', $phone);
+        $request->session()->put('otp_expires_at', $expiresAt->toIso8601String());
 
-        Auth::login($user);
-
-        return redirect()->intended(route('customer.dashboard', absolute: false));
+        return redirect()->route('otp.verify');
     }
 }
