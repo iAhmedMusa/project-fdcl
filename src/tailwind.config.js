@@ -15,8 +15,15 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                poppins: ['Poppins', 'sans-serif'],
             },
             colors: {
+                light: 'hsl(0 0% 98%)',
+                surface: 'hsl(0 0% 96%)',
+                text: {
+                    primary: 'hsl(var(--foreground))',
+                    secondary: 'hsl(215 16% 47%)',
+                },
                 navy: {
                     DEFAULT: '#0D1B2A',
                     light: '#1B2D45',
