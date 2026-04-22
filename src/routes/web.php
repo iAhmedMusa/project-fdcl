@@ -63,6 +63,10 @@ Route::middleware(['auth', 'customer'])->group(function () {
 // Invoice download (auth required)
 Route::get('/orders/{order}/invoice', [InvoiceController::class, 'download'])->middleware('auth')->name('orders.invoice');
 
+// Public invoice routes — token-based, no auth required
+Route::get('/i/{token}', [InvoiceController::class, 'showPublic'])->name('invoice.public');
+Route::get('/i/{token}/pdf', [InvoiceController::class, 'downloadPublic'])->name('invoice.public.pdf');
+
 // Customer routes
 Route::middleware(['auth', 'customer'])->prefix('dashboard')->group(function () {
     Route::get('/', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
@@ -93,6 +97,8 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->group(function () {
     Route::patch('/orders/{order}/notes', [OrderController::class, 'updateNotes'])->name('staff.orders.notes');
     Route::post('/orders/{order}/photos', [OrderController::class, 'uploadPhoto'])->name('staff.orders.photos');
     Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('staff.orders.payments');
+    Route::post('/orders/{order}/send-invoice-sms', [InvoiceController::class, 'sendSms'])->name('staff.orders.invoice-sms');
+    Route::post('/orders/{order}/send-ready-sms', [InvoiceController::class, 'sendReadySms'])->name('staff.orders.ready-sms');
     // Appointments
     Route::get('/appointments', [StaffAppointmentController::class, 'index'])->name('staff.appointments.index');
     Route::patch('/appointments/{appointment}/status', [StaffAppointmentController::class, 'updateStatus'])->name('staff.appointments.status');
@@ -106,6 +112,7 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->group(function () {
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/sms-balance', [DashboardController::class, 'smsBalance'])->name('admin.sms-balance');
 
     // Orders
     Route::get('/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('admin.orders.index');
@@ -136,6 +143,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::post('/profile/phone/send-otp', [ProfileController::class, 'sendPhoneOtp'])->name('profile.phone.send-otp');
+    Route::post('/profile/phone/verify-otp', [ProfileController::class, 'verifyPhoneOtp'])->name('profile.phone.verify-otp');
 
     // Photo registry lookup (used by customers and staff)
     Route::post('/reprint/lookup', [ReprintController::class, 'lookup'])->name('reprint.lookup');

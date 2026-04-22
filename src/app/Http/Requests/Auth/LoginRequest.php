@@ -47,6 +47,10 @@ class LoginRequest extends FormRequest
         $login = $this->string('login')->toString();
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
 
+        if ($field === 'phone') {
+            $login = User::normalizePhone($login) ?? $login;
+        }
+
         $user = User::where($field, $login)->first();
 
         if (! $user || ! Hash::check($this->string('password')->toString(), $user->password ?? '')) {

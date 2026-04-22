@@ -9,7 +9,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\SmsService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -17,6 +19,17 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public function smsBalance(SmsService $smsService): JsonResponse
+    {
+        $balance = $smsService->getBalance();
+
+        if ($balance !== null) {
+            return response()->json(['balance' => $balance]);
+        }
+
+        return response()->json(['balance' => null], 502);
+    }
+
     public function index(Request $request): Response
     {
         // ── Filters ───────────────────────────────────────────────────────────

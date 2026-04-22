@@ -133,10 +133,12 @@ class CustomerController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:100',
-            'phone' => 'required|string|max:20',
+            'phone' => ['required', 'string', 'max:20', 'regex:/^(\+8801|8801|01)[3-9]\d{8}$/', Rule::unique('users', 'phone')->ignore($customer->id)],
             'email' => ['nullable', 'email', 'max:150', Rule::unique('users', 'email')->ignore($customer->id)],
             'address' => 'nullable|string|max:300',
         ]);
+
+        $validated['phone'] = User::normalizePhone($validated['phone']);
 
         // If email is being changed away from a placeholder, keep it
         if (empty($validated['email'])) {

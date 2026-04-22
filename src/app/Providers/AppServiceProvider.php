@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\OrderPlaced;
 use App\Events\OrderStatusChanged;
+use App\Listeners\SendInvoiceSmsOnOrderPlaced;
 use App\Listeners\SendOrderConfirmationEmail;
 use App\Listeners\SendStatusUpdateEmail;
 use Illuminate\Support\Facades\Event;
@@ -31,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             OrderPlaced::class,
             SendOrderConfirmationEmail::class
+        );
+
+        Event::listen(
+            OrderPlaced::class,
+            SendInvoiceSmsOnOrderPlaced::class
         );
 
         Event::listen(
