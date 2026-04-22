@@ -54,40 +54,30 @@
             margin-bottom: 16px;
         }
 
-        /* ── Watermark ── */
-        .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 280px;
-            height: 280px;
-            object-fit: contain;
-            opacity: 0.025;
-            filter: grayscale(100%);
-            pointer-events: none;
-            z-index: 0;
-            user-select: none;
-        }
-        .card > * { position: relative; z-index: 1; }
-
-        /* ── Logo strip (white, top of card) ── */
-        .logo-strip {
-            background: var(--surface);
-            padding: 24px 28px 0;
-            text-align: center;
-        }
-        .logo-strip img {
-            width: 64px;
-            height: 64px;
-            object-fit: contain;
-        }
 
         /* ── Card header (navy) ── */
         .card-header {
             background: var(--navy);
-            padding: 20px 28px 28px;
+            padding: 24px 28px 28px;
+        }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .header-logo {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            padding: 6px;
+        }
+        .header-content {
+            flex: 1;
             text-align: center;
+            padding-right: 80px; /* optical balance against logo width */
         }
         .studio-name {
             font-family: 'Poppins', sans-serif;
@@ -96,14 +86,14 @@
             color: #FFFFFF;
             letter-spacing: 2.5px;
             text-transform: uppercase;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .emerald-rule {
             width: 40px;
             height: 3px;
             background: var(--emerald);
             border-radius: 2px;
-            margin: 0 auto 14px;
+            margin: 0 auto 12px;
         }
         .invoice-tag {
             font-size: 10px;
@@ -119,6 +109,10 @@
             font-weight: 800;
             color: #FFFFFF;
             letter-spacing: -0.5px;
+        }
+        @media (max-width: 480px) {
+            .header-content { padding-right: 0; }
+            .header-logo { width: 86px; height: 86px; }
         }
 
         /* ── Card body ── */
@@ -237,16 +231,56 @@
         }
         tfoot td:first-child { color: #94A3B8; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
 
+        /* ── Payment + Photo ID row ── */
+        .payment-row-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        @media (max-width: 480px) { .payment-row-wrap { flex-direction: column; } }
+
+        .photo-id-card {
+            flex: 1;
+            background: var(--emerald-l);
+            border: 1.5px solid #6EE7B7;
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .photo-id-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--emerald-d);
+            margin-bottom: 8px;
+        }
+        .photo-id-code {
+            font-family: 'Poppins', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--navy);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .photo-id-hint {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
         /* ── Payment summary ── */
         .payment-box {
             background: #F8FAFC;
             border: 1.5px solid var(--border);
             border-radius: 12px;
             padding: 18px 20px;
-            max-width: 300px;
-            margin-left: auto;
+            width: 300px;
+            flex-shrink: 0;
         }
-        @media (max-width: 480px) { .payment-box { max-width: 100%; } }
+        @media (max-width: 480px) { .payment-box { width: 100%; } }
         .payment-row {
             display: flex;
             justify-content: space-between;
@@ -356,8 +390,9 @@ $categoryLabels = [
     'frame'        => 'Photo Frame',
     'mug'          => 'Custom Mug',
 ];
-$balance   = $order->total_amount - $order->amount_paid;
-$pdfUrl    = route('invoice.public.pdf', $token);
+$balance    = $order->total_amount - $order->amount_paid;
+$registries = $order->photoRegistries;
+$pdfUrl     = route('invoice.public.pdf', $token);
 $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
 @endphp
 
@@ -365,20 +400,17 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
 
     <div class="card">
 
-        {{-- Watermark --}}
-        <img class="watermark" src="{{ asset('images/logo.png') }}" alt="" aria-hidden="true">
-
-        {{-- Logo strip (white bg so logo shows in full colour) --}}
-        <div class="logo-strip">
-            <img src="{{ asset('images/logo.png') }}" alt="Focus Digital Color Lab logo">
-        </div>
-
-        {{-- Navy header --}}
+        {{-- Navy header with logo left --}}
         <div class="card-header">
-            <div class="studio-name">Focus Digital Color Lab</div>
-            <div class="emerald-rule"></div>
-            <div class="invoice-tag">Invoice</div>
-            <div class="invoice-num">{{ $order->order_number }}</div>
+            <div class="header-inner">
+                <img class="header-logo" src="{{ asset('images/logo.png') }}" alt="Focus Digital Color Lab">
+                <div class="header-content">
+                    <div class="studio-name">Focus Digital Color Lab</div>
+                    <div class="emerald-rule"></div>
+                    <div class="invoice-tag">Invoice</div>
+                    <div class="invoice-num">{{ $order->order_number }}</div>
+                </div>
+            </div>
         </div>
 
         {{-- Body --}}
@@ -396,9 +428,7 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
                     <div class="meta-label">Order Details</div>
                     <p><strong>Date:</strong> {{ $order->created_at->format('d M Y') }}</p>
                     <p><strong>Branch:</strong> {{ $order->location->name }}</p>
-                    <p><strong>Status:</strong>
-                        <span class="status-pill s-{{ $order->status }}">{{ ucfirst($order->status) }}</span>
-                    </p>
+                    <p><strong>Status:</strong> {{ ucfirst($order->status) }}</p>
                 </div>
             </div>
 
@@ -419,7 +449,7 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
                         @foreach($order->items as $item)
                         <tr>
                             <td>
-                                <span class="cat-tag">{{ $categoryLabels[$item->product->category] ?? $item->product->category }}</span>
+                                <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
                                 <span class="item-name">{{ $item->product->name }}</span>
                                 @if($item->product->size_label)
                                     <span class="item-size">{{ $item->product->size_label }}</span>
@@ -440,28 +470,39 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
                 </table>
             </div>
 
-            {{-- Payment summary --}}
-            <div class="payment-box">
-                <div class="payment-row">
-                    <span class="p-label">Order Total</span>
-                    <span class="p-val">৳{{ number_format($order->total_amount, 0) }}</span>
+            {{-- Payment + Photo ID --}}
+            <div class="payment-row-wrap">
+                @if($registries->isNotEmpty())
+                <div class="photo-id-card">
+                    <div class="photo-id-label">Your FDCL Photo {{ $registries->count() > 1 ? 'IDs' : 'ID' }}</div>
+                    @foreach($registries as $registry)
+                        <div class="photo-id-code">{{ $registry->registry_code }}</div>
+                    @endforeach
+                    <div class="photo-id-hint">Save {{ $registries->count() > 1 ? 'these codes' : 'this code' }} to reorder your photos any time without re-uploading.</div>
                 </div>
-                <div class="payment-row">
-                    <span class="p-label">Amount Paid</span>
-                    <span class="p-val">৳{{ number_format($order->amount_paid, 0) }}</span>
-                </div>
-                <div class="payment-divider"></div>
-                @if($balance > 0)
-                    <div class="payment-total balance">
-                        <span>Balance Due</span>
-                        <span>৳{{ number_format($balance, 0) }}</span>
-                    </div>
-                @else
-                    <div class="payment-total paid">
-                        <span>Payment</span>
-                        <span>Paid in Full</span>
-                    </div>
                 @endif
+                <div class="payment-box">
+                    <div class="payment-row">
+                        <span class="p-label">Subtotal</span>
+                        <span class="p-val">৳{{ number_format($order->total_amount, 0) }}</span>
+                    </div>
+                    <div class="payment-row">
+                        <span class="p-label">Paid</span>
+                        <span class="p-val">৳{{ number_format($order->amount_paid, 0) }}</span>
+                    </div>
+                    <div class="payment-divider"></div>
+                    @if($balance > 0)
+                        <div class="payment-total balance">
+                            <span>Balance Due</span>
+                            <span>৳{{ number_format($balance, 0) }}</span>
+                        </div>
+                    @else
+                        <div class="payment-total paid">
+                            <span>Balance Due</span>
+                            <span>৳0 (Settled)</span>
+                        </div>
+                    @endif
+                </div>
             </div>
 
         </div>

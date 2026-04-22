@@ -13,18 +13,6 @@
             background: #FFFFFF;
         }
 
-        /* ── Watermark ── */
-        .watermark {
-            position: fixed;
-            top: 38%;
-            left: 50%;
-            margin-left: -120px;
-            width: 240px;
-            height: 240px;
-            opacity: 0.045;
-            z-index: -1;
-        }
-
         /* ── Page wrapper ── */
         .page { padding: 0; }
 
@@ -46,6 +34,15 @@
             width: 38%;
             vertical-align: middle;
             text-align: right;
+        }
+        .header-logo {
+            height: 48px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        .header-text {
+            display: inline-block;
+            vertical-align: middle;
         }
         .studio-name {
             font-size: 17px;
@@ -80,6 +77,19 @@
             margin: 0;
         }
 
+        /* ── Watermark ── */
+        .watermark-wrap { position: relative; }
+        .watermark-img {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            width: 240px;
+            height: 240px;
+            margin-left: -120px;
+            opacity: 0.06;
+            z-index: 0;
+        }
+
         /* ── Body ── */
         .body { padding: 24px 36px; }
 
@@ -100,18 +110,7 @@
         .meta-detail { font-size: 12px; color: #64748B; line-height: 1.6; }
         .meta-key    { font-weight: bold; color: #0F172A; }
 
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        .s-pending    { background-color: #F1F5F9; color: #475569; }
-        .s-processing { background-color: #DBEAFE; color: #1E40AF; }
-        .s-ready      { background-color: #FEF3C7; color: #92400E; }
-        .s-delivered  { background-color: #D1FAE5; color: #065F46; }
-        .s-cancelled  { background-color: #FEE2E2; color: #991B1B; }
+        .status-text  { font-weight: bold; color: #0F172A; }
 
         /* ── Section title ── */
         .section-title {
@@ -172,14 +171,40 @@
         .items-table tfoot td.label { color: #94A3B8; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
 
         /* ── Payment summary ── */
-        .payment-wrap { text-align: right; margin-bottom: 28px; }
+        .payment-wrap { margin-bottom: 28px; width: 100%; }
+        .payment-wrap-inner { width: 100%; }
+        .photo-id-cell { width: 55%; vertical-align: middle; padding-right: 14px; }
+        .photo-id-box {
+            background-color: #ECFDF5;
+            border: 1.5px solid #6EE7B7;
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+        .photo-id-label {
+            font-size: 9px;
+            font-weight: bold;
+            color: #047857;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .photo-id-code {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0F172A;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .photo-id-hint { font-size: 10px; color: #64748B; line-height: 1.5; }
+
+        .payment-cell { width: 45%; vertical-align: middle; text-align: right; }
         .payment-box {
             display: inline-block;
             background-color: #F8FAFC;
             border: 1.5px solid #E2E8F0;
             border-radius: 10px;
             padding: 14px 18px;
-            min-width: 260px;
+            min-width: 220px;
             text-align: left;
         }
         .payment-row { margin-bottom: 7px; }
@@ -227,11 +252,10 @@ $categoryLabels = [
     'frame'        => 'Photo Frame',
     'mug'          => 'Custom Mug',
 ];
-$balance = $order->total_amount - $order->amount_paid;
+$balance    = $order->total_amount - $order->amount_paid;
+$registries = $order->photoRegistries;
+$logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('images/logo.png')));
 @endphp
-
-{{-- Watermark --}}
-<img class="watermark" src="{{ public_path('images/logo.png') }}" alt="">
 
 <div class="page">
 
@@ -239,8 +263,11 @@ $balance = $order->total_amount - $order->amount_paid;
     <div class="header">
         <div style="width:100%">
             <div class="header-left">
-                <div class="studio-name">Focus Digital Color Lab</div>
-                <div class="studio-tagline">www.focusdigitalcolorlab.com &nbsp;&bull;&nbsp; +880 1713-140768</div>
+                <img class="header-logo" src="{{ $logoB64 }}" alt="FDCL">
+                <div class="header-text">
+                    <div class="studio-name">Focus Digital Color Lab</div>
+                    <div class="studio-tagline">www.focusdigitalcolorlab.com &nbsp;&bull;&nbsp; +880 1713-140768</div>
+                </div>
             </div><div class="header-right">
                 <div class="invoice-label">Invoice</div>
                 <div class="invoice-number">{{ $order->order_number }}</div>
@@ -249,8 +276,9 @@ $balance = $order->total_amount - $order->amount_paid;
     </div>
     <div class="emerald-bar"></div>
 
-    {{-- Body --}}
-    <div class="body">
+    {{-- Body with watermark --}}
+    <div class="body watermark-wrap">
+        <img class="watermark-img" src="{{ $logoB64 }}" alt="">
 
         {{-- Meta --}}
         <table class="meta-table">
@@ -267,8 +295,7 @@ $balance = $order->total_amount - $order->amount_paid;
                     <div class="meta-detail">
                         <span class="meta-key">Date:</span> {{ $order->created_at->format('d M Y') }}<br>
                         <span class="meta-key">Branch:</span> {{ $order->location->name }}<br>
-                        <span class="meta-key">Status:</span>
-                        <span class="status-badge s-{{ $order->status }}">{{ ucfirst($order->status) }}</span>
+                        <span class="meta-key">Status:</span> <span class="status-text">{{ ucfirst($order->status) }}</span>
                     </div>
                 </td>
             </tr>
@@ -288,50 +315,67 @@ $balance = $order->total_amount - $order->amount_paid;
                 @foreach($order->items as $item)
                 <tr>
                     <td>
-                        <span class="cat-tag">{{ $categoryLabels[$item->product->category] ?? $item->product->category }}</span>
+                        <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
                         <span class="item-name">{{ $item->product->name }}</span>
                         @if($item->product->size_label)
                             <span class="item-size">{{ $item->product->size_label }}</span>
                         @endif
                     </td>
                     <td class="center">{{ $item->quantity }}</td>
-                    <td class="right muted">৳{{ number_format($item->unit_price, 0) }}</td>
-                    <td class="right">৳{{ number_format($item->subtotal, 0) }}</td>
+                    <td class="right muted">Tk{{ number_format($item->unit_price, 0) }}</td>
+                    <td class="right">Tk{{ number_format($item->subtotal, 0) }}</td>
                 </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
                     <td class="label" colspan="3">Order Total</td>
-                    <td class="right" style="font-size:15px">৳{{ number_format($order->total_amount, 0) }}</td>
+                    <td class="right" style="font-size:15px">Tk {{ number_format($order->total_amount, 0) }}</td>
                 </tr>
             </tfoot>
         </table>
 
-        {{-- Payment --}}
+        {{-- Payment + Photo ID --}}
         <div class="payment-wrap">
-            <div class="payment-box">
-                <div class="payment-row">
-                    <span class="pay-label">Order Total</span>
-                    <span class="pay-val">৳{{ number_format($order->total_amount, 0) }}</span>
-                </div>
-                <div class="payment-row">
-                    <span class="pay-label">Amount Paid</span>
-                    <span class="pay-val">৳{{ number_format($order->amount_paid, 0) }}</span>
-                </div>
-                <hr class="pay-divider">
-                @if($balance > 0)
-                    <div>
-                        <span class="pay-label pay-total pay-balance">Balance Due</span>
-                        <span class="pay-val pay-total pay-balance" style="text-align:right;display:inline-block;width:50%">৳{{ number_format($balance, 0) }}</span>
-                    </div>
-                @else
-                    <div>
-                        <span class="pay-label pay-total pay-paid">Payment</span>
-                        <span class="pay-val pay-total pay-paid" style="text-align:right;display:inline-block;width:50%">Paid in Full</span>
-                    </div>
-                @endif
-            </div>
+            <table class="payment-wrap-inner">
+                <tr>
+                    @if($registries->isNotEmpty())
+                    <td class="photo-id-cell">
+                        <div class="photo-id-box">
+                            <div class="photo-id-label">Your FDCL Photo {{ $registries->count() > 1 ? 'IDs' : 'ID' }}</div>
+                            @foreach($registries as $registry)
+                                <div class="photo-id-code">{{ $registry->registry_code }}</div>
+                            @endforeach
+                            <div class="photo-id-hint">Save {{ $registries->count() > 1 ? 'these codes' : 'this code' }} to reorder your photos any time without re-uploading.</div>
+                        </div>
+                    </td>
+                    @endif
+                    <td class="{{ $registries->isNotEmpty() ? 'payment-cell' : '' }}" style="{{ $registries->isNotEmpty() ? '' : 'text-align:right' }}">
+                        <div class="payment-box">
+                            <div class="payment-row">
+                                <span class="pay-label">Subtotal</span>
+                                <span class="pay-val">Tk {{ number_format($order->total_amount, 0) }}</span>
+                            </div>
+                            <div class="payment-row">
+                                <span class="pay-label">Paid</span>
+                                <span class="pay-val">Tk {{ number_format($order->amount_paid, 0) }}</span>
+                            </div>
+                            <hr class="pay-divider">
+                            @if($balance > 0)
+                                <div>
+                                    <span class="pay-label pay-total pay-balance">Balance Due</span>
+                                    <span class="pay-val pay-total pay-balance" style="text-align:right;display:inline-block;width:50%">Tk {{ number_format($balance, 0) }}</span>
+                                </div>
+                            @else
+                                <div>
+                                    <span class="pay-label pay-total pay-paid">Balance Due</span>
+                                    <span class="pay-val pay-total pay-paid" style="text-align:right;display:inline-block;width:50%">Tk 0 (Settled)</span>
+                                </div>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
     </div>

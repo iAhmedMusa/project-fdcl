@@ -73,7 +73,7 @@ class SmsService
     public function sendInvoiceLink(string $phone, string $url, string $orderNumber, ?string $name = null): bool
     {
         $greeting = $name ? "Hi {$name}," : 'Hi,';
-        $message  = "{$greeting} thanks for choosing Focus Digital Color Lab! your order {$orderNumber} is placed. View your invoice at: {$url}. We appreciate your business!";
+        $message  = "{$greeting} your order invoice at: {$url}. thanks for choosing Focus Digital Color Lab!";
         return $this->send($phone, $message);
     }
 
