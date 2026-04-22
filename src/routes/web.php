@@ -63,6 +63,10 @@ Route::middleware(['auth', 'customer'])->group(function () {
 // Invoice download (auth required)
 Route::get('/orders/{order}/invoice', [InvoiceController::class, 'download'])->middleware('auth')->name('orders.invoice');
 
+// Public invoice routes — token-based, no auth required
+Route::get('/i/{token}', [InvoiceController::class, 'showPublic'])->name('invoice.public');
+Route::get('/i/{token}/pdf', [InvoiceController::class, 'downloadPublic'])->name('invoice.public.pdf');
+
 // Customer routes
 Route::middleware(['auth', 'customer'])->prefix('dashboard')->group(function () {
     Route::get('/', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
@@ -93,6 +97,8 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->group(function () {
     Route::patch('/orders/{order}/notes', [OrderController::class, 'updateNotes'])->name('staff.orders.notes');
     Route::post('/orders/{order}/photos', [OrderController::class, 'uploadPhoto'])->name('staff.orders.photos');
     Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('staff.orders.payments');
+    Route::post('/orders/{order}/send-invoice-sms', [InvoiceController::class, 'sendSms'])->name('staff.orders.invoice-sms');
+    Route::post('/orders/{order}/send-ready-sms', [InvoiceController::class, 'sendReadySms'])->name('staff.orders.ready-sms');
     // Appointments
     Route::get('/appointments', [StaffAppointmentController::class, 'index'])->name('staff.appointments.index');
     Route::patch('/appointments/{appointment}/status', [StaffAppointmentController::class, 'updateStatus'])->name('staff.appointments.status');

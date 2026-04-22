@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\InvoiceToken;
 use App\Models\Order;
 use App\Models\PhotoRegistry;
 use Illuminate\Http\Request;
@@ -121,6 +122,7 @@ class DashboardController extends Controller
                     'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($order->photoRegistries->first()->photo_paths ?? [])),
                 ] : null,
             ],
+            'invoiceToken' => InvoiceToken::where('order_id', $order->id)->value('token'),
         ]);
     }
 }

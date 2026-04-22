@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Staff;
 
+use App\Events\OrderPlaced;
 use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Models\Order;
@@ -327,6 +328,8 @@ class WalkInOrderController extends Controller
 
             return $order;
         });
+
+        OrderPlaced::dispatch($order->load(['user', 'location', 'items.product']));
 
         return redirect()
             ->route('staff.orders.show', $order->order_number)
