@@ -9,27 +9,22 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\SmsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function smsBalance(): JsonResponse
+    public function smsBalance(SmsService $smsService): JsonResponse
     {
-        $apiKey = config('services.bulksms.api_key');
+        $balance = $smsService->getBalance();
 
-        $response = Http::timeout(10)->get('https://bulksmsbd.net/api/getBalanceApi', [
-            'api_key' => $apiKey,
-        ]);
-
-        if ($response->successful()) {
-            $data = $response->json();
-            return response()->json(['balance' => $data['balance'] ?? null]);
+        if ($balance !== null) {
+            return response()->json(['balance' => $balance]);
         }
 
         return response()->json(['balance' => null], 502);
