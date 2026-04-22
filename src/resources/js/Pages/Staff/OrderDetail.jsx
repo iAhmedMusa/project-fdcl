@@ -3,13 +3,37 @@ import { useState } from 'react';
 import StaffLayout from '@/Layouts/StaffLayout';
 import { Card, CardContent, Button, Badge, StatusBadge, PaymentBadge, Input, Label, Textarea, Select } from '@/Components/ui';
 
-export default function OrderDetail({ order }) {
+export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) {
     const [showPaymentForm, setShowPaymentForm] = useState(false);
     const [notes, setNotes] = useState(order.notes || '');
     const [pendingStatus, setPendingStatus] = useState(null);
     const [photoFiles, setPhotoFiles] = useState({});
     const [uploadingPhotos, setUploadingPhotos] = useState({});
     const [uploadProgress, setUploadProgress] = useState({});
+    const [smsSending, setSmsSending] = useState(null);
+    const [smsMessage, setSmsMessage] = useState(null);
+
+    const sendSms = async (type) => {
+        const routeName = type === 'ready' ? 'staff.orders.ready-sms' : 'staff.orders.invoice-sms';
+        setSmsSending(type);
+        setSmsMessage(null);
+        try {
+            const res = await fetch(route(routeName, order.id), {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+            });
+            const data = await res.json();
+            if (res.ok && type === 'invoice') {
+                router.reload({ only: ['invoiceToken', 'smsSent'] });
+            } else {
+                setSmsMessage({ ok: res.ok, text: data.message });
+            }
+        } catch {
+            setSmsMessage({ ok: false, text: 'Network error. Try again.' });
+        } finally {
+            setSmsSending(null);
+        }
+    };
 
     const { data, setData, post, processing, errors } = useForm({
         amount: order.balance.toFixed(2),
@@ -138,6 +162,53 @@ export default function OrderDetail({ order }) {
                         )}
                         <StatusBadge status={order.status} />
                     </div>
+                </div>
+
+                {/* Invoice & SMS actions */}
+                <div className="mb-6 flex flex-wrap items-center gap-2">
+                    <a
+                        href={invoiceToken ? route('invoice.public', invoiceToken) : route('orders.invoice', order.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-md border bg-card px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent"
+                    >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Invoice
+                    </a>
+
+                    {!smsSent && (
+                        <button
+                            onClick={() => sendSms('invoice')}
+                            disabled={smsSending !== null}
+                            className="inline-flex items-center gap-1.5 rounded-md border bg-card px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent disabled:opacity-50"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+                            </svg>
+                            {smsSending === 'invoice' ? 'Sending…' : 'Send Invoice SMS'}
+                        </button>
+                    )}
+
+                    {hasPhone && order.status === 'ready' && (
+                        <button
+                            onClick={() => sendSms('ready')}
+                            disabled={smsSending !== null}
+                            className="inline-flex items-center gap-1.5 rounded-md border bg-card px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent disabled:opacity-50"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+                            </svg>
+                            {smsSending === 'ready' ? 'Sending…' : 'Send Ready SMS'}
+                        </button>
+                    )}
+
+                    {smsMessage && (
+                        <span className={`text-sm font-medium ${smsMessage.ok ? 'text-green-600' : 'text-red-600'}`}>
+                            {smsMessage.text}
+                        </span>
+                    )}
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-3">

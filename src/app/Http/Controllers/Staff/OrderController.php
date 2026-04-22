@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Staff;
 
 use App\Events\OrderStatusChanged;
 use App\Http\Controllers\Controller;
+use App\Models\InvoiceToken;
 use App\Models\Order;
 use App\Models\PhotoRegistry;
+use App\Services\InvoiceService;
 use App\Services\OrderNumberGenerator;
 use App\Services\PhotoStorage;
 use Illuminate\Http\RedirectResponse;
@@ -204,6 +206,9 @@ class OrderController extends Controller
                     'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($order->photoRegistries->first()->photo_paths ?? [])),
                 ] : null,
             ],
+            'invoiceToken' => InvoiceToken::where('order_id', $order->id)->value('token'),
+            'smsSent' => (bool) InvoiceToken::where('order_id', $order->id)->value('sms_sent'),
+            'hasPhone' => ! empty($order->user->phone),
         ]);
     }
 
