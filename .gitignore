@@ -50,3 +50,7 @@ CLOUD_STORAGE_PLAN.md
 .opencode.json
 
 bare-prod/*
+
+# ── Graphify (dev-only, excluded from staging/prod) ────────────────────────────
+graphify-out/
+src/.graphify_incremental.json
