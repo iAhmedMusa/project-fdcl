@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureCustomer;
 use App\Http\Middleware\EnsureStaff;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
@@ -34,8 +35,15 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Throwable $e, $request) {
+            if ($e instanceof AuthenticationException) {
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Unauthenticated'], 401);
+                }
+                return redirect('/login');
+            }
+
             if (! $request->header('X-Inertia')) {
-                return null; // let default handler take over
+                return null;
             }
 
             $message = match (true) {
