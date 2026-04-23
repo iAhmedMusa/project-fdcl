@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Invoice {{ $order->order_number }} — Focus Digital Color Lab</title>
+    @if(!($isPdf ?? false))
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    @endif
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -390,10 +392,10 @@ $categoryLabels = [
     'frame'        => 'Photo Frame',
     'mug'          => 'Custom Mug',
 ];
-$balance    = $order->total_amount - $order->amount_paid;
+$balance    = $order->total_amount - ($order->discount_amount ?? 0) - $order->amount_paid;
 $registries = $order->photoRegistries;
-$pdfUrl     = route('invoice.public.pdf', $token);
-$shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
+$pdfUrl     = isset($token) ? route('invoice.public.pdf', $token) : '#';
+$shareText  = isset($token) ? urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}") : '';
 @endphp
 
 <div class="page">
@@ -446,7 +448,7 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($order->items as $item)
+                        @foreach($order->items->filter(fn($i) => $i->reprint_source !== 'studio_fee') as $item)
                         <tr>
                             <td>
                                 <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
@@ -538,7 +540,8 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
 
     </div>
 
-    {{-- Action buttons — bottom of page --}}
+    {{-- Action buttons — hidden in PDF render --}}
+    @if(!($isPdf ?? false))
     <div class="action-bar">
         <a class="btn-action btn-download" href="{{ $pdfUrl }}">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -553,9 +556,11 @@ $shareText = urlencode("FDCL Invoice {$order->order_number}: {$pdfUrl}");
             Share Invoice
         </button>
     </div>
+    @endif
 
 </div>
 
+@if(!($isPdf ?? false))
 <script>
 async function shareInvoice() {
     const pdfUrl  = '{{ $pdfUrl }}';
@@ -577,5 +582,6 @@ function whatsappFallback(url, title) {
     window.open('https://wa.me/?text=' + encodeURIComponent(title + '\n' + url), '_blank');
 }
 </script>
+@endif
 </body>
 </html>

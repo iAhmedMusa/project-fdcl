@@ -347,7 +347,7 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                 </div>
 
                                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                                    {order.items.map((item) => (
+                                    {order.items.filter(item => item.category !== 'studio_fee').map((item) => (
                                         <div key={item.id} className="py-5 first:pt-0 last:pb-0">
                                             {/* Photo ID — per reprint item */}
                                             {item.category === 'reprint' && item.registry_code && (

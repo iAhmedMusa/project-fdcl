@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\StudioFeeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\AppointmentController;
@@ -136,6 +137,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     // Reports
     Route::get('/reports', [ReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/reports/download', [ReportController::class, 'download'])->name('admin.reports.download');
+
+    // Studio Fees
+    Route::get('/studio-fees', [StudioFeeController::class, 'index'])->name('admin.studio-fees.index');
+    Route::post('/studio-fees', [StudioFeeController::class, 'store'])->name('admin.studio-fees.store');
+    Route::put('/studio-fees/{studioFee}', [StudioFeeController::class, 'update'])->name('admin.studio-fees.update');
+    Route::patch('/studio-fees/{studioFee}/toggle-active', [StudioFeeController::class, 'toggleActive'])->name('admin.studio-fees.toggle-active');
 });
 
 // Authenticated routes (all roles)
