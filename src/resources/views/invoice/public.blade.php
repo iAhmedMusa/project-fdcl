@@ -430,7 +430,7 @@ $shareText  = isset($token) ? urlencode("FDCL Invoice {$order->order_number}: {$
                     <div class="meta-label">Order Details</div>
                     <p><strong>Date:</strong> {{ $order->created_at->format('d M Y') }}</p>
                     <p><strong>Branch:</strong> {{ $order->location->name }}</p>
-                    <p><strong>Status:</strong> {{ ucfirst($order->status) }}</p>
+                    <p><strong>Order Status:</strong> {{ ucfirst($order->status) }}</p>
                 </div>
             </div>
 
