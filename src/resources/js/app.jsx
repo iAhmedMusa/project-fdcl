@@ -9,12 +9,27 @@ import toast from 'react-hot-toast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
-// Intercept non-Inertia error responses and show a compact centered toast
+// Intercept 401 errors and redirect to login
+router.on('error', (event) => {
+    try {
+        const response = event.detail?.[0]?.response || event.detail?.response;
+        const status = response?.status;
+
+        if (status === 401) {
+            window.location.href = '/login';
+            event.preventDefault?.();
+        }
+    } catch (e) {
+        // silently ignore
+    }
+});
+
 router.on('invalid', (event) => {
     try {
         event.preventDefault();
         const response = event.detail?.response;
         const status = response?.status;
+        const data = response?.data;
 
         const labels = { 401: 'Login Required', 403: 'Access Denied', 404: 'Not Found', 500: 'Server Error' };
         const fallbacks = {
@@ -24,7 +39,7 @@ router.on('invalid', (event) => {
             500: 'Server Error — Please try again or contact support.',
         };
 
-        if (status === 401) {
+        if (status === 401 || data === 'Unauthenticated' || (typeof data === 'string' && data.includes('Unauthenticated'))) {
             window.location.href = '/login';
             return;
         }
