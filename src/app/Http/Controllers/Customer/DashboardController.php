@@ -28,14 +28,14 @@ class DashboardController extends Controller
                     'amount_paid' => (float) $order->amount_paid,
                     'created_at' => $order->created_at->format('M d, Y H:i'),
                     'location' => [
-                        'name' => $order->location->name,
-                        'address' => $order->location->address,
+                        'name' => $order->location?->name,
+                        'address' => $order->location?->address,
                     ],
                     'items' => $order->items->map(function ($item) {
                         return [
                             'id' => $item->id,
-                            'product_name' => $item->product->name,
-                            'size_label' => $item->product->size_label,
+                            'product_name' => $item->product?->name,
+                            'size_label' => $item->product?->size_label,
                             'quantity' => $item->quantity,
                             'subtotal' => (float) $item->subtotal,
                         ];
@@ -86,25 +86,25 @@ class DashboardController extends Controller
                 'created_at' => $order->created_at->format('M d, Y \a\t H:i'),
                 'updated_at' => $order->updated_at->format('M d, Y \a\t H:i'),
                 'location' => [
-                    'name' => $order->location->name,
-                    'address' => $order->location->address,
-                    'google_maps_url' => $order->location->google_maps_url,
-                    'phone' => $order->location->phone,
+                    'name' => $order->location?->name,
+                    'address' => $order->location?->address,
+                    'google_maps_url' => $order->location?->google_maps_url,
+                    'phone' => $order->location?->phone,
                 ],
-                'items' => $order->items->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'product_name' => $item->product->name,
-                        'category' => $item->product->category,
-                        'size_label' => $item->product->size_label,
-                        'quantity' => $item->quantity,
-                        'unit_price' => (float) $item->unit_price,
-                        'subtotal' => (float) $item->subtotal,
-                        'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($item->photo_paths ?? [])),
-                        'photo_source' => $item->photo_source,
-                        'item_specific_notes' => $item->item_specific_notes,
-                    ];
-                }),
+'items' => $order->items->map(function ($item) {
+                        return [
+                            'id' => $item->id,
+                            'product_name' => $item->product?->name,
+                            'category' => $item->product?->category,
+                            'size_label' => $item->product?->size_label,
+                            'quantity' => $item->quantity,
+                            'unit_price' => (float) $item->unit_price,
+                            'subtotal' => (float) $item->subtotal,
+                            'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($item->photo_paths ?? [])),
+                            'photo_source' => $item->photo_source,
+                            'item_specific_notes' => $item->item_specific_notes,
+                        ];
+                    }),
                 'payments' => $order->payments->map(function ($payment) {
                     return [
                         'id' => $payment->id,
