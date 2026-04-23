@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->respond(function (\Throwable $e, $request) {
+        $exceptions->render(function (\Throwable $e, $request) {
             if (! $request->header('X-Inertia')) {
                 return null; // let default handler take over
             }

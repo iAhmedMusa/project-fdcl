@@ -74,9 +74,11 @@ const structuredData = {
 };
 
 export default function Home() {
-    const { t } = useLanguage();
+    const { t, lang } = useLanguage();
 
-    const title = t.nav.brand + ' | ' + t.nav.brandSub + ' in Dhaka';
+    const title = lang === 'bn'
+        ? 'প্রিমিয়াম ফটো স্টুডিও'
+        : 'Premium Photo Studio in Dhaka';
     const description = t.footer.description;
 
     return (
