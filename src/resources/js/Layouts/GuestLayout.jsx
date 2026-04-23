@@ -93,21 +93,23 @@ export default function GuestLayout({ children }) {
             </div>
 
             {/* Right form panel */}
-            <div className="relative flex flex-1 flex-col items-center justify-center bg-background p-6 sm:p-10">
-                <div className="absolute right-4 top-4">
+            <div className="relative flex-1 overflow-y-auto bg-background">
+                <div className="absolute right-4 top-4 z-10">
                     <ThemeToggle />
                 </div>
 
-                {/* Mobile logo */}
-                <div className="mb-8 lg:hidden flex flex-col items-center gap-2">
-                    <Link href="/">
-                        <ApplicationLogo className="h-14 w-14 rounded-full" />
-                    </Link>
-                    <p className="text-xs font-semibold tracking-widest text-primary uppercase">Focus Digital Color Lab</p>
-                </div>
+                <div className="flex min-h-full flex-col items-center justify-center px-6 py-12 sm:px-10" style={{ paddingBottom: 'max(3rem, env(safe-area-inset-bottom))' }}>
+                    {/* Mobile logo */}
+                    <div className="mb-8 lg:hidden flex flex-col items-center gap-2">
+                        <Link href="/">
+                            <ApplicationLogo className="h-14 w-14 rounded-full" />
+                        </Link>
+                        <p className="text-xs font-semibold tracking-widest text-primary uppercase">Focus Digital Color Lab</p>
+                    </div>
 
-                <div className="w-full max-w-md">
-                    {children}
+                    <div className="w-full max-w-md">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>

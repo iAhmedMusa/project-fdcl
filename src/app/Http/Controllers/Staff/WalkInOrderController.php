@@ -12,6 +12,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PhotoRegistry;
 use App\Models\Product;
+use App\Models\StudioFee;
 use App\Models\User;
 use App\Services\OrderNumberGenerator;
 use App\Services\PhotoStorage;
@@ -43,9 +44,23 @@ class WalkInOrderController extends Controller
         $locations = Location::where('is_active', true)
             ->get(['id', 'name', 'address']);
 
+        $studioFees = StudioFee::where('is_active', true)
+            ->with('location:id,name')
+            ->get()
+            ->mapWithKeys(fn ($sf) => [$sf->location_id => (float) $sf->fee]);
+
+        $staff = auth()->user()->load('location.studioFee');
+        $staffLocation = [
+            'id'         => $staff->location->id,
+            'name'       => $staff->location->name,
+            'studio_fee' => (float) ($staff->location->studioFee->fee ?? 0),
+        ];
+
         return Inertia::render('Staff/CreateOrder', [
-            'products' => $products,
-            'locations' => $locations,
+            'products'      => $products,
+            'locations'     => $locations,
+            'studioFees'    => $studioFees,
+            'staffLocation' => $staffLocation,
         ]);
     }
 
@@ -85,6 +100,7 @@ class WalkInOrderController extends Controller
             'mug.photo_source' => 'nullable|string|max:1000',
             'mug.notes' => 'nullable|string|max:1000',
             'discount_amount' => 'nullable|numeric|min:0',
+            'studio_fee_per_session' => 'nullable|numeric|min:0',
             'payment_amount' => 'nullable|numeric|min:0.01',
             'payment_method' => 'required_with:payment_amount|in:cash,bkash,nagad,card,other',
             'payment_reference' => 'nullable|string|max:100',
@@ -118,10 +134,15 @@ class WalkInOrderController extends Controller
 
             // Calculate reprint amount from all items
             $reprintItemsData = $validated['reprint_items'] ?? [];
+            $studioFeePerSession = (float) (auth()->user()->load('location.studioFee')->location->studioFee->fee ?? 0);
+            $studioFeeAmount = 0;
             if (in_array('reprint', $validated['services']) && ! empty($reprintItemsData)) {
                 foreach ($reprintItemsData as $reprintItem) {
                     $product = Product::findOrFail($reprintItem['product_id']);
                     $reprintAmount += $product->price * $reprintItem['quantity'];
+                    if (($reprintItem['source'] ?? '') === 'awaiting') {
+                        $studioFeeAmount += $studioFeePerSession;
+                    }
                 }
             }
 
@@ -154,7 +175,7 @@ class WalkInOrderController extends Controller
             }
 
             // Calculate total amount
-            $totalAmount = $reprintAmount + $albumAmount + $frameAmount + $mugAmount;
+            $totalAmount = $reprintAmount + $albumAmount + $frameAmount + $mugAmount + $studioFeeAmount;
 
             // Handle payment amount
             $paymentAmount = isset($validated['payment_amount'])
@@ -254,6 +275,28 @@ class WalkInOrderController extends Controller
                             $itemRegistry->update(['user_id' => $customer->id]);
                         }
                     }
+                }
+            }
+
+            // Create Studio Fee order items for each awaiting photo session
+            if ($studioFeeAmount > 0 && $studioFeePerSession > 0) {
+                $awaitingCount = 0;
+                foreach ($reprintItemsData as $reprintItem) {
+                    if (($reprintItem['source'] ?? '') === 'awaiting') {
+                        $awaitingCount++;
+                    }
+                }
+                for ($i = 0; $i < $awaitingCount; $i++) {
+                    OrderItem::create([
+                        'order_id' => $order->id,
+                        'product_id' => null,
+                        'quantity' => 1,
+                        'unit_price' => $studioFeePerSession,
+                        'subtotal' => $studioFeePerSession,
+                        'photo_paths' => null,
+                        'reprint_source' => 'studio_fee',
+                        'item_specific_notes' => 'Studio Fee',
+                    ]);
                 }
             }
 

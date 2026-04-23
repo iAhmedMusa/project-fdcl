@@ -207,10 +207,9 @@
             min-width: 220px;
             text-align: left;
         }
-        .payment-row { margin-bottom: 7px; }
-        .payment-row-inner { width: 100%; }
-        .pay-label { font-size: 12px; color: #64748B; display: inline-block; width: 50%; }
-        .pay-val   { font-size: 12px; font-weight: bold; color: #0F172A; display: inline-block; width: 50%; text-align: right; }
+        .payment-row { margin-bottom: 7px; width: 100%; border-collapse: collapse; }
+        .pay-label { font-size: 12px; color: #64748B; width: 55%; }
+        .pay-val   { font-size: 12px; font-weight: bold; color: #0F172A; width: 45%; text-align: right; }
         .pay-divider { border: none; border-top: 1px solid #E2E8F0; margin: 10px 0; }
         .pay-total { font-size: 15px; font-weight: bold; }
         .pay-balance { color: #DC2626; }
@@ -252,7 +251,7 @@ $categoryLabels = [
     'frame'        => 'Photo Frame',
     'mug'          => 'Custom Mug',
 ];
-$balance    = $order->total_amount - $order->amount_paid;
+$balance    = $order->total_amount - ($order->discount_amount ?? 0) - $order->amount_paid;
 $registries = $order->photoRegistries;
 $logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('images/logo.png')));
 @endphp
@@ -315,10 +314,15 @@ $logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_
                 @foreach($order->items as $item)
                 <tr>
                     <td>
-                        <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
-                        <span class="item-name">{{ $item->product->name }}</span>
-                        @if($item->product->size_label)
-                            <span class="item-size">{{ $item->product->size_label }}</span>
+                        @if($item->reprint_source === 'studio_fee')
+                            <span class="cat-tag">Studio Fee</span>
+                            <span class="item-name">Session Fee</span>
+                        @else
+                            <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
+                            <span class="item-name">{{ $item->product->name }}</span>
+                            @if($item->product->size_label)
+                                <span class="item-size">{{ $item->product->size_label }}</span>
+                            @endif
                         @endif
                     </td>
                     <td class="center">{{ $item->quantity }}</td>
@@ -352,25 +356,22 @@ $logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_
                     @endif
                     <td class="{{ $registries->isNotEmpty() ? 'payment-cell' : '' }}" style="{{ $registries->isNotEmpty() ? '' : 'text-align:right' }}">
                         <div class="payment-box">
-                            <div class="payment-row">
-                                <span class="pay-label">Subtotal</span>
-                                <span class="pay-val">Tk {{ number_format($order->total_amount, 0) }}</span>
-                            </div>
-                            <div class="payment-row">
-                                <span class="pay-label">Paid</span>
-                                <span class="pay-val">Tk {{ number_format($order->amount_paid, 0) }}</span>
-                            </div>
+                            <table class="payment-row">
+                                <tr><td class="pay-label">Subtotal</td><td class="pay-val">Tk {{ number_format($order->total_amount, 0) }}</td></tr>
+                                @if(($order->discount_amount ?? 0) > 0)
+                                <tr><td class="pay-label" style="color:#065F46">Discount</td><td class="pay-val" style="color:#065F46">-Tk {{ number_format($order->discount_amount, 0) }}</td></tr>
+                                @endif
+                                <tr><td class="pay-label">Paid</td><td class="pay-val">Tk {{ number_format($order->amount_paid, 0) }}</td></tr>
+                            </table>
                             <hr class="pay-divider">
                             @if($balance > 0)
-                                <div>
-                                    <span class="pay-label pay-total pay-balance">Balance Due</span>
-                                    <span class="pay-val pay-total pay-balance" style="text-align:right;display:inline-block;width:50%">Tk {{ number_format($balance, 0) }}</span>
-                                </div>
+                                <table class="payment-row">
+                                    <tr><td class="pay-label pay-total pay-balance">Balance Due</td><td class="pay-val pay-total pay-balance">Tk {{ number_format($balance, 0) }}</td></tr>
+                                </table>
                             @else
-                                <div>
-                                    <span class="pay-label pay-total pay-paid">Balance Due</span>
-                                    <span class="pay-val pay-total pay-paid" style="text-align:right;display:inline-block;width:50%">Tk 0 (Settled)</span>
-                                </div>
+                                <table class="payment-row">
+                                    <tr><td class="pay-label pay-total pay-paid">Balance Due</td><td class="pay-val pay-total pay-paid">Tk 0 (Settled)</td></tr>
+                                </table>
                             @endif
                         </div>
                     </td>

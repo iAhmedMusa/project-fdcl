@@ -217,8 +217,8 @@ export default function CustomerLayout({ children }) {
                 {/* Mobile logout confirmation modal */}
                 {showLogoutModal && (
                     <>
-                        <div className="fixed inset-0 z-50 bg-black/50 lg:hidden" onClick={() => setShowLogoutModal(false)} />
-                        <div className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl border-t bg-card p-6 shadow-xl lg:hidden">
+                        <div className="fixed inset-0 z-[55] bg-black/50 lg:hidden" onClick={() => setShowLogoutModal(false)} />
+                        <div className="fixed bottom-0 left-0 right-0 z-[60] rounded-t-2xl border-t bg-card px-6 pt-6 shadow-xl lg:hidden" style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}>
                             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-muted-foreground/30" />
                             <div className="mb-1 text-center">
                                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">

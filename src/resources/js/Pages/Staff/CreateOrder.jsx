@@ -65,7 +65,7 @@ function StepHeader({ number, title, isComplete, isActive }) {
     );
 }
 
-export default function CreateOrder({ products, locations }) {
+export default function CreateOrder({ products, locations, studioFees, staffLocation }) {
     // ── Step 1: Customer ──────────────────────────────────────
     const [customerType, setCustomerType] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -154,6 +154,14 @@ export default function CreateOrder({ products, locations }) {
     const albumTotal = selectedAlbumProduct ? parseFloat(selectedAlbumProduct.price) * albumQuantity : 0;
     const frameTotal = selectedFrameProduct ? parseFloat(selectedFrameProduct.price) * frameQuantity : 0;
     const mugTotal = selectedMugProduct ? parseFloat(selectedMugProduct.price) * mugQuantity : 0;
+
+    const studioFeePerSession = staffLocation?.studio_fee ?? 0;
+    const studioFeeSessions = reprintSource === 'awaiting' ? 1 + additionalReprintItems.filter(item => {
+        return item.reprintSource === 'awaiting';
+    }).length : additionalReprintItems.filter(item => {
+        return item.reprintSource === 'awaiting';
+    }).length;
+    const studioFeeTotal = studioFeePerSession * studioFeeSessions;
 
     // Step completion checks
     const isStep1Complete = () => {
@@ -264,6 +272,7 @@ export default function CreateOrder({ products, locations }) {
                 const prod = reprintProducts.find(p => p.id == item.product);
                 if (prod) total += parseFloat(prod.price) * item.quantity;
             });
+            total += studioFeeTotal;
         }
         if (selectedServices.has('album') && albumProduct) {
             total += albumTotal;
@@ -357,6 +366,7 @@ export default function CreateOrder({ products, locations }) {
             quantity: 1,
             file: null,
             preview: null,
+            reprintSource: reprintSource,
         }]);
     };
 
@@ -426,12 +436,13 @@ export default function CreateOrder({ products, locations }) {
             data.reprint_items = [
                 firstItem,
                 ...additionalReprintItems.map(item => ({
-                    source: reprintSource,
+                    source: item.reprintSource || reprintSource,
                     product_id: parseInt(item.product),
                     quantity: item.quantity,
                     paper_type: reprintPaperType,
                 })),
             ];
+            data.studio_fee_per_session = studioFeePerSession;
         }
 
         if (selectedServices.has('album')) {
@@ -1134,19 +1145,25 @@ export default function CreateOrder({ products, locations }) {
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium text-gray-700">New Photo Session</p>
                                                         <p className="text-xs text-gray-500">
-                                                            Customer is here for a new photo. Leave blank and upload later
+                                                            Customer is here for a new photo.
                                                         </p>
                                                         {reprintSource === 'awaiting' && (
-                                                            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                                                                <div className="flex items-center gap-2 text-sm text-amber-700">
-                                                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                                                                    </svg>
-                                                                    <span className="font-medium">Awaiting Photo</span>
+                                                            <div className="mt-3 space-y-2">
+                                                                <div className="flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+                                                                    <span className="text-sm font-medium text-primary">Studio Fee <span className="font-normal text-xs text-primary/60">({staffLocation?.name})</span></span>
+                                                                    <span className="text-sm font-bold text-primary">৳{studioFeePerSession.toFixed(0)}</span>
                                                                 </div>
-                                                                <p className="mt-1 text-xs text-amber-600">
-                                                                    Photo ID will be generated when you upload the photo.
-                                                                </p>
+                                                                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                                                                    <div className="flex items-center gap-2 text-sm text-amber-700">
+                                                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                                                                        </svg>
+                                                                        <span className="font-medium">Awaiting Photo</span>
+                                                                    </div>
+                                                                    <p className="mt-1 text-xs text-amber-600">
+                                                                        Photo ID will be generated when you upload the photo.
+                                                                    </p>
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1340,7 +1357,7 @@ export default function CreateOrder({ products, locations }) {
                                                 <span className="text-xl font-bold text-gray-900">৳{(reprintTotal + additionalReprintItems.reduce((sum, item) => {
                                                     const prod = reprintProducts.find(p => p.id == item.product);
                                                     return sum + (prod ? parseFloat(prod.price) * item.quantity : 0);
-                                                }, 0)).toFixed(0)}</span>
+                                                }, 0) + studioFeeTotal).toFixed(0)}</span>
                                             </div>
                                         </div>
                                     )}
@@ -1816,6 +1833,12 @@ export default function CreateOrder({ products, locations }) {
 
                                     {selectedServices.has('reprint') && reprintProduct && (
                                         <div className="border-t pt-3 space-y-1">
+                                            {reprintSource === 'awaiting' && studioFeePerSession > 0 && (
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-primary font-medium">Studio Fee</span>
+                                                    <span className="font-bold text-primary">৳{studioFeeTotal.toFixed(0)}</span>
+                                                </div>
+                                            )}
                                             <div className="flex justify-between">
                                                 <span className="text-gray-500">Photo 1:</span>
                                                 <span className="font-medium">
@@ -1846,7 +1869,7 @@ export default function CreateOrder({ products, locations }) {
                                                 <span className="font-bold">৳{(reprintTotal + additionalReprintItems.reduce((sum, item) => {
                                                     const prod = reprintProducts.find(p => p.id == item.product);
                                                     return sum + (prod ? parseFloat(prod.price) * item.quantity : 0);
-                                                }, 0)).toFixed(0)}</span>
+                                                }, 0) + studioFeeTotal).toFixed(0)}</span>
                                             </div>
                                         </div>
                                     )}
