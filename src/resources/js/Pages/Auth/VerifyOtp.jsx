@@ -124,7 +124,7 @@ export default function VerifyOtp({ phone, expiresAt, status }) {
                                 onChange={(e) => handleChange(index, e.target.value)}
                                 onKeyDown={(e) => handleKeyDown(index, e)}
                                 onPaste={index === 0 ? handlePaste : undefined}
-                                className="h-12 w-12 rounded-lg border border-input bg-background text-center text-lg font-semibold text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
+                                className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg border border-input bg-background text-center text-base sm:text-lg font-semibold text-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
                             />
                         ))}
                     </div>
