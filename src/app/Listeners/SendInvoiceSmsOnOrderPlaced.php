@@ -27,6 +27,11 @@ class SendInvoiceSmsOnOrderPlaced implements ShouldQueue
 
         try {
             $token = $this->invoiceService->createOrRenewToken($order);
+
+            if ($token->sms_sent) {
+                return;
+            }
+
             $url   = $this->invoiceService->getPublicUrl($token);
             $sent  = $this->smsService->sendInvoiceLink($phone, $url, $order->order_number, $order->user->name ?? null);
             if ($sent) {
