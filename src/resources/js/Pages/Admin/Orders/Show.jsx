@@ -85,7 +85,7 @@ export default function OrdersShow({ order }) {
                 <div className="mt-4 rounded-lg border bg-card p-5 shadow-sm">
                     <h2 className="mb-3 text-sm font-semibold text-foreground">Items</h2>
                     <div className="space-y-3">
-                        {order.items.map((item) => (
+                        {order.items.filter(item => item.category !== 'studio_fee').map((item) => (
                             <div key={item.id} className="flex justify-between border-b pb-3 last:border-0 last:pb-0">
                                 <div>
                                     <p className="font-medium text-foreground">{item.product_name}</p>
