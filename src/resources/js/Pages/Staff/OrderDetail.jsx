@@ -18,18 +18,14 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
         setSmsSending(type);
         setSmsMessage(null);
         try {
-            const res = await fetch(route(routeName, order.id), {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
-            });
-            const data = await res.json();
-            if (res.ok && type === 'invoice') {
+            const res = await window.axios.post(route(routeName, order.id));
+            if (type === 'invoice') {
                 router.reload({ only: ['invoiceToken', 'smsSent'] });
             } else {
-                setSmsMessage({ ok: res.ok, text: data.message });
+                setSmsMessage({ ok: true, text: res.data.message });
             }
-        } catch {
-            setSmsMessage({ ok: false, text: 'Network error. Try again.' });
+        } catch (err) {
+            setSmsMessage({ ok: false, text: err.response?.data?.message ?? 'Network error. Try again.' });
         } finally {
             setSmsSending(null);
         }

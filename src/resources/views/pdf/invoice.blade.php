@@ -294,7 +294,7 @@ $logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_
                     <div class="meta-detail">
                         <span class="meta-key">Date:</span> {{ $order->created_at->format('d M Y') }}<br>
                         <span class="meta-key">Branch:</span> {{ $order->location->name }}<br>
-                        <span class="meta-key">Status:</span> <span class="status-text">{{ ucfirst($order->status) }}</span>
+                        <span class="meta-key">Order Status:</span> <span class="status-text">{{ ucfirst($order->status) }}</span>
                     </div>
                 </td>
             </tr>
