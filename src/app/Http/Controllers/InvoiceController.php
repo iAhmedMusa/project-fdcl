@@ -85,7 +85,7 @@ class InvoiceController extends Controller
 
         $token = $invoiceService->createOrRenewToken($order);
         $url   = $invoiceService->getPublicUrl($token);
-        $sent  = $smsService->sendOrderReady($phone, $url, $order->order_number);
+        $sent  = $smsService->sendOrderReady($phone, $url, $order->order_number, $order->user->name);
 
         if (! $sent) {
             return response()->json(['message' => 'SMS could not be sent. Check logs.'], 500);
