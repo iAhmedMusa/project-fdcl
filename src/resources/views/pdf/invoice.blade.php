@@ -2,284 +2,412 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FDCL Invoice - {{ $order->order_number }}</title>
+    <title>Invoice {{ $order->order_number }}</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: DejaVu Sans, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #1a1a1a;
+            font-size: 13px;
+            color: #0F172A;
+            background: #FFFFFF;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-        }
+
+        /* ── Page wrapper ── */
+        .page { padding: 0; }
+
+        /* ── Header band ── */
         .header {
-            background-color: #0D1B2A;
-            color: white;
-            padding: 30px;
-            margin: -40px -40px 30px -40px;
-            text-align: center;
+            background-color: #0F172A;
+            padding: 28px 36px 22px;
         }
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 28px;
-            font-weight: 700;
-        }
-        .header .separator {
-            width: 60px;
-            height: 3px;
-            background-color: #D4A017;
-            margin: 10px auto;
-        }
-        .header .invoice-number {
-            font-size: 18px;
-            color: #D4A017;
-            margin-top: 10px;
-        }
-        .studio-info {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 13px;
-            color: #666;
-        }
-        .studio-info p {
-            margin: 5px 0;
-        }
-        .order-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-        }
-        .order-info-left, .order-info-right {
-            width: 48%;
-        }
-        .order-info h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .order-info p {
-            margin: 5px 0;
-            font-size: 14px;
-        }
-        .items-table {
+        .header-inner {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
         }
-        .items-table thead {
-            background-color: #0D1B2A;
-            color: white;
+        .header-left {
+            display: inline-block;
+            width: 60%;
+            vertical-align: middle;
         }
+        .header-right {
+            display: inline-block;
+            width: 38%;
+            vertical-align: middle;
+            text-align: right;
+        }
+        .header-logo {
+            height: 48px;
+            margin-right: 12px;
+            vertical-align: middle;
+        }
+        .header-text {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .studio-name {
+            font-size: 17px;
+            font-weight: bold;
+            color: #FFFFFF;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .studio-tagline {
+            font-size: 11px;
+            color: #94A3B8;
+            letter-spacing: .5px;
+        }
+        .invoice-label {
+            font-size: 10px;
+            color: #059669;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .invoice-number {
+            font-size: 22px;
+            font-weight: bold;
+            color: #FFFFFF;
+            letter-spacing: -0.5px;
+        }
+        .emerald-bar {
+            height: 4px;
+            background-color: #059669;
+            margin: 0;
+        }
+
+        /* ── Watermark ── */
+        .watermark-wrap { position: relative; }
+        .watermark-img {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            width: 240px;
+            height: 240px;
+            margin-left: -120px;
+            opacity: 0.06;
+            z-index: 0;
+        }
+
+        /* ── Body ── */
+        .body { padding: 24px 36px; }
+
+        /* ── Meta table ── */
+        .meta-table { width: 100%; margin-bottom: 22px; }
+        .meta-table td { vertical-align: top; width: 50%; padding: 0; }
+        .meta-section-title {
+            font-size: 9px;
+            font-weight: bold;
+            color: #059669;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+        }
+        .meta-name   { font-size: 14px; font-weight: bold; color: #0F172A; margin-bottom: 2px; }
+        .meta-detail { font-size: 12px; color: #64748B; line-height: 1.6; }
+        .meta-key    { font-weight: bold; color: #0F172A; }
+
+        .status-text  { font-weight: bold; color: #0F172A; }
+
+        /* ── Section title ── */
+        .section-title {
+            font-size: 9px;
+            font-weight: bold;
+            color: #059669;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 6px;
+            margin-bottom: 0;
+        }
+
+        /* ── Items table ── */
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .items-table thead tr { background-color: #059669; }
         .items-table th {
-            padding: 12px;
+            padding: 9px 12px;
             text-align: left;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 9px;
+            font-weight: bold;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
         }
-        .items-table th:last-child {
-            text-align: right;
+        .items-table th.right { text-align: right; }
+        .items-table th.center { text-align: center; }
+
+        .items-table td { padding: 10px 12px; border-bottom: 1px solid #E2E8F0; font-size: 12px; }
+        .items-table td.right  { text-align: right; font-weight: bold; }
+        .items-table td.center { text-align: center; color: #64748B; }
+        .items-table td.muted  { color: #64748B; }
+        .items-table tbody tr:nth-child(even) td { background-color: #F8FAFC; }
+
+        .cat-tag {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: bold;
+            color: #059669;
+            background-color: #ECFDF5;
+            padding: 1px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            margin-bottom: 2px;
         }
-        .items-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 14px;
-        }
-        .items-table td:last-child {
-            text-align: right;
-        }
-        .items-table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+        .item-name { font-size: 12px; font-weight: bold; display: block; color: #0F172A; }
+        .item-size { font-size: 11px; color: #94A3B8; display: block; }
+
+        .items-table tfoot tr { background-color: #0F172A; }
         .items-table tfoot td {
-            border-top: 2px solid #0D1B2A;
-            font-weight: 700;
+            padding: 11px 12px;
+            color: #FFFFFF;
+            font-weight: bold;
+            font-size: 13px;
+            border-bottom: none;
         }
-        .payment-box {
-            background-color: #f5f5f5;
-            border: 2px solid #0D1B2A;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-        .payment-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-        .payment-row.total {
-            font-weight: 700;
-            font-size: 18px;
-            border-top: 1px solid #ccc;
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-        .payment-row .amount {
-            font-weight: 700;
-        }
-        .payment-row.balance {
-            color: #dc2626;
-        }
+        .items-table tfoot td.label { color: #94A3B8; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+
+        /* ── Payment summary ── */
+        .payment-wrap { margin-bottom: 28px; width: 100%; }
+        .payment-wrap-inner { width: 100%; }
+        .photo-id-cell { width: 55%; vertical-align: middle; padding-right: 14px; }
         .photo-id-box {
-            background-color: #FFF8E7;
-            border: 2px solid #D4A017;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: center;
+            background-color: #ECFDF5;
+            border: 1.5px solid #6EE7B7;
+            border-radius: 10px;
+            padding: 14px 16px;
         }
-        .photo-id-box h4 {
-            margin: 0 0 10px 0;
-            font-size: 12px;
+        .photo-id-label {
+            font-size: 9px;
+            font-weight: bold;
+            color: #047857;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+        .photo-id-code {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0F172A;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .photo-id-hint { font-size: 10px; color: #64748B; line-height: 1.5; }
+
+        .payment-cell { width: 45%; vertical-align: middle; text-align: right; }
+        .payment-box {
+            display: inline-block;
+            background-color: #F8FAFC;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 14px 18px;
+            min-width: 220px;
+            text-align: left;
+        }
+        .payment-row { margin-bottom: 7px; width: 100%; border-collapse: collapse; }
+        .pay-label { font-size: 12px; color: #64748B; width: 55%; }
+        .pay-val   { font-size: 12px; font-weight: bold; color: #0F172A; width: 45%; text-align: right; }
+        .pay-divider { border: none; border-top: 1px solid #E2E8F0; margin: 10px 0; }
+        .pay-total { font-size: 15px; font-weight: bold; }
+        .pay-balance { color: #DC2626; }
+        .pay-paid    { color: #065F46; }
+
+        /* ── Footer / branches ── */
+        .footer {
+            background-color: #0F172A;
+            padding: 20px 36px 16px;
+        }
+        .footer-branches { width: 100%; margin-bottom: 14px; }
+        .footer-branches td { vertical-align: top; width: 50%; padding: 0 12px 0 0; }
+        .branch-name {
+            font-size: 10px;
+            font-weight: bold;
+            color: #059669;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #D4A017;
+            margin-bottom: 4px;
         }
-        .photo-id-box .code {
-            font-size: 28px;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-            color: #0D1B2A;
-            margin: 10px 0;
+        .branch-addr { font-size: 11px; color: #94A3B8; line-height: 1.7; }
+
+        .footer-bottom {
+            border-top: 1px solid #1E293B;
+            padding-top: 12px;
         }
-        .photo-id-box p {
-            font-size: 13px;
-            color: #666;
-            margin: 10px 0 0 0;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 12px;
-            color: #999;
-        }
-        .footer p {
-            margin: 5px 0;
-        }
-        .status {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status-pending { background-color: #f3f4f6; color: #4b5563; }
-        .status-processing { background-color: #dbeafe; color: #1e40af; }
-        .status-ready { background-color: #fef3c7; color: #92400e; }
-        .status-delivered { background-color: #d1fae5; color: #065f46; }
-        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
+        .footer-bottom-inner { width: 100%; }
+        .footer-web  { font-size: 11px; color: #059669; display: inline-block; width: 40%; }
+        .footer-hours{ font-size: 11px; color: #64748B; display: inline-block; width: 35%; text-align: center; }
+        .footer-since{ font-size: 11px; color: #64748B; display: inline-block; width: 24%; text-align: right; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Focus Digital Color Lab</h1>
-            <div class="separator"></div>
-            <div class="invoice-number">INVOICE {{ $order->order_number }}</div>
-        </div>
+@php
+$categoryLabels = [
+    'photo_studio' => 'Photo Studio',
+    'reprint'      => 'Photo Reprint',
+    'album'        => 'Photo Album',
+    'frame'        => 'Photo Frame',
+    'mug'          => 'Custom Mug',
+];
+$balance    = $order->total_amount - ($order->discount_amount ?? 0) - $order->amount_paid;
+$registries = $order->photoRegistries;
+$logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('images/logo.png')));
+@endphp
 
-        <div class="studio-info">
-            <p><strong>Shantinagar:</strong> Shantinagar Moar, Bailey Road, Dhaka | <strong>Gulshan-1:</strong> House 5, Road 21, Gulshan-1, Dhaka 1212</p>
-            <p>Phone: 01713-140768 | Website: https://focuslab.com.bd</p>
-        </div>
+<div class="page">
 
-        <div class="order-info">
-            <div class="order-info-left">
-                <h3>Invoice To</h3>
-                <p><strong>{{ $order->user->name }}</strong></p>
-                <p>{{ $order->user->email }}</p>
-                @if($order->user->phone)
-                    <p>{{ $order->user->phone }}</p>
-                @endif
-            </div>
-            <div class="order-info-right">
-                <h3>Order Details</h3>
-                <p><strong>Order Number:</strong> {{ $order->order_number }}</p>
-                <p><strong>Date:</strong> {{ $order->created_at->format('M d, Y H:i') }}</p>
-                <p><strong>Location:</strong> {{ $order->location->name }}</p>
-                <p><strong>Status:</strong>
-                    <span class="status status-{{ $order->status }}">
-                        {{ ucfirst($order->status) }}
-                    </span>
-                </p>
+    {{-- Header --}}
+    <div class="header">
+        <div style="width:100%">
+            <div class="header-left">
+                <img class="header-logo" src="{{ $logoB64 }}" alt="FDCL">
+                <div class="header-text">
+                    <div class="studio-name">Focus Digital Color Lab</div>
+                    <div class="studio-tagline">www.focusdigitalcolorlab.com &nbsp;&bull;&nbsp; +880 1713-140768</div>
+                </div>
+            </div><div class="header-right">
+                <div class="invoice-label">Invoice</div>
+                <div class="invoice-number">{{ $order->order_number }}</div>
             </div>
         </div>
+    </div>
+    <div class="emerald-bar"></div>
 
+    {{-- Body with watermark --}}
+    <div class="body watermark-wrap">
+        <img class="watermark-img" src="{{ $logoB64 }}" alt="">
+
+        {{-- Meta --}}
+        <table class="meta-table">
+            <tr>
+                <td style="padding-right:20px">
+                    <div class="meta-section-title">Billed To</div>
+                    <div class="meta-name">{{ $order->user->name }}</div>
+                    @if($order->user->phone)
+                        <div class="meta-detail">{{ $order->user->phone }}</div>
+                    @endif
+                </td>
+                <td style="text-align:right">
+                    <div class="meta-section-title" style="text-align:right">Order Details</div>
+                    <div class="meta-detail">
+                        <span class="meta-key">Date:</span> {{ $order->created_at->format('d M Y') }}<br>
+                        <span class="meta-key">Branch:</span> {{ $order->location->name }}<br>
+                        <span class="meta-key">Status:</span> <span class="status-text">{{ ucfirst($order->status) }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        {{-- Items --}}
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Service</th>
-                    <th>Size</th>
-                    <th style="text-align: center;">Qty</th>
-                    <th style="text-align: right;">Unit Price</th>
-                    <th style="text-align: right;">Subtotal</th>
+                    <th style="width:50%">Service</th>
+                    <th class="center" style="width:10%">Qty</th>
+                    <th class="right" style="width:18%">Unit Price</th>
+                    <th class="right" style="width:18%">Total</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($order->items as $index => $item)
+                @foreach($order->items as $item)
                 <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->product->name }}</td>
-                    <td>{{ $item->product->size_label ?? '—' }}</td>
-                    <td style="text-align: center;">{{ $item->quantity }}</td>
-                    <td style="text-align: right;">৳{{ number_format($item->unit_price, 0) }}</td>
-                    <td style="text-align: right;">৳{{ number_format($item->subtotal, 0) }}</td>
+                    <td>
+                        @if($item->reprint_source === 'studio_fee')
+                            <span class="cat-tag">Studio Fee</span>
+                            <span class="item-name">Session Fee</span>
+                        @else
+                            <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
+                            <span class="item-name">{{ $item->product->name }}</span>
+                            @if($item->product->size_label)
+                                <span class="item-size">{{ $item->product->size_label }}</span>
+                            @endif
+                        @endif
+                    </td>
+                    <td class="center">{{ $item->quantity }}</td>
+                    <td class="right muted">Tk{{ number_format($item->unit_price, 0) }}</td>
+                    <td class="right">Tk{{ number_format($item->subtotal, 0) }}</td>
                 </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5" style="text-align: right;"><strong>Total</strong></td>
-                    <td><strong>৳{{ number_format($order->total_amount, 0) }}</strong></td>
+                    <td class="label" colspan="3">Order Total</td>
+                    <td class="right" style="font-size:15px">Tk {{ number_format($order->total_amount, 0) }}</td>
                 </tr>
             </tfoot>
         </table>
 
-        <div class="payment-box">
-            <div class="payment-row">
-                <span>Total Amount:</span>
-                <span class="amount">৳{{ number_format($order->total_amount, 0) }}</span>
-            </div>
-            <div class="payment-row">
-                <span>Amount Paid:</span>
-                <span class="amount">৳{{ number_format($order->amount_paid, 0) }}</span>
-            </div>
-            @if($order->total_amount - $order->amount_paid > 0)
-            <div class="payment-row balance total">
-                <span>Balance Due:</span>
-                <span class="amount">৳{{ number_format($order->total_amount - $order->amount_paid, 0) }}</span>
-            </div>
-            @else
-            <div class="payment-row total" style="color: #065f46;">
-                <span>Status:</span>
-                <span class="amount">PAID</span>
-            </div>
-            @endif
+        {{-- Payment + Photo ID --}}
+        <div class="payment-wrap">
+            <table class="payment-wrap-inner">
+                <tr>
+                    @if($registries->isNotEmpty())
+                    <td class="photo-id-cell">
+                        <div class="photo-id-box">
+                            <div class="photo-id-label">Your FDCL Photo {{ $registries->count() > 1 ? 'IDs' : 'ID' }}</div>
+                            @foreach($registries as $registry)
+                                <div class="photo-id-code">{{ $registry->registry_code }}</div>
+                            @endforeach
+                            <div class="photo-id-hint">Save {{ $registries->count() > 1 ? 'these codes' : 'this code' }} to reorder your photos any time without re-uploading.</div>
+                        </div>
+                    </td>
+                    @endif
+                    <td class="{{ $registries->isNotEmpty() ? 'payment-cell' : '' }}" style="{{ $registries->isNotEmpty() ? '' : 'text-align:right' }}">
+                        <div class="payment-box">
+                            <table class="payment-row">
+                                <tr><td class="pay-label">Subtotal</td><td class="pay-val">Tk {{ number_format($order->total_amount, 0) }}</td></tr>
+                                @if(($order->discount_amount ?? 0) > 0)
+                                <tr><td class="pay-label" style="color:#065F46">Discount</td><td class="pay-val" style="color:#065F46">-Tk {{ number_format($order->discount_amount, 0) }}</td></tr>
+                                @endif
+                                <tr><td class="pay-label">Paid</td><td class="pay-val">Tk {{ number_format($order->amount_paid, 0) }}</td></tr>
+                            </table>
+                            <hr class="pay-divider">
+                            @if($balance > 0)
+                                <table class="payment-row">
+                                    <tr><td class="pay-label pay-total pay-balance">Balance Due</td><td class="pay-val pay-total pay-balance">Tk {{ number_format($balance, 0) }}</td></tr>
+                                </table>
+                            @else
+                                <table class="payment-row">
+                                    <tr><td class="pay-label pay-total pay-paid">Balance Due</td><td class="pay-val pay-total pay-paid">Tk 0 (Settled)</td></tr>
+                                </table>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
-        @if($order->photoRegistries->first())
-        <div class="photo-id-box">
-            <h4>Your FDCL Photo ID</h4>
-            <div class="code">{{ $order->photoRegistries->first()->registry_code }}</div>
-            <p>Save this code to reorder your photos any time without re-uploading.</p>
-        </div>
-        @endif
+    </div>
 
-        <div class="footer">
-            <p><strong>Thank you for choosing Focus Digital Color Lab!</strong></p>
-            <p>For any questions, please call <strong>01713-140768</strong></p>
-            <p style="margin-top: 15px; font-size: 11px;">Business Hours: Sat–Thu 9:30 AM – 9:00 PM | Fri 3:00 PM – 9:00 PM</p>
+    {{-- Footer / branches --}}
+    <div class="footer">
+        <table class="footer-branches">
+            <tr>
+                <td>
+                    <div class="branch-name">Bailey Road</div>
+                    <div class="branch-addr">
+                        Shantinagar Moar, Bailey Road<br>
+                        Dhaka, Bangladesh
+                    </div>
+                </td>
+                <td>
+                    <div class="branch-name">Gulshan</div>
+                    <div class="branch-addr">
+                        House 5, Road 21, Gulshan-1<br>
+                        Dhaka 1212, Bangladesh
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <div class="footer-bottom">
+            <span class="footer-web">www.focusdigitalcolorlab.com</span>
+            <span class="footer-hours">Sat–Thu 9:30 AM–9:00 PM &bull; Fri 3:00–9:00 PM</span>
+            <span class="footer-since">Trusted since 2009</span>
         </div>
     </div>
+
+</div>
 </body>
 </html>

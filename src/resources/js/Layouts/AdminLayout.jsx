@@ -37,12 +37,13 @@ export default function AdminLayout({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
-    const navigation = [
-        { name: 'Dashboard', href: '/admin',          icon: 'chart' },
-        { name: 'Orders',    href: '/admin/orders',   icon: 'clipboard' },
-        { name: 'Products',  href: '/admin/products', icon: 'cube' },
-        { name: 'Users',     href: '/admin/users',    icon: 'users' },
-        { name: 'Reports',   href: '/admin/reports',  icon: 'document' },
+const navigation = [
+        { name: 'Dashboard', href: '/admin', icon: 'chart' },
+        { name: 'Orders', href: '/admin/orders', icon: 'clipboard' },
+        { name: 'Products', href: '/admin/products', icon: 'cube' },
+        { name: 'Studio Fees', href: '/admin/studio-fees', icon: 'cube' },
+        { name: 'Users', href: '/admin/users', icon: 'users' },
+        { name: 'Reports', href: '/admin/reports', icon: 'document' },
     ];
 
     const currentPath = window.location.pathname;

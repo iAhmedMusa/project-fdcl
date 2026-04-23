@@ -8,6 +8,7 @@ import Locations from '@/Components/Landing/Locations';
 import Services from '@/Components/Landing/Services';
 import Testimonials from '@/Components/Landing/Testimonials';
 import LandingLayout from '@/Layouts/LandingLayout';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Head } from '@inertiajs/react';
 
 const structuredData = {
@@ -73,22 +74,29 @@ const structuredData = {
 };
 
 export default function Home() {
+    const { t, lang } = useLanguage();
+
+    const title = lang === 'bn'
+        ? 'প্রিমিয়াম ফটো স্টুডিও'
+        : 'Premium Photo Studio in Dhaka';
+    const description = t.footer.description;
+
     return (
         <LandingLayout>
             <Head>
-                <title>Premium Photo Studio in Dhaka | Focus Digital Color Lab</title>
+                <title>{title}</title>
                 <meta
                     name="description"
-                    content="Premium photo studio in Dhaka near Gulshan and Bailey Road. Any custom size photo prints, visa size photos, photo albums, frames &amp; mug prints, document prints. Ready in 10 minutes. Serving since 2009."
+                    content={description}
                 />
                 <meta
                     name="keywords"
                     content="photo studio Dhaka, Photo Lab, passport photo Dhaka, visa photo Gulshan, photo studio Bailey Road, photo studio near Gulshan, passport size photo Dhaka, FDCL photo studio, photo print Dhaka"
                 />
-                <meta property="og:title" content="Focus Digital Color Lab | Premium Photo Studio in Dhaka" />
+                <meta property="og:title" content={title} />
                 <meta
                     property="og:description"
-                    content="Premium passport and visa photos in 10 minutes. Two locations: Bailey Road &amp; Gulshan, Dhaka. Trusted since 2009."
+                    content={description}
                 />
                 <meta property="og:image" content="/images/studio/studio-04.jpg" />
                 <meta property="og:type" content="business.business" />

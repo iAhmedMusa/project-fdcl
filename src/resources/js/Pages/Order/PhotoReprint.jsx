@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
-import { Head, Link, router, usePage } from '@inertiajs/react';
 import CustomerLayout from '@/Layouts/CustomerLayout';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 
 export default function PhotoReprint({ products, locations, prefilledCode }) {
     const { auth } = usePage().props;
@@ -141,7 +141,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
             <div className="max-w-xl">
                 {/* ── Step 1: Select photo ────────────────────────────── */}
                 <div className="rounded-lg border bg-card p-5">
-                    <h2 className="text-base font-semibold text-gray-900">Select Your Photo</h2>
+                    <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Select Your Photo</h2>
 
                     {/* Tabs */}
                     <div className="mt-4 flex gap-3">
@@ -155,14 +155,14 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                             className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${
                                 activeTab === 'id'
                                     ? 'border-primary bg-primary/5 text-primary'
-                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                    : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600'
                             }`}
                         >
                             <svg className="mx-auto mb-1.5 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                             Photo ID
-                            <span className="block text-xs font-normal text-gray-400 mt-0.5">From our studio</span>
+                            <span className="block text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">From our studio</span>
                         </button>
                         <button
                             type="button"
@@ -174,14 +174,14 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                             className={`flex-1 rounded-lg border-2 px-4 py-3 text-center text-sm font-medium transition-colors ${
                                 activeTab === 'upload'
                                     ? 'border-primary bg-primary/5 text-primary'
-                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                    : 'border-gray-200 text-gray-500 hover:border-gray-300 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600'
                             }`}
                         >
                             <svg className="mx-auto mb-1.5 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
                             </svg>
                             Upload
-                            <span className="block text-xs font-normal text-gray-400 mt-0.5">From your device</span>
+                            <span className="block text-xs font-normal text-gray-400 dark:text-gray-500 mt-0.5">From your device</span>
                         </button>
                     </div>
 
@@ -193,8 +193,8 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                     type="text"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value.toUpperCase())}
-                                    placeholder="Enter Photo ID (e.g. FDL-2024-001)"
-                                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    placeholder="Enter your Photo ID"
+                                    className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                                 />
                                 <button
                                     type="submit"
@@ -214,19 +214,19 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                 </button>
                             </form>
 
-                            <p className="mt-2 text-xs text-gray-400">
+                            <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
                                 Enter the Photo ID provided by Focus Digital Color Lab when your photo was captured at our studio.
                             </p>
 
                             {lookupError && (
-                                <div className="mt-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
+                                <div className="mt-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
                                     {lookupError}
                                 </div>
                             )}
 
                             {foundRegistry && (
-                                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4">
-                                    <div className="flex items-center gap-2 text-sm font-medium text-green-700">
+                                <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
+                                    <div className="flex items-center gap-2 text-sm font-medium text-green-700 dark:text-green-400">
                                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                         </svg>
@@ -257,13 +257,13 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                     {activeTab === 'upload' && (
                         <div className="mt-4">
                             {!uploadedFile ? (
-                                <label className="flex cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 transition-colors hover:border-primary/50 hover:bg-primary/5">
-                                    <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                <label className="flex cursor-pointer flex-col items-center gap-3 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 transition-colors hover:border-primary/50 hover:bg-primary/5 dark:border-gray-600 dark:bg-gray-800">
+                                    <svg className="h-10 w-10 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z" />
                                     </svg>
                                     <div className="text-center">
                                         <span className="text-sm font-medium text-primary">Click to upload</span>
-                                        <p className="mt-1 text-xs text-gray-400">JPG, PNG — max 10MB</p>
+                                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">JPG, PNG — max 10MB</p>
                                     </div>
                                     <input
                                         ref={fileInputRef}
@@ -274,7 +274,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                     />
                                 </label>
                             ) : (
-                                <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4">
+                                <div className="flex items-center gap-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
                                     {uploadPreview && (
                                         <img
                                             src={uploadPreview}
@@ -283,15 +283,15 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                         />
                                     )}
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-medium text-green-700">{uploadedFile.name}</p>
-                                        <p className="text-xs text-green-600">
+                                        <p className="truncate text-sm font-medium text-green-700 dark:text-green-400">{uploadedFile.name}</p>
+                                        <p className="text-xs text-green-600 dark:text-green-500">
                                             {(uploadedFile.size / 1024 / 1024).toFixed(1)} MB
                                         </p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={removeFile}
-                                        className="rounded-md p-1 text-green-600 hover:bg-green-100"
+                                        className="rounded-md p-1 text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30"
                                     >
                                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -309,18 +309,18 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                 {/* ── Step 2: Size & Copies (only show when photo is ready) ──── */}
                 {hasPhoto && (
                     <form onSubmit={handleSubmit} className="mt-6 rounded-lg border bg-card p-5">
-                        <h2 className="text-base font-semibold text-gray-900">Print Details</h2>
+                        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Print Details</h2>
 
                         {/* Photo size dropdown */}
                         <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Photo size <span className="text-red-500">*</span>
                             </label>
                             <select
                                 value={selectedProduct}
                                 onChange={(e) => setSelectedProduct(e.target.value)}
                                 required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             >
                                 <option value="">Select size...</option>
                                 {products.map((product) => (
@@ -336,16 +336,16 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
                         {/* Number of copies */}
                         <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Number of copies <span className="text-red-500">*</span>
-                                <span className="ml-2 text-xs font-normal text-gray-400">Minimum 4 copies per order</span>
+                                <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum 4 copies per order</span>
                             </label>
                             <div className="flex items-center gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setQuantity(Math.max(4, quantity - 2))}
                                     disabled={quantity <= 4}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                 >
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
@@ -362,13 +362,13 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                         const clamped = Math.min(100, Math.max(4, val));
                                         setQuantity(clamped % 2 === 0 ? clamped : clamped + 1);
                                     }}
-                                    className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setQuantity(Math.min(100, quantity + 2))}
                                     disabled={quantity >= 100}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30"
+                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                 >
                                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -382,13 +382,13 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
                         {/* Paper type */}
                         <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Paper type
                             </label>
                             <select
                                 value={paperType}
                                 onChange={(e) => setPaperType(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                             >
                                 <option value="glossy">Glossy</option>
                                 <option value="matte">Matte</option>
@@ -397,7 +397,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
                         {/* Delivery method */}
                         <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Delivery method <span className="text-red-500">*</span>
                             </label>
                             <div className="flex flex-col gap-2">
@@ -410,7 +410,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                         onChange={() => setDeliveryMethod('pickup')}
                                         className="h-4 w-4 text-primary focus:ring-primary"
                                     />
-                                    <span className="text-sm text-gray-700">Pickup from studio</span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">Pickup from studio</span>
                                 </label>
                                 <label className="flex items-center gap-2 cursor-not-allowed opacity-50">
                                     <input
@@ -420,8 +420,8 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                         disabled
                                         className="h-4 w-4 text-primary focus:ring-primary"
                                     />
-                                    <span className="text-sm text-gray-500">Home delivery</span>
-                                    <span className="text-xs text-gray-400">(Coming soon)</span>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400">Home delivery</span>
+                                    <span className="text-xs text-gray-400 dark:text-gray-500">(Coming soon)</span>
                                 </label>
                             </div>
                         </div>
@@ -429,14 +429,14 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                         {/* Pickup location dropdown */}
                         {deliveryMethod === 'pickup' && (
                             <div className="mt-4">
-                                <label className="mb-2 block text-sm font-medium text-gray-700">
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Pickup studio <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={selectedLocation}
                                     onChange={(e) => setSelectedLocation(e.target.value)}
                                     required
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                 >
                                     <option value="">Select location...</option>
                                     {locations.map((location) => (
@@ -453,27 +453,27 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
                         {/* Special instructions */}
                         <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 Special instructions
-                                <span className="ml-1 font-normal text-gray-400">(optional)</span>
+                                <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">(optional)</span>
                             </label>
                             <textarea
                                 rows={3}
                                 value={specialInstructions}
                                 onChange={(e) => setSpecialInstructions(e.target.value)}
                                 placeholder="e.g. Do not crop, specific colour notes, border preference..."
-                                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                             />
                         </div>
 
                         {/* Total */}
                         {selectedProduct && (
-                            <div className="mt-6 rounded-lg bg-gray-50 p-4">
+                            <div className="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Total</span>
-                                    <span className="text-xl font-bold text-gray-900">৳{total.toFixed(0)}</span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">Total</span>
+                                    <span className="text-xl font-bold text-gray-900 dark:text-gray-100">৳{total.toFixed(0)}</span>
                                 </div>
-                                <p className="mt-1 text-xs text-gray-400">
+                                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                                     {selectedProductData?.name} ({selectedProductData?.size_label}) × {quantity}
                                 </p>
                             </div>

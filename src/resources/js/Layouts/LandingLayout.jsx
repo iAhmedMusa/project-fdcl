@@ -1,14 +1,15 @@
 import ThemeToggle from '@/Components/ThemeToggle';
+import { useLanguage } from '@/contexts/LanguageContext';
 import useFlash from '@/hooks/useFlash';
 import { Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
-const navLinks = [
-    { label: 'Services', href: '#services' },
-    { label: 'Gallery', href: '#gallery' },
-    { label: 'About', href: '#about' },
-    { label: 'Locations', href: '#locations' },
-    { label: 'FAQ', href: '#faq' },
+const navLinkKeys = [
+    { key: 'services', href: '#services' },
+    { key: 'gallery', href: '#gallery' },
+    { key: 'about', href: '#about' },
+    { key: 'locations', href: '#locations' },
+    { key: 'faq', href: '#faq' },
 ];
 
 function smoothScroll(e, href) {
@@ -21,6 +22,7 @@ function smoothScroll(e, href) {
 
 export default function LandingLayout({ children }) {
     useFlash();
+    const { t, lang, toggleLang } = useLanguage();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
 
@@ -31,7 +33,7 @@ export default function LandingLayout({ children }) {
     }, []);
 
     return (
-        <div className="font-inter min-h-screen bg-light dark:bg-gray-900">
+        <div className="min-h-screen bg-light dark:bg-gray-900">
             <nav
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
                     scrolled
@@ -49,34 +51,40 @@ export default function LandingLayout({ children }) {
                             />
                             <div className="flex flex-col">
                                 <span className="font-poppins text-lg font-bold leading-tight text-text-primary dark:text-white">
-                                    Focus Digital Color Lab
+                                    {t.nav.brand}
                                 </span>
                                 <span className="text-xs font-medium tracking-widest text-primary uppercase">
-                                    Premium Photo Studio
+                                    {t.nav.brandSub}
                                 </span>
                             </div>
                         </a>
 
                         <div className="hidden items-center gap-8 md:flex">
-                            {navLinks.map((link) => (
+                            {navLinkKeys.map((link) => (
                                 <a
-                                    key={link.href}
+                                    key={link.key}
                                     href={link.href}
                                     onClick={(e) => smoothScroll(e, link.href)}
                                     className="relative text-sm font-medium text-text-secondary dark:text-gray-300 transition-colors hover:text-text-primary dark:hover:text-white after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-0 after:bg-secondary after:transition-all after:duration-300 hover:after:w-full"
                                 >
-                                    {link.label}
+                                    {t.nav[link.key]}
                                 </a>
                             ))}
                         </div>
 
                         <div className="hidden md:flex items-center gap-3">
+                            <button
+                                onClick={toggleLang}
+                                className="rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-bold tracking-wide text-text-secondary dark:text-gray-300 transition-colors hover:border-primary/30 hover:text-primary dark:hover:border-primary/30 dark:hover:text-primary cursor-pointer"
+                            >
+                                {lang === 'en' ? 'বাংলা' : 'EN'}
+                            </button>
                             <ThemeToggle />
                             <Link
                                 href="/order"
                                 className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-primary/80 hover:shadow-md"
                             >
-                                Get Your Photo
+                                {t.nav.cta}
                             </Link>
                         </div>
 
@@ -101,9 +109,9 @@ export default function LandingLayout({ children }) {
                 {mobileOpen && (
                     <div className="border-t border-border dark:border-gray-700 bg-white dark:bg-gray-800 md:hidden">
                         <div className="space-y-1 px-4 py-4">
-                            {navLinks.map((link) => (
+                            {navLinkKeys.map((link) => (
                                 <a
-                                    key={link.href}
+                                    key={link.key}
                                     href={link.href}
                                     onClick={(e) => {
                                         smoothScroll(e, link.href);
@@ -111,18 +119,24 @@ export default function LandingLayout({ children }) {
                                     }}
                                     className="block rounded-md px-3 py-2.5 text-sm font-medium text-text-secondary dark:text-gray-300 transition-colors hover:bg-surface dark:hover:bg-gray-700 hover:text-primary"
                                 >
-                                    {link.label}
+                                    {t.nav[link.key]}
                                 </a>
                             ))}
                             <div className="pt-4 flex items-center justify-between">
+                                <button
+                                    onClick={toggleLang}
+                                    className="rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-bold tracking-wide text-text-secondary dark:text-gray-300 transition-colors hover:border-primary/30 hover:text-primary dark:hover:border-primary/30 dark:hover:text-primary cursor-pointer"
+                                >
+                                    {lang === 'en' ? 'বাংলা' : 'EN'}
+                                </button>
                                 <ThemeToggle />
                                 <Link
                                     href="/order"
-                                    className="rounded-lg bg-primary px-3 py-2.5 text-center text-sm font-bold text-white shadow-sm"
-                                    onClick={() => setMobileOpen(false)}
-                                >
-                                    Get Your Photo
-                                </Link>
+className="rounded-lg bg-primary px-3 py-2.5 text-center text-sm font-bold text-white shadow-sm"
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                {t.nav.cta}
+                            </Link>
                             </div>
                         </div>
                     </div>
@@ -130,6 +144,18 @@ export default function LandingLayout({ children }) {
             </nav>
 
             <main>{children}</main>
+
+            <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                aria-label="Back to top"
+                className={`fixed right-4 bottom-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/20 text-gray-700 shadow-md backdrop-blur-xl transition-all duration-300 hover:bg-white/40 hover:border-white/25 hover:text-primary dark:bg-white/10 dark:text-white dark:hover:bg-white/20 dark:hover:text-primary cursor-pointer ${
+                    scrolled ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'
+                }`}
+            >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                </svg>
+            </button>
 
             <footer className="bg-gray-950 border-t border-white/10">
                 <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -144,15 +170,15 @@ export default function LandingLayout({ children }) {
                                 />
                                 <div>
                                     <span className="block text-base font-bold text-white">
-                                        Focus Digital Color Lab
+                                        {t.footer.brand}
                                     </span>
                                     <span className="block text-xs font-medium tracking-widest text-primary uppercase">
-                                        Premium Photo Studio · Dhaka
+                                        {t.footer.brandSub}
                                     </span>
                                 </div>
                             </div>
                             <p className="mt-4 text-sm leading-relaxed text-gray-400 max-w-md">
-                                Dhaka's most trusted premium photo studio since 2009. Professional passport photos, visa photos, photo albums, frames, and mug prints — ready in 10 minutes. Serving Gulshan, Bailey Road, and all of Dhaka.
+                                {t.footer.description}
                             </p>
                             <div className="mt-5 flex flex-wrap gap-4">
                                 <a
@@ -162,7 +188,7 @@ export default function LandingLayout({ children }) {
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                                     </svg>
-                                    +880 1713-140768
+                                    {t.footer.phone}
                                 </a>
                                 <a
                                     href="https://wa.me/8801973140768"
@@ -181,18 +207,18 @@ export default function LandingLayout({ children }) {
                         {/* Services */}
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4">
-                                Our Services
+                                {t.footer.servicesTitle}
                             </h3>
                             <ul className="space-y-2.5">
                                 {[
-                                    { label: 'Passport Photo', href: '/order/photo-studio' },
-                                    { label: 'Visa Photo', href: '/order/photo-studio' },
-                                    { label: 'Photo Reprint', href: '/login' },
-                                    { label: 'Photo Album', href: '/album' },
-                                    { label: 'Photo Frame', href: '/frame' },
-                                    { label: 'Mug Print', href: '/mug' },
+                                    { label: t.footer.passportPhoto, href: '/order/photo-studio' },
+                                    { label: t.footer.visaPhoto, href: '/order/photo-studio' },
+                                    { label: t.footer.photoReprint, href: '/login' },
+                                    { label: t.footer.photoAlbum, href: '/album' },
+                                    { label: t.footer.photoFrame, href: '/frame' },
+                                    { label: t.footer.mugPrint, href: '/mug' },
                                 ].map((link) => (
-                                    <li key={link.label}>
+                                    <li key={link.href + link.label}>
                                         <a
                                             href={link.href}
                                             className="text-sm text-gray-400 transition-colors hover:text-white"
@@ -207,39 +233,39 @@ export default function LandingLayout({ children }) {
                         {/* Locations */}
                         <div>
                             <h3 className="text-xs font-bold uppercase tracking-wider text-primary mb-4">
-                                Studio Locations
+                                {t.footer.locationsTitle}
                             </h3>
                             <div className="space-y-4 text-sm text-gray-400">
                                 <div>
-                                    <p className="font-semibold text-white">Bailey Road Studio</p>
-                                    <p className="mt-1">Shantinagar Moar, Bailey Road</p>
-                                    <p>Dhaka 1217</p>
+                                    <p className="font-semibold text-white">{t.footer.baileyRoad}</p>
+                                    <p className="mt-1">{t.footer.baileyRoadAddr1}</p>
+                                    <p>{t.footer.baileyRoadAddr2}</p>
                                     <a
                                         href="https://maps.app.goo.gl/UDVbk2jqn4XVSEbVA"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="mt-1 inline-block text-xs text-primary hover:text-primary/80"
                                     >
-                                        Open in Maps →
+                                        {t.footer.openInMaps}
                                     </a>
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-white">Gulshan Studio</p>
-                                    <p className="mt-1">House 5, Road 21, Gulshan-1</p>
-                                    <p>Dhaka 1212</p>
+                                    <p className="font-semibold text-white">{t.footer.gulshan}</p>
+                                    <p className="mt-1">{t.footer.gulshanAddr1}</p>
+                                    <p>{t.footer.gulshanAddr2}</p>
                                     <a
                                         href="https://maps.app.goo.gl/uLh3GKExPgmbjY8H8"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="mt-1 inline-block text-xs text-primary hover:text-primary/80"
                                     >
-                                        Open in Maps →
+                                        {t.footer.openInMaps}
                                     </a>
                                 </div>
                                 <div className="rounded-lg bg-white/5 p-3 text-xs">
-                                    <p className="font-medium text-white">Opening Hours</p>
-                                    <p className="mt-1">Sat–Thu: 9:30 AM – 9:00 PM</p>
-                                    <p>Friday: 3:00 PM – 9:00 PM</p>
+                                    <p className="font-medium text-white">{t.footer.openingHours}</p>
+                                    <p className="mt-1">{t.footer.satThu}</p>
+                                    <p>{t.footer.friday}</p>
                                 </div>
                             </div>
                         </div>
@@ -249,7 +275,7 @@ export default function LandingLayout({ children }) {
                 <div className="border-t border-white/10">
                     <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
                         <p className="text-xs text-gray-500">
-                            © {new Date().getFullYear()} Focus Digital Color Lab. Premium Photo Studio in Dhaka, Bangladesh.
+                            © {new Date().getFullYear()} {t.footer.copyright}
                         </p>
                     </div>
                 </div>

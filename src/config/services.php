@@ -41,4 +41,11 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'bulksms' => [
+        'api_key' => env('BULKSMS_API_KEY'),
+        'sender_id' => env('BULKSMS_SENDER_ID', '8809648907781'),
+        'url' => env('BULKSMS_URL', 'http://bulksmsbd.net/api/smsapi'),
+        'balance_url' => env('BULKSMS_BALANCE_URL', 'http://bulksmsbd.net/api/getBalanceApi'),
+    ],
+
 ];
