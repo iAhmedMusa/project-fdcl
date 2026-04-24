@@ -16,6 +16,14 @@ const STATUS_COLORS = {
     cancelled:  'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
 
+const STATUS_DOT = {
+    pending:    'bg-gray-400',
+    processing: 'bg-blue-500',
+    ready:      'bg-amber-500',
+    delivered:  'bg-green-500',
+    cancelled:  'bg-red-500',
+};
+
 const STATUS_CHART_COLORS = {
     Pending:    '#f97316',
     Processing: '#3b82f6',
@@ -25,7 +33,7 @@ const STATUS_CHART_COLORS = {
 };
 
 const TOOLTIP_STYLE = {
-    contentStyle: { backgroundColor: '#0D1B2A', border: 'none', borderRadius: '8px' },
+    contentStyle: { backgroundColor: '#0D1B2A', border: 'none', borderRadius: '8px', fontSize: '12px' },
     labelStyle:   { color: '#fff' },
     itemStyle:    { color: '#D4A017' },
 };
@@ -47,6 +55,34 @@ const SERVICE_COLORS = {
     frame:        '#f97316',
     mug:          '#a855f7',
 };
+
+function SectionHeader({ title }) {
+    return (
+        <div className="mb-4 flex items-center gap-3">
+            <h2 className="whitespace-nowrap text-sm font-semibold text-foreground">{title}</h2>
+            <div className="h-px flex-1 bg-border/60" />
+        </div>
+    );
+}
+
+function KpiCard({ label, value, sub, accent = 'border-border', icon, valueClass = 'text-foreground' }) {
+    return (
+        <div className={`rounded-xl border-l-4 bg-card p-4 shadow-sm ${accent}`}>
+            <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                    <p className={`mt-1.5 text-2xl font-bold tracking-tight ${valueClass}`}>{value}</p>
+                    {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+                </div>
+                {icon && (
+                    <div className="shrink-0 rounded-lg bg-muted p-2.5">
+                        {icon}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default function Dashboard({
     stats, weekly_orders, revenue_by_service, orders_by_location, recent_orders,
@@ -116,242 +152,247 @@ export default function Dashboard({
         ? (((stats.monthly_revenue - stats.monthly_revenue_prev) / stats.monthly_revenue_prev) * 100).toFixed(1)
         : null;
 
+    const smsEstimate = smsBalance !== null && !smsLoading && !smsError
+        ? Math.floor(parseFloat(smsBalance) / (smsType === 'masking' ? 0.55 : 0.35)).toLocaleString()
+        : null;
+
     return (
         <AdminLayout>
             <Head title="Admin Dashboard - FDCL" />
 
-            <div className="px-4 py-4 sm:px-6 lg:px-8">
-                <h1 className="mb-4 text-lg font-semibold text-foreground">Dashboard</h1>
+            <div className="space-y-6">
+                {/* Page title */}
+                <div>
+                    <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+                    <p className="mt-0.5 text-sm text-muted-foreground">Overview of orders, revenue, and operations.</p>
+                </div>
 
                 <DashboardFilterBar locations={locations} filters={filters} baseRoute="/admin" />
 
                 {/* ── Row A: Core KPIs ─────────────────────────────────────── */}
-                <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Today's Orders</p>
-                                <p className="mt-1 text-3xl font-bold text-foreground">{stats.today_orders}</p>
-                            </div>
-                            <div className="rounded-full bg-secondary p-3">
-                                <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Today's Revenue</p>
-                                <p className="mt-1 text-3xl font-bold text-primary">{fmt(stats.today_revenue)}</p>
-                            </div>
-                            <div className="rounded-full bg-primary/10 p-3">
-                                <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Pending Orders</p>
-                                <p className="mt-1 text-3xl font-bold text-amber-600">{stats.pending_orders}</p>
-                            </div>
-                            <div className="rounded-full bg-amber-50 p-3">
-                                <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground">Unpaid Balance</p>
-                                <p className="mt-1 text-3xl font-bold text-red-600">{fmt(stats.unpaid_balance)}</p>
-                            </div>
-                            <div className="rounded-full bg-red-50 p-3">
-                                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <KpiCard
+                        label="Today's Orders"
+                        value={stats.today_orders}
+                        accent="border-l-4 border-blue-500"
+                        icon={
+                            <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        }
+                    />
+                    <KpiCard
+                        label="Today's Revenue"
+                        value={fmt(stats.today_revenue)}
+                        accent="border-l-4 border-primary"
+                        valueClass="text-primary"
+                        icon={
+                            <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        }
+                    />
+                    <KpiCard
+                        label="Pending Orders"
+                        value={stats.pending_orders}
+                        accent="border-l-4 border-amber-500"
+                        valueClass="text-amber-600"
+                        icon={
+                            <svg className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        }
+                    />
+                    <KpiCard
+                        label="Unpaid Balance"
+                        value={fmt(stats.unpaid_balance)}
+                        accent="border-l-4 border-red-500"
+                        valueClass="text-red-600"
+                        icon={
+                            <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                        }
+                    />
                 </div>
 
                 {/* ── Row B: Extended KPIs ──────────────────────────────────── */}
-                <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {/* Monthly Revenue */}
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <p className="text-sm font-medium text-muted-foreground">This Month's Revenue</p>
-                        <p className="mt-1 text-2xl font-bold text-foreground">{fmt(stats.monthly_revenue)}</p>
-                        {delta !== null && (
-                            <p className={`mt-1 text-xs font-medium ${parseFloat(delta) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                                {parseFloat(delta) >= 0 ? '↑' : '↓'} {Math.abs(delta)}% vs last month
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Appointments */}
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <p className="text-sm font-medium text-muted-foreground">Studio Appointments</p>
-                        <p className="mt-1 text-2xl font-bold text-foreground">{appointment_stats.today ?? 0} today</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                            {appointment_stats.this_week ?? 0} this week · {appointment_stats.attendance_rate ?? 0}% attended
-                        </p>
-                    </div>
-
-                    {/* New Customers */}
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <p className="text-sm font-medium text-muted-foreground">New Customers</p>
-                        <p className="mt-1 text-2xl font-bold text-foreground">{stats.new_customers_month}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">joined this month</p>
-                    </div>
-
-                    {/* Overdue Unpaid */}
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <p className="text-sm font-medium text-muted-foreground">Overdue Unpaid</p>
-                        <p className={`mt-1 text-2xl font-bold ${stats.overdue_unpaid_count > 0 ? 'text-amber-600' : 'text-foreground'}`}>
-                            {stats.overdue_unpaid_count}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">orders 7+ days unpaid</p>
-                    </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <KpiCard
+                        label="This Month's Revenue"
+                        value={fmt(stats.monthly_revenue)}
+                        accent="border-l-4 border-primary/50"
+                        sub={delta !== null
+                            ? `${parseFloat(delta) >= 0 ? '↑' : '↓'} ${Math.abs(delta)}% vs last month`
+                            : undefined
+                        }
+                        valueClass={delta !== null && parseFloat(delta) >= 0 ? 'text-primary' : 'text-foreground'}
+                    />
+                    <KpiCard
+                        label="Studio Appointments"
+                        value={`${appointment_stats.today ?? 0} today`}
+                        accent="border-l-4 border-purple-500"
+                        sub={`${appointment_stats.this_week ?? 0} this week · ${appointment_stats.attendance_rate ?? 0}% attended`}
+                    />
+                    <KpiCard
+                        label="New Customers"
+                        value={stats.new_customers_month}
+                        accent="border-l-4 border-teal-500"
+                        sub="joined this month"
+                    />
+                    <KpiCard
+                        label="Overdue Unpaid"
+                        value={stats.overdue_unpaid_count}
+                        accent={stats.overdue_unpaid_count > 0 ? 'border-l-4 border-amber-500' : 'border-l-4 border-border'}
+                        valueClass={stats.overdue_unpaid_count > 0 ? 'text-amber-600' : 'text-foreground'}
+                        sub="orders 7+ days unpaid"
+                    />
                 </div>
 
-                {/* ── SMS Balance ──────────────────────────────────────────── */}
-                <div className="mb-6">
-                    <div className="rounded-lg bg-card p-4 shadow-sm sm:max-w-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <p className="text-sm font-medium text-muted-foreground">BulkSMS Balance</p>
+                {/* ── SMS Balance + Revenue by Service ─────────────────────── */}
+                <div className="grid gap-4 lg:grid-cols-3">
+                    {/* SMS Balance */}
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-foreground">BulkSMS Balance</p>
+                                <p className="text-xs text-muted-foreground">Available credits</p>
+                            </div>
                             <button
                                 onClick={fetchSmsBalance}
                                 disabled={smsLoading}
-                                className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                className="cursor-pointer rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                Refresh
+                                {smsLoading ? 'Loading…' : 'Refresh'}
                             </button>
                         </div>
 
-                        <p className="text-2xl font-bold text-foreground mb-3">
+                        <p className="text-3xl font-bold tracking-tight text-foreground">
                             {smsLoading
-                                ? <span className="text-muted-foreground text-base">Loading…</span>
+                                ? <span className="text-base font-normal text-muted-foreground">Fetching…</span>
                                 : smsError
-                                    ? <span className="text-red-500 text-base">Failed</span>
+                                    ? <span className="text-base font-normal text-red-500">Failed to load</span>
                                     : smsBalance !== null
                                         ? smsBalance
-                                        : <span className="text-muted-foreground text-sm">—</span>
+                                        : <span className="text-base font-normal text-muted-foreground">Not loaded</span>
                             }
                         </p>
 
-                        <div className="flex gap-2 mb-3">
-                            <button
-                                onClick={() => setSmsType('masking')}
-                                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold border transition-colors ${smsType === 'masking' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
-                            >
-                                Masking
-                            </button>
-                            <button
-                                onClick={() => setSmsType('non-masking')}
-                                className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold border transition-colors ${smsType === 'non-masking' ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
-                            >
-                                Non-Masking
-                            </button>
+                        <div className="mt-4 flex gap-2">
+                            {['masking', 'non-masking'].map((type) => (
+                                <button
+                                    key={type}
+                                    onClick={() => setSmsType(type)}
+                                    className={`flex-1 cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
+                                        smsType === type
+                                            ? 'border-primary bg-primary/10 text-primary'
+                                            : 'text-muted-foreground hover:bg-muted'
+                                    }`}
+                                >
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </button>
+                            ))}
                         </div>
 
-                        {smsBalance !== null && !smsLoading && !smsError && (
-                            <p className="text-xs text-muted-foreground">
-                                ≈ <span className="font-bold text-foreground text-sm">
-                                    {Math.floor(parseFloat(smsBalance) / (smsType === 'masking' ? 0.55 : 0.35)).toLocaleString()}
-                                </span> SMS available
+                        {smsEstimate && (
+                            <p className="mt-3 text-xs text-muted-foreground">
+                                ≈ <span className="font-bold text-foreground">{smsEstimate}</span> SMS available
                             </p>
                         )}
                     </div>
-                </div>
 
-                {/* ── Revenue by Service stat ──────────────────────────────── */}
-                <div className="mb-6 rounded-lg bg-card p-4 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-sm font-semibold text-foreground">Revenue by Service</h2>
-                        <select
-                            value={serviceLocFilter}
-                            onChange={(e) => setServiceLocFilter(e.target.value)}
-                            className="h-8 rounded-md border bg-background px-2 text-xs"
-                        >
-                            <option value="">All Locations</option>
-                            {locations.map((l) => (
-                                <option key={l.id} value={String(l.id)}>{l.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {serviceRows.every((r) => r.revenue === 0) ? (
-                        <p className="py-6 text-center text-sm text-muted-foreground">No service revenue data for the selected period.</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {serviceRows.filter((r) => r.revenue > 0).map((row) => (
-                                <div key={row.category}>
-                                    <div className="mb-1 flex items-center justify-between text-xs">
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                                                style={{ backgroundColor: SERVICE_COLORS[row.category] ?? '#9CA3AF' }}
-                                            />
-                                            <span className="font-medium text-foreground">{row.label}</span>
-                                            <span className="text-muted-foreground">({row.order_count} {row.order_count === 1 ? 'order' : 'orders'})</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-muted-foreground">{row.pct}%</span>
-                                            <span className="w-24 text-right font-bold text-foreground">{fmt(row.revenue)}</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                                        <div
-                                            className="h-full rounded-full transition-all duration-300"
-                                            style={{ width: `${row.pct}%`, backgroundColor: SERVICE_COLORS[row.category] ?? '#9CA3AF' }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
+                    {/* Revenue by Service */}
+                    <div className="rounded-xl border bg-card p-5 shadow-sm lg:col-span-2">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-foreground">Revenue by Service</p>
+                                <p className="text-xs text-muted-foreground">Breakdown for selected period</p>
+                            </div>
+                            <div className="relative">
+                                <select
+                                    value={serviceLocFilter}
+                                    onChange={(e) => setServiceLocFilter(e.target.value)}
+                                    className="h-8 cursor-pointer appearance-none rounded-lg border bg-background pl-3 pr-8 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                                >
+                                    <option value="">All Locations</option>
+                                    {locations.map((l) => (
+                                        <option key={l.id} value={String(l.id)}>{l.name}</option>
+                                    ))}
+                                </select>
+                                <svg className="pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                </svg>
+                            </div>
                         </div>
-                    )}
 
-                    <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs">
-                        <span className="font-semibold uppercase tracking-wide text-muted-foreground">Total</span>
-                        <span className="font-bold text-foreground">{fmt(serviceTotal)}</span>
+                        {serviceRows.every((r) => r.revenue === 0) ? (
+                            <p className="py-8 text-center text-sm text-muted-foreground">No service revenue for selected period.</p>
+                        ) : (
+                            <div className="space-y-3.5">
+                                {serviceRows.filter((r) => r.revenue > 0).map((row) => (
+                                    <div key={row.category}>
+                                        <div className="mb-1.5 flex items-center justify-between text-xs">
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className="h-2 w-2 shrink-0 rounded-full"
+                                                    style={{ backgroundColor: SERVICE_COLORS[row.category] ?? '#9CA3AF' }}
+                                                />
+                                                <span className="font-medium text-foreground">{row.label}</span>
+                                                <span className="text-muted-foreground">{row.order_count} {row.order_count === 1 ? 'order' : 'orders'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-muted-foreground">{row.pct}%</span>
+                                                <span className="w-20 text-right font-bold text-foreground">{fmt(row.revenue)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                                            <div
+                                                className="h-full rounded-full transition-all duration-500"
+                                                style={{
+                                                    width: `${row.pct}%`,
+                                                    background: `linear-gradient(90deg, ${SERVICE_COLORS[row.category] ?? '#9CA3AF'}, ${SERVICE_COLORS[row.category] ?? '#9CA3AF'}aa)`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs">
+                            <span className="font-semibold uppercase tracking-wide text-muted-foreground">Total</span>
+                            <span className="font-bold text-foreground">{fmt(serviceTotal)}</span>
+                        </div>
                     </div>
                 </div>
 
                 {/* ── Row C: Monthly Trend + Payment Methods ────────────────── */}
-                <div className="mb-6 grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">6-Month Revenue Trend</h2>
-                        <div className="h-56">
+                <SectionHeader title="Trends & Payments" />
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">6-Month Revenue Trend</p>
+                        <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={monthly_trend}>
                                     <defs>
                                         <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#D4A017" stopOpacity={0.3} />
+                                            <stop offset="5%" stopColor="#D4A017" stopOpacity={0.25} />
                                             <stop offset="95%" stopColor="#D4A017" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                    <XAxis dataKey="month" tickFormatter={monthLabel} stroke="#9CA3AF" fontSize={12} />
-                                    <YAxis stroke="#9CA3AF" fontSize={12} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
-                                    <Tooltip {...TOOLTIP_STYLE} formatter={(v) => fmt(v)} />
-                                    <Area type="monotone" dataKey="revenue" stroke="#D4A017" strokeWidth={2} fill="url(#revGrad)" />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+                                    <XAxis dataKey="month" tickFormatter={monthLabel} stroke="#9CA3AF" fontSize={11} tickLine={false} />
+                                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
+                                    <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Revenue']} />
+                                    <Area type="monotone" dataKey="revenue" stroke="#D4A017" strokeWidth={2.5} fill="url(#revGrad)" dot={false} activeDot={{ r: 4, fill: '#D4A017' }} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Payment Methods</h2>
-                        <div className="h-56">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">Payment Methods</p>
+                        <div className="h-60">
                             {payment_methods.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -361,15 +402,15 @@ export default function Dashboard({
                                             nameKey="method"
                                             cx="50%"
                                             cy="50%"
-                                            innerRadius={55}
-                                            outerRadius={80}
+                                            innerRadius={60}
+                                            outerRadius={85}
                                             paddingAngle={3}
                                         >
                                             {payment_methods.map((_, i) => (
                                                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip {...TOOLTIP_STYLE} formatter={(v) => fmt(v)} />
+                                        <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Amount']} />
                                         <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -380,53 +421,54 @@ export default function Dashboard({
                     </div>
                 </div>
 
-                {/* ── Row D: Weekly Orders + Revenue by Service ─────────────── */}
-                <div className="mb-6 grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Orders (Last 7 Days)</h2>
-                        <div className="h-56">
+                {/* ── Row D: Weekly Orders + Revenue by Service Chart ───────── */}
+                <SectionHeader title="Activity" />
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">Orders — Last 7 Days</p>
+                        <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={weekly_orders}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                    <XAxis dataKey="date" stroke="#9CA3AF" fontSize={12} />
-                                    <YAxis stroke="#9CA3AF" fontSize={12} />
-                                    <Tooltip {...TOOLTIP_STYLE} itemStyle={{ color: '#D4A017' }} />
-                                    <Line type="monotone" dataKey="count" stroke="#D4A017" strokeWidth={3} dot={{ fill: '#D4A017', strokeWidth: 2 }} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+                                    <XAxis dataKey="date" stroke="#9CA3AF" fontSize={11} tickLine={false} />
+                                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                                    <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [v, 'Orders']} />
+                                    <Line type="monotone" dataKey="count" stroke="#D4A017" strokeWidth={2.5} dot={{ fill: '#D4A017', r: 3, strokeWidth: 0 }} activeDot={{ r: 5 }} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Revenue by Service</h2>
-                        <div className="h-56">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">Revenue by Service</p>
+                        <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={revenue_by_service} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                    <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={fmt} />
-                                    <YAxis type="category" dataKey="category" stroke="#9CA3AF" fontSize={12} width={80} />
-                                    <Tooltip {...TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} formatter={(v) => fmt(v)} />
-                                    <Bar dataKey="revenue" fill="#0D1B2A" radius={[0, 4, 4, 0]} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+                                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} tickFormatter={fmt} />
+                                    <YAxis type="category" dataKey="category" stroke="#9CA3AF" fontSize={11} width={85} tickLine={false} axisLine={false} />
+                                    <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Revenue']} />
+                                    <Bar dataKey="revenue" fill="#D4A017" radius={[0, 4, 4, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
                 </div>
 
-                {/* ── Row E: Location Pie + Top Products ───────────────────── */}
-                <div className="mb-6 grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Orders by Location</h2>
-                        <div className="h-56">
+                {/* ── Row E: Location + Top Products ───────────────────────── */}
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">Orders by Location</p>
+                        <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={orders_by_location}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
+                                        innerRadius={65}
+                                        outerRadius={85}
+                                        paddingAngle={4}
                                         dataKey="count"
                                         label={({ name, count }) => `${name}: ${count}`}
                                         labelLine={false}
@@ -435,30 +477,30 @@ export default function Dashboard({
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip {...TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} />
+                                    <Tooltip {...TOOLTIP_STYLE} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="mt-2 flex justify-center gap-4">
+                        <div className="flex flex-wrap justify-center gap-4">
                             {orders_by_location.map((item, index) => (
                                 <div key={item.name} className="flex items-center gap-2">
-                                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                                    <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
                                     <span className="text-xs text-muted-foreground">{item.name}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Top 5 Products</h2>
-                        <div className="h-56">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">Top 5 Products</p>
+                        <div className="h-60">
                             {top_products.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={top_products} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                        <XAxis type="number" stroke="#9CA3AF" fontSize={12} tickFormatter={fmt} />
-                                        <YAxis type="category" dataKey="name" stroke="#9CA3AF" fontSize={11} width={100} />
-                                        <Tooltip {...TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} formatter={(v) => fmt(v)} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+                                        <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} tickFormatter={fmt} />
+                                        <YAxis type="category" dataKey="name" stroke="#9CA3AF" fontSize={11} width={105} tickLine={false} axisLine={false} />
+                                        <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Revenue']} />
                                         <Bar dataKey="revenue" fill="#D4A017" radius={[0, 4, 4, 0]} />
                                     </BarChart>
                                 </ResponsiveContainer>
@@ -470,16 +512,17 @@ export default function Dashboard({
                 </div>
 
                 {/* ── Row F: Status Distribution + Recent Orders ────────────── */}
-                <div className="mb-6 grid gap-4 lg:grid-cols-3">
-                    <div className="rounded-lg bg-card p-4 shadow-sm">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Order Status</h2>
-                        <div className="h-56">
+                <SectionHeader title="Orders Overview" />
+                <div className="grid gap-4 lg:grid-cols-3">
+                    <div className="rounded-xl border bg-card p-5 shadow-sm">
+                        <p className="mb-4 text-sm font-semibold text-foreground">Order Status</p>
+                        <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={order_status_dist} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                    <XAxis type="number" stroke="#9CA3AF" fontSize={12} allowDecimals={false} />
-                                    <YAxis type="category" dataKey="status" stroke="#9CA3AF" fontSize={12} width={72} />
-                                    <Tooltip {...TOOLTIP_STYLE} itemStyle={{ color: '#fff' }} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
+                                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} allowDecimals={false} />
+                                    <YAxis type="category" dataKey="status" stroke="#9CA3AF" fontSize={11} width={75} tickLine={false} axisLine={false} />
+                                    <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [v, 'Orders']} />
                                     <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                                         {order_status_dist.map((entry, i) => (
                                             <Cell key={i} fill={STATUS_CHART_COLORS[entry.status] ?? '#9CA3AF'} />
@@ -490,30 +533,38 @@ export default function Dashboard({
                         </div>
                     </div>
 
-                    <div className="rounded-lg bg-card p-4 shadow-sm lg:col-span-2">
-                        <h2 className="mb-3 text-sm font-semibold text-foreground">Recent Orders</h2>
+                    <div className="rounded-xl border bg-card p-5 shadow-sm lg:col-span-2">
+                        <div className="mb-4 flex items-center justify-between">
+                            <p className="text-sm font-semibold text-foreground">Recent Orders</p>
+                            <Link href="/admin/orders" className="cursor-pointer text-xs font-semibold text-primary hover:underline">
+                                View all →
+                            </Link>
+                        </div>
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y border-b">
+                            <table className="min-w-full">
                                 <thead>
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Order #</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Customer</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Location</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Amount</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                                    <tr className="border-b">
+                                        <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Order</th>
+                                        <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Customer</th>
+                                        <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Location</th>
+                                        <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Amount</th>
+                                        <th className="pb-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y">
+                                <tbody className="divide-y divide-border/50">
                                     {recent_orders.map((order) => (
-                                        <tr key={order.id} className="hover:bg-muted">
-                                            <td className="whitespace-nowrap px-4 py-3">
-                                                <span className="font-mono text-sm font-bold text-primary">{order.order_number}</span>
+                                        <tr key={order.id} className="group transition-colors hover:bg-muted/40">
+                                            <td className="whitespace-nowrap py-3 pr-4">
+                                                <Link href={`/admin/orders/${order.order_number}`} className="cursor-pointer font-mono text-xs font-bold text-primary hover:underline">
+                                                    {order.order_number}
+                                                </Link>
                                             </td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-sm text-foreground">{order.user.name}</td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">{order.location.name}</td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-foreground">{fmt(order.total_amount)}</td>
-                                            <td className="whitespace-nowrap px-4 py-3 text-center">
-                                                <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${STATUS_COLORS[order.status]}`}>
+                                            <td className="whitespace-nowrap py-3 pr-4 text-sm text-foreground">{order.user.name}</td>
+                                            <td className="whitespace-nowrap py-3 pr-4 text-sm text-muted-foreground">{order.location.name}</td>
+                                            <td className="whitespace-nowrap py-3 pr-4 text-right text-sm font-semibold text-foreground">{fmt(order.total_amount)}</td>
+                                            <td className="whitespace-nowrap py-3 text-center">
+                                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status]}`}>
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[order.status]}`} />
                                                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                                 </span>
                                             </td>
@@ -521,11 +572,6 @@ export default function Dashboard({
                                     ))}
                                 </tbody>
                             </table>
-                        </div>
-                        <div className="mt-3 text-center">
-                            <Link href="/admin/orders" className="text-sm font-semibold text-primary hover:underline">
-                                View All Orders →
-                            </Link>
                         </div>
                     </div>
                 </div>
