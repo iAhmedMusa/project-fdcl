@@ -147,7 +147,7 @@ class PhotoStorageController extends Controller
         // Prevent path traversal: reject any .. sequences and require known prefix
         abort_if(str_contains($path, '..'), 400);
         $allowed = false;
-        foreach (['orders/', 'photos/'] as $prefix) {
+        foreach (['orders/', 'photos/', 'old-photo-storage/'] as $prefix) {
             if (str_starts_with($path, $prefix)) {
                 $allowed = true;
                 break;
