@@ -15,6 +15,7 @@ export function LanguageProvider({ children }) {
     useEffect(() => {
         localStorage.setItem('lang', lang);
         document.documentElement.lang = lang;
+        document.documentElement.classList.toggle('lang-bn', lang === 'bn');
     }, [lang]);
 
     const toggleLang = () => setLang((prev) => (prev === 'en' ? 'bn' : 'en'));
