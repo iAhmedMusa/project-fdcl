@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -15,7 +16,7 @@ class SocialAuthController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         $googleUser = Socialite::driver('google')->user();
 
@@ -45,6 +46,8 @@ class SocialAuthController extends Controller
         }
 
         Auth::login($user, remember: true);
+
+        $request->session()->regenerate();
 
         return redirect(route('customer.dashboard'));
     }

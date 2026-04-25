@@ -9,90 +9,107 @@ export default function GuestLayout({ children }) {
     return (
         <div className="flex min-h-screen">
             {/* Left brand panel */}
-            <div className="relative hidden lg:flex lg:w-[45%] xl:w-2/5 flex-col overflow-hidden bg-zinc-950">
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-slate-950 to-black" />
+            <div className="relative hidden lg:flex lg:w-[45%] xl:w-2/5 flex-col overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-950 via-purple-950 to-gray-950" />
 
-                {/* Blue accent glow */}
-                <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl" />
-                <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
+                {/* Glow blobs */}
+                <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl" />
+                <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-violet-500/15 blur-3xl" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
 
-                {/* Grid pattern overlay */}
+                {/* Subtle grid */}
                 <div
-                    className="absolute inset-0 opacity-[0.03]"
+                    className="absolute inset-0 opacity-[0.04]"
                     style={{
                         backgroundImage:
-                            'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
-                        backgroundSize: '40px 40px',
+                            'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
+                        backgroundSize: '48px 48px',
                     }}
                 />
 
                 <div className="relative flex flex-1 flex-col justify-between p-10">
                     {/* Logo */}
-                    <div>
-                        <Link href="/">
-                            <ApplicationLogo className="h-12 w-auto brightness-0 invert" />
-                        </Link>
-                    </div>
+                    <Link href="/" className="flex items-center gap-3">
+                        <ApplicationLogo className="h-12 w-12 rounded-full" />
+                        <div>
+                            <span className="block text-sm font-bold text-white leading-tight">Focus Digital Color Lab</span>
+                            <span className="block text-[10px] font-semibold tracking-widest text-primary uppercase">Premium Photo Studio</span>
+                        </div>
+                    </Link>
 
                     {/* Center content */}
-                    <div className="space-y-6">
-                        <div className="space-y-3">
-                            <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                                <span className="text-xs font-medium tracking-wide text-blue-400">
-                                    Premium Photo Studio
-                                </span>
+                    <div className="space-y-7">
+                        <div className="space-y-4">
+                            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
+                                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                                <span className="text-xs font-medium tracking-wide text-primary">Serving Dhaka since 2009</span>
                             </div>
                             <h1 className="text-4xl font-bold leading-tight text-white">
-                                Professional photography,
+                                Professional photos,
                                 <br />
-                                <span className="text-blue-400">perfectly printed.</span>
+                                <span className="text-primary">Print in 10 minutes.</span>
                             </h1>
-                            <p className="text-base leading-relaxed text-zinc-400">
-                                Professional photo printing & development in Dhaka. Trusted by photographers and families since day one.
+                            <p className="text-sm leading-relaxed text-white/50">
+                                Passport, Visa, NID, school admission — every official photo accepted on first submission. Two studios in Dhaka.
                             </p>
                         </div>
 
-                        {/* Feature list */}
-                        <ul className="space-y-3">
+                        <ul className="space-y-3.5">
                             {[
-                                'High-quality prints & digital processing',
-                                'Fast turnaround, reliable delivery',
-                                'Track your orders in real time',
+                                'Track your order status in real time',
+                                'Reorder any time with your FDCL Photo ID',
+                                'Fujifilm Frontier professional printing',
+                                'bKash payment accepted',
                             ].map((item) => (
-                                <li key={item} className="flex items-center gap-3 text-sm text-zinc-400">
-                                    <svg className="h-4 w-4 shrink-0 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <li key={item} className="flex items-center gap-3 text-sm text-white/60">
+                                    <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
                                     {item}
                                 </li>
                             ))}
                         </ul>
+
+                        {/* Trust badge */}
+                        <div className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+                            <div className="flex -space-x-1.5">
+                                {['bg-violet-500','bg-rose-500','bg-amber-500','bg-cyan-500'].map((c, i) => (
+                                    <div key={i} className={`h-7 w-7 rounded-full border-2 border-gray-900 ${c} flex items-center justify-center text-[10px] font-bold text-white`}>
+                                        {['R','T','A','S'][i]}
+                                    </div>
+                                ))}
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold text-white">50,000+ happy customers</p>
+                                <p className="text-[10px] text-white/40">5.0 ★ on Google</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Footer */}
-                    <p className="text-xs text-zinc-600">
-                        © {new Date().getFullYear()} Focus Digital Color Lab, Dhaka
+                    <p className="text-xs text-white/20">
+                        © {new Date().getFullYear()} Focus Digital Color Lab · Bailey Road &amp; Gulshan, Dhaka
                     </p>
                 </div>
             </div>
 
             {/* Right form panel */}
-            <div className="relative flex flex-1 flex-col items-center justify-center bg-background p-6 sm:p-10">
-                <div className="absolute right-4 top-4">
+            <div className="relative flex-1 overflow-y-auto bg-background">
+                <div className="absolute right-4 top-4 z-10">
                     <ThemeToggle />
                 </div>
 
-                {/* Mobile logo */}
-                <div className="mb-8 lg:hidden">
-                    <Link href="/">
-                        <ApplicationLogo className="h-12 w-auto" />
-                    </Link>
-                </div>
+                <div className="flex min-h-full flex-col items-center justify-center px-6 py-12 sm:px-10" style={{ paddingBottom: 'max(3rem, env(safe-area-inset-bottom))' }}>
+                    {/* Mobile logo */}
+                    <div className="mb-8 lg:hidden flex flex-col items-center gap-2">
+                        <Link href="/">
+                            <ApplicationLogo className="h-14 w-14 rounded-full" />
+                        </Link>
+                        <p className="text-xs font-semibold tracking-widest text-primary uppercase">Focus Digital Color Lab</p>
+                    </div>
 
-                <div className="w-full max-w-md">
-                    {children}
+                    <div className="w-full max-w-md">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>

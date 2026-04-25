@@ -2,8 +2,11 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import VerifyPhoneOtp from './VerifyPhoneOtp';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+import axios from 'axios';
 
 export default function UpdateProfileInformation({
     mustVerifyEmail,
@@ -20,8 +23,45 @@ export default function UpdateProfileInformation({
             address: user.address || '',
         });
 
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [otpError, setOtpError] = useState('');
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [otpPhone, setOtpPhone] = useState('');
+
+    const phoneIsEmpty = !user.phone;
+    const phoneIsChanged = data.phone !== (user.phone || '');
+
+    const handleSendOtp = async () => {
+        if (!data.phone || data.phone === user.phone) return;
+
+        setSendingOtp(true);
+        setOtpError('');
+
+        try {
+            await axios.post(route('profile.phone.send-otp'), {
+                phone: data.phone,
+            });
+            setOtpPhone(data.phone);
+            setShowOtpModal(true);
+        } catch (err) {
+            const msg = err.response?.data?.errors?.phone?.[0]
+                || err.response?.data?.message
+                || 'Failed to send OTP.';
+            setOtpError(msg);
+        } finally {
+            setSendingOtp(false);
+        }
+    };
+
+    const handleOtpSuccess = (verifiedPhone) => {
+        setShowOtpModal(false);
+        setData('phone', verifiedPhone);
+        window.location.reload();
+    };
+
     const submit = (e) => {
         e.preventDefault();
+        if (phoneIsChanged) return;
         patch(route('profile.update'));
     };
 
@@ -33,6 +73,18 @@ export default function UpdateProfileInformation({
                     Update your account's profile information and email address.
                 </p>
             </header>
+
+            {phoneIsEmpty && (
+                <div className="mt-3 flex items-start gap-2.5 rounded-lg border border-yellow-500/30 bg-yellow-50 px-4 py-3 dark:bg-yellow-950/40">
+                    <svg className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    <div>
+                        <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Add your phone number</p>
+                        <p className="text-xs text-yellow-700 dark:text-yellow-400">A verified phone number is required to place and track orders.</p>
+                    </div>
+                </div>
+            )}
 
             <form onSubmit={submit} className="mt-4 space-y-3">
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -66,16 +118,40 @@ export default function UpdateProfileInformation({
                 <div className="grid gap-3 sm:grid-cols-2">
                     <div>
                         <InputLabel htmlFor="phone" value="Phone Number" />
-                        <TextInput
-                            id="phone"
-                            type="tel"
-                            className="mt-1"
-                            value={data.phone}
-                            onChange={(e) => setData('phone', e.target.value)}
-                            placeholder="+880 1XXX-XXXXXX"
-                            autoComplete="tel"
-                        />
-                        <InputError className="mt-1" message={errors.phone} />
+                        <div className="mt-1 flex gap-2">
+                            <TextInput
+                                id="phone"
+                                type="tel"
+                                className="flex-1"
+                                value={data.phone}
+                                onChange={(e) => setData('phone', e.target.value.replace(/[^\d+]/g, ''))}
+                                placeholder="01XXXXXXXXX"
+                                autoComplete="tel"
+                                inputMode="numeric"
+                            />
+                            {phoneIsChanged && data.phone && (
+                                <PrimaryButton
+                                    type="button"
+                                    onClick={handleSendOtp}
+                                    disabled={sendingOtp}
+                                    className="shrink-0"
+                                >
+                                    {sendingOtp ? (
+                                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                    ) : 'Verify'}
+                                </PrimaryButton>
+                            )}
+                        </div>
+                        {otpError && <InputError className="mt-1" message={otpError} />}
+                        {phoneIsChanged && data.phone && (
+                            <p className="mt-1 text-xs text-muted-foreground">Save other changes first. Phone changes require OTP verification.</p>
+                        )}
+                        {!phoneIsChanged && !phoneIsEmpty && (
+                            <InputError className="mt-1" message={errors.phone} />
+                        )}
                     </div>
                     <div>
                         <InputLabel htmlFor="address" value="Delivery Address" />
@@ -113,7 +189,7 @@ export default function UpdateProfileInformation({
                 )}
 
                 <div className="flex items-center gap-3 pt-1">
-                    <PrimaryButton disabled={processing}>Save changes</PrimaryButton>
+                    <PrimaryButton disabled={processing || phoneIsChanged}>Save changes</PrimaryButton>
                     <Transition
                         show={recentlySuccessful}
                         enter="transition ease-in-out"
@@ -125,6 +201,14 @@ export default function UpdateProfileInformation({
                     </Transition>
                 </div>
             </form>
+
+            {showOtpModal && (
+                <VerifyPhoneOtp
+                    phone={otpPhone}
+                    onSuccess={handleOtpSuccess}
+                    onClose={() => setShowOtpModal(false)}
+                />
+            )}
         </section>
     );
 }
