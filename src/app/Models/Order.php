@@ -26,6 +26,7 @@ class Order extends Model
         'special_instructions',
         'paper_type',
         'notified_at',
+        'bkash_reference',
     ];
 
     protected function casts(): array

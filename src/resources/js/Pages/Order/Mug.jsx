@@ -1,6 +1,7 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 
 export default function Mug({ products, locations }) {
     const [activeTab, setActiveTab] = useState('upload');
@@ -19,6 +20,7 @@ export default function Mug({ products, locations }) {
     const [selectedLocation, setSelectedLocation] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
@@ -27,7 +29,7 @@ export default function Mug({ products, locations }) {
     const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
 
     const hasPhoto = (activeTab === 'upload' && uploadedFile) || (activeTab === 'source' && photoSource.trim());
-    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation;
+    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation && bkashRef.trim();
 
     function handleFileChange(e) {
         const file = e.target.files[0];
@@ -58,6 +60,7 @@ export default function Mug({ products, locations }) {
             formData.append('product_id', selectedProduct);
             formData.append('quantity', quantity);
             formData.append('location_id', selectedLocation);
+            formData.append('bkash_reference', bkashRef);
             if (itemNotes) formData.append('item_specific_notes', itemNotes);
             if (specialInstructions) formData.append('special_instructions', specialInstructions);
 
@@ -75,6 +78,7 @@ export default function Mug({ products, locations }) {
                 location_id: parseInt(selectedLocation),
                 item_specific_notes: itemNotes || null,
                 special_instructions: specialInstructions || null,
+                bkash_reference: bkashRef,
             }, {
                 onError: (errs) => setErrors(errs),
                 onFinish: () => setSubmitting(false),
@@ -325,10 +329,18 @@ export default function Mug({ products, locations }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 dark:text-gray-400">Payment:</span>
-                                <span className="font-medium text-amber-600">Pay at pickup</span>
+                                <span className="font-medium text-pink-600 dark:text-pink-400">bKash</span>
                             </div>
                         </div>
                     </div>
+
+                    {/* bKash Payment */}
+                    <BkashPaymentSection
+                        total={total}
+                        value={bkashRef}
+                        onChange={setBkashRef}
+                        error={errors.bkash_reference}
+                    />
 
                     {/* Upload progress */}
                     {uploadProgress !== null && (

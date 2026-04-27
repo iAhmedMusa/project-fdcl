@@ -1,6 +1,7 @@
 import LandingLayout from '@/Layouts/LandingLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 
 const STORAGE_KEY = 'pending_mug_order';
 
@@ -17,6 +18,7 @@ export default function Mug({ products, locations }) {
     const [selectedLocation, setSelectedLocation] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
@@ -34,6 +36,7 @@ export default function Mug({ products, locations }) {
                 if (data.selectedLocation) setSelectedLocation(data.selectedLocation);
                 if (data.itemNotes) setItemNotes(data.itemNotes);
                 if (data.specialInstructions) setSpecialInstructions(data.specialInstructions);
+                if (data.bkashRef) setBkashRef(data.bkashRef);
                 localStorage.removeItem(STORAGE_KEY);
             }
         } catch {}
@@ -43,7 +46,7 @@ export default function Mug({ products, locations }) {
     const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
 
     const hasPhoto = (activeTab === 'upload' && uploadedFile) || (activeTab === 'source' && photoSource.trim());
-    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation;
+    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation && (!auth.user || bkashRef.trim());
 
     function handleFileChange(e) {
         const file = e.target.files[0];
@@ -75,6 +78,7 @@ export default function Mug({ products, locations }) {
                 selectedLocation,
                 itemNotes,
                 specialInstructions,
+                bkashRef,
             }));
             setShowLoginModal(true);
             return;
@@ -88,6 +92,7 @@ export default function Mug({ products, locations }) {
             formData.append('product_id', selectedProduct);
             formData.append('quantity', quantity);
             formData.append('location_id', selectedLocation);
+            formData.append('bkash_reference', bkashRef);
             if (itemNotes) formData.append('item_specific_notes', itemNotes);
             if (specialInstructions) formData.append('special_instructions', specialInstructions);
 
@@ -109,6 +114,7 @@ export default function Mug({ products, locations }) {
                 location_id: parseInt(selectedLocation),
                 item_specific_notes: itemNotes || null,
                 special_instructions: specialInstructions || null,
+                bkash_reference: bkashRef,
             }, {
                 onError: (errs) => setErrors(errs),
                 onFinish: () => {
@@ -121,7 +127,7 @@ export default function Mug({ products, locations }) {
 
     return (
         <LandingLayout>
-            <Head title="Photo Mug - FDCL" />
+            <Head title="Mug Print - FDCL" />
 
             <div className="mx-auto max-w-2xl px-4 pt-32 pb-16">
                 <Link href="/#services" className="mb-4 inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary dark:text-gray-400 dark:hover:text-white">
@@ -132,7 +138,7 @@ export default function Mug({ products, locations }) {
                 </Link>
 
                 <div className="mb-5">
-                    <h1 className="text-lg font-semibold text-text-primary dark:text-white">Photo Mug</h1>
+                    <h1 className="text-lg font-semibold text-text-primary dark:text-white">Mug Print</h1>
                     <p className="text-sm text-text-secondary dark:text-gray-400">Order a personalized photo mug.</p>
                 </div>
 
@@ -347,10 +353,19 @@ export default function Mug({ products, locations }) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Payment:</span>
-                                    <span className="font-medium text-amber-600">Pay at pickup</span>
+                                    <span className="font-medium text-pink-600 dark:text-pink-400">bKash</span>
                                 </div>
                             </div>
                         </div>
+
+                        {auth.user && (
+                            <BkashPaymentSection
+                                total={total}
+                                value={bkashRef}
+                                onChange={setBkashRef}
+                                error={errors.bkash_reference}
+                            />
+                        )}
 
                         {uploadProgress !== null && (
                             <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">

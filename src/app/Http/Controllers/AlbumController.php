@@ -61,6 +61,7 @@ class AlbumController extends Controller
             'photo_source' => 'nullable|string|max:1000',
             'item_specific_notes' => 'nullable|string|max:1000',
             'special_instructions' => 'nullable|string|max:500',
+            'bkash_reference' => 'required|string|max:100',
         ]);
 
         $orderNumber = $this->orderNumbers->generate();
@@ -79,6 +80,7 @@ class AlbumController extends Controller
                 'total_amount' => $product->price * $validated['quantity'],
                 'amount_paid' => 0,
                 'special_instructions' => $validated['special_instructions'] ?? null,
+                'bkash_reference' => $validated['bkash_reference'],
             ]);
 
             OrderItem::create([
