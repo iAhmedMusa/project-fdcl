@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\OrderPlaced;
+use App\Http\Controllers\Concerns\HandlesDelivery;
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Location;
 use App\Models\Order;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class OrderController extends Controller
 {
+    use HandlesDelivery;
+
     public function __construct(
         private OrderNumberGenerator $orderNumbers,
         private PhotoStorage $photoStorage,
@@ -33,49 +36,49 @@ class OrderController extends Controller
         $locations = Location::where('is_active', true)->get(['id', 'name', 'address']);
 
         return Inertia::render('Order/Wizard', [
-            'products' => $products,
-            'locations' => $locations,
+            'products'     => $products,
+            'locations'    => $locations,
+            'deliveryFees' => $this->deliveryFees(),
         ]);
     }
 
     public function store(StoreOrderRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $user = $request->user();
+        $user      = $request->user();
+        $delivery  = $this->deliveryOrderFields($validated);
 
-        $order = DB::transaction(function () use ($validated, $user) {
+        $order = DB::transaction(function () use ($validated, $user, $delivery) {
             $orderNumber = $this->orderNumbers->generate();
 
-            // Resolve products and compute total
             $itemsData = collect($validated['items'])->map(function ($item) {
                 $product = Product::findOrFail($item['product_id']);
 
                 return [
-                    'product' => $product,
-                    'quantity' => $item['quantity'],
+                    'product'    => $product,
+                    'quantity'   => $item['quantity'],
                     'unit_price' => $product->price,
-                    'subtotal' => $product->price * $item['quantity'],
-                    'photos' => $item['photos'] ?? [],
+                    'subtotal'   => $product->price * $item['quantity'],
+                    'photos'     => $item['photos'] ?? [],
                 ];
             });
 
-            $totalAmount = $itemsData->sum('subtotal');
+            $productTotal = $itemsData->sum('subtotal');
 
             $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => $user->id,
-                'location_id' => $validated['location_id'],
-                'pickup_type' => $validated['pickup_type'] ?? 'studio',
-                'status' => 'pending',
-                'payment_status' => 'unpaid',
-                'total_amount' => $totalAmount,
-                'amount_paid' => 0,
+                'order_number'         => $orderNumber,
+                'user_id'              => $user->id,
+                'status'               => 'pending',
+                'payment_status'       => 'unpaid',
+                'total_amount'         => $productTotal + $delivery['delivery_fee'],
+                'amount_paid'          => 0,
                 'special_instructions' => $validated['special_instructions'] ?? null,
-                'bkash_reference' => $validated['bkash_reference'],
+                'bkash_reference'      => $validated['bkash_reference'],
+                ...$delivery,
             ]);
 
-            $allPhotoPaths = [];
-            $hasPhotoStudio = false;
+            $allPhotoPaths          = [];
+            $hasPhotoStudio         = false;
             $photoStudioRegistryCode = null;
 
             foreach ($itemsData as $itemData) {
@@ -84,24 +87,24 @@ class OrderController extends Controller
                 if ($itemData['product']->category === 'photo_studio' && count($itemData['photos']) > 0) {
                     $photoStudioRegistryCode = $this->orderNumbers->generateRegistryCode();
                     foreach ($itemData['photos'] as $photo) {
-                        $path = $this->photoStorage->store($photo, $photoStudioRegistryCode, $orderNumber);
+                        $path         = $this->photoStorage->store($photo, $photoStudioRegistryCode, $orderNumber);
                         $photoPaths[] = $path;
                         $allPhotoPaths[] = $path;
                     }
                 } else {
                     foreach ($itemData['photos'] as $photo) {
-                        $path = $this->photoStorage->storeWithOrderNumber($photo, $orderNumber);
+                        $path         = $this->photoStorage->storeWithOrderNumber($photo, $orderNumber);
                         $photoPaths[] = $path;
                         $allPhotoPaths[] = $path;
                     }
                 }
 
                 OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $itemData['product']->id,
-                    'quantity' => $itemData['quantity'],
-                    'unit_price' => $itemData['unit_price'],
-                    'subtotal' => $itemData['subtotal'],
+                    'order_id'    => $order->id,
+                    'product_id'  => $itemData['product']->id,
+                    'quantity'    => $itemData['quantity'],
+                    'unit_price'  => $itemData['unit_price'],
+                    'subtotal'    => $itemData['subtotal'],
                     'photo_paths' => $photoPaths ?: null,
                 ]);
 
@@ -110,18 +113,19 @@ class OrderController extends Controller
                 }
             }
 
-            // Create PhotoRegistry for photo_studio orders
             if ($hasPhotoStudio && count($allPhotoPaths) > 0) {
                 PhotoRegistry::create([
                     'registry_code' => $photoStudioRegistryCode,
-                    'user_id' => $user->id,
-                    'order_id' => $order->id,
-                    'photo_paths' => $allPhotoPaths,
+                    'user_id'       => $user->id,
+                    'order_id'      => $order->id,
+                    'photo_paths'   => $allPhotoPaths,
                 ]);
             }
 
             return $order;
         });
+
+        $this->saveAddressToProfile($user, $validated);
 
         OrderPlaced::dispatch($order);
 

@@ -5,6 +5,7 @@ const STATUS_COLORS = {
     pending: 'bg-secondary text-secondary-foreground',
     processing: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     ready: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    out_for_delivery: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
     delivered: 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
     cancelled: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 };
@@ -136,8 +137,8 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                         <span className="font-mono text-sm font-semibold text-primary">
                                             {order.order_number}
                                         </span>
-                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status]}`}>
-                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                        <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status] ?? 'bg-secondary text-secondary-foreground'}`}>
+                                            {order.status === 'out_for_delivery' ? 'On the Way' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                         </span>
                                         <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_COLORS[order.payment_status]}`}>
                                             {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
@@ -145,7 +146,10 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                     </div>
                                     <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                         <span>{order.created_at}</span>
-                                        {order.location && <span>{order.location.name}</span>}
+                                        {order.pickup_type === 'delivery'
+                                            ? <span>{order.steadfast_tracking_code ? `Tracking: ${order.steadfast_tracking_code}` : 'Home Delivery'}</span>
+                                            : order.location && <span>{order.location.name}</span>
+                                        }
                                         {order.items_summary && <span>{order.items_summary}</span>}
                                     </div>
                                 </div>

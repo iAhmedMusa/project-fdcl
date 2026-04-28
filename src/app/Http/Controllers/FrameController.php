@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\OrderPlaced;
+use App\Http\Controllers\Concerns\HandlesDelivery;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -18,6 +19,8 @@ use Inertia\Response;
 
 class FrameController extends Controller
 {
+    use HandlesDelivery;
+
     public function __construct(
         private OrderNumberGenerator $orderNumbers,
         private PhotoStorage $photoStorage,
@@ -33,8 +36,9 @@ class FrameController extends Controller
             ->get(['id', 'name', 'address']);
 
         return Inertia::render('Landing/Frame', [
-            'products' => $products,
-            'locations' => $locations,
+            'products'     => $products,
+            'locations'    => $locations,
+            'deliveryFees' => $this->deliveryFees(),
         ]);
     }
 
@@ -48,88 +52,84 @@ class FrameController extends Controller
             ->get(['id', 'name', 'address']);
 
         return Inertia::render('Order/Frame', [
-            'products' => $products,
-            'locations' => $locations,
+            'products'     => $products,
+            'locations'    => $locations,
+            'deliveryFees' => $this->deliveryFees(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $user        = $request->user();
         $orderNumber = $this->orderNumbers->generate();
+        $hasUpload   = $request->hasFile('photo');
 
-        $hasPhotoUpload = $request->hasFile('photo');
+        $extraRules = [
+            'product_id'           => 'required|exists:products,id',
+            'quantity'             => 'required|integer|min:1|max:100',
+            'item_specific_notes'  => 'nullable|string|max:1000',
+            'special_instructions' => 'nullable|string|max:500',
+            'bkash_reference'      => 'required|string|max:100',
+        ];
 
-        if ($hasPhotoUpload) {
-            $validated = $request->validate([
-                'photo' => 'required|image|max:10240',
-                'product_id' => 'required|exists:products,id',
-                'quantity' => 'required|integer|min:1|max:100',
-                'location_id' => 'required|exists:locations,id',
-                'item_specific_notes' => 'nullable|string|max:1000',
-                'special_instructions' => 'nullable|string|max:500',
-                'bkash_reference' => 'required|string|max:100',
-            ]);
-
-            $registryCode = $this->orderNumbers->generateRegistryCode();
-            $product = Product::findOrFail($validated['product_id']);
-            $photoPath = $this->photoStorage->store($request->file('photo'), $registryCode, $orderNumber);
-            $photoPaths = [$photoPath];
+        if ($hasUpload) {
+            $extraRules['photo'] = 'required|image|max:10240';
         } else {
-            $validated = $request->validate([
-                'photo_source' => 'required|string|max:1000',
-                'product_id' => 'required|exists:products,id',
-                'quantity' => 'required|integer|min:1|max:100',
-                'location_id' => 'required|exists:locations,id',
-                'item_specific_notes' => 'nullable|string|max:1000',
-                'special_instructions' => 'nullable|string|max:500',
-                'bkash_reference' => 'required|string|max:100',
-            ]);
-
-            $product = Product::findOrFail($validated['product_id']);
-            $photoPaths = [];
+            $extraRules['photo_source'] = 'required|string|max:1000';
         }
 
-        $order = DB::transaction(function () use ($user, $product, $validated, $orderNumber, $hasPhotoUpload, $photoPaths, &$registryCode) {
-            $location = Location::findOrFail($validated['location_id']);
+        $validated    = $request->validate(array_merge($this->deliveryRules(), $extraRules));
+        $product      = Product::findOrFail($validated['product_id']);
+        $delivery     = $this->deliveryOrderFields($validated);
+        $productTotal = $product->price * $validated['quantity'];
 
+        $registryCode = null;
+        $photoPaths   = [];
+
+        if ($hasUpload) {
+            $registryCode = $this->orderNumbers->generateRegistryCode();
+            $photoPath    = $this->photoStorage->store($request->file('photo'), $registryCode, $orderNumber);
+            $photoPaths   = [$photoPath];
+        }
+
+        $order = DB::transaction(function () use ($user, $product, $validated, $orderNumber, $delivery, $productTotal, $hasUpload, $photoPaths, $registryCode) {
             $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => $user->id,
-                'location_id' => $location->id,
-                'pickup_type' => 'studio',
-                'status' => 'pending',
-                'payment_status' => 'unpaid',
-                'total_amount' => $product->price * $validated['quantity'],
-                'amount_paid' => 0,
+                'order_number'         => $orderNumber,
+                'user_id'              => $user->id,
+                'status'               => 'pending',
+                'payment_status'       => 'unpaid',
+                'total_amount'         => $productTotal + $delivery['delivery_fee'],
+                'amount_paid'          => 0,
                 'special_instructions' => $validated['special_instructions'] ?? null,
-                'bkash_reference' => $validated['bkash_reference'],
+                'bkash_reference'      => $validated['bkash_reference'],
+                ...$delivery,
             ]);
 
             OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $product->id,
-                'quantity' => $validated['quantity'],
-                'unit_price' => $product->price,
-                'subtotal' => $product->price * $validated['quantity'],
-                'photo_paths' => $photoPaths ?: null,
-                'photo_source' => $validated['photo_source'] ?? null,
+                'order_id'            => $order->id,
+                'product_id'          => $product->id,
+                'quantity'            => $validated['quantity'],
+                'unit_price'          => $product->price,
+                'subtotal'            => $productTotal,
+                'photo_paths'         => $photoPaths ?: null,
+                'photo_source'        => $validated['photo_source'] ?? null,
                 'item_specific_notes' => $validated['item_specific_notes'] ?? null,
             ]);
 
-            if ($hasPhotoUpload && $registryCode) {
+            if ($hasUpload && $registryCode) {
                 $registry = PhotoRegistry::create([
                     'registry_code' => $registryCode,
-                    'user_id' => $user->id,
-                    'photo_paths' => $photoPaths,
-                    'expires_at' => now()->addYear(),
+                    'user_id'       => $user->id,
+                    'photo_paths'   => $photoPaths,
+                    'expires_at'    => now()->addYear(),
                 ]);
-
                 $order->photoRegistries()->attach($registry->id);
             }
 
             return $order;
         });
+
+        $this->saveAddressToProfile($user, $validated);
 
         OrderPlaced::dispatch($order->load(['user', 'location', 'items.product']));
 

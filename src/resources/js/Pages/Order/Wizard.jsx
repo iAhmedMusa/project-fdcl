@@ -74,24 +74,29 @@ const SERVICE_DEFS = [
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function categoryForService(service) {
-    return SERVICE_DEFS.find((s) => s.category === service)?.category;
-}
-
 function allowsMultiplePhotos(category) {
     return category === 'album' || category === 'frame';
 }
 
 // ─── Wizard ─────────────────────────────────────────────────────────────────
 
-export default function Wizard({ products, locations }) {
+export default function Wizard({ products, locations, deliveryFees }) {
     const { auth } = usePage().props;
 
     const [step, setStep] = useState(1);
     const [service, setService] = useState(null);
     const [items, setItems] = useState({}); // { productId: { quantity, files: [] } }
-    const [locationId, setLocationId] = useState(locations[0]?.id || '');
+
+    // Delivery state
     const [pickupType, setPickupType] = useState('studio');
+    const [locationId, setLocationId] = useState('');
+    const [deliveryType, setDeliveryType] = useState('regular');
+    const [flat, setFlat] = useState('');
+    const [road, setRoad] = useState('');
+    const [block, setBlock] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [deliveryInstructions, setDeliveryInstructions] = useState('');
+
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -120,11 +125,20 @@ export default function Wizard({ products, locations }) {
 
     const locationName = locations.find((l) => l.id === parseInt(locationId))?.name;
 
+    const deliveryAddressComplete = flat.trim() && road.trim() && postalCode.trim();
+    const deliveryFee = pickupType === 'delivery'
+        ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
+        : 0;
+
     // ─── Step navigation ─────────────────────────────────────────────────
 
     function canAdvance() {
         if (step === 1) return !!service;
-        if (step === 2) return activeItems.length > 0 && locationId;
+        if (step === 2) {
+            if (activeItems.length === 0) return false;
+            if (pickupType === 'studio') return !!locationId;
+            return !!(deliveryAddressComplete && deliveryType);
+        }
         if (step === 3) return true;
         if (step === 4) return true;
         return false;
@@ -165,8 +179,14 @@ export default function Wizard({ products, locations }) {
         setSubmitting(true);
 
         const payload = {
-            location_id: parseInt(locationId),
             pickup_type: pickupType,
+            location_id: pickupType === 'studio' ? parseInt(locationId) : null,
+            delivery_type: pickupType === 'delivery' ? deliveryType : null,
+            flat: pickupType === 'delivery' ? flat : null,
+            road: pickupType === 'delivery' ? road : null,
+            block: pickupType === 'delivery' ? block : null,
+            postal_code: pickupType === 'delivery' ? postalCode : null,
+            delivery_instructions: pickupType === 'delivery' ? deliveryInstructions : null,
             special_instructions: specialInstructions || null,
             bkash_reference: bkashRef,
             items: activeItems.map((item) => {
@@ -218,6 +238,14 @@ export default function Wizard({ products, locations }) {
                         setLocationId={setLocationId}
                         pickupType={pickupType}
                         setPickupType={setPickupType}
+                        deliveryType={deliveryType}
+                        setDeliveryType={setDeliveryType}
+                        flat={flat} setFlat={setFlat}
+                        road={road} setRoad={setRoad}
+                        block={block} setBlock={setBlock}
+                        postalCode={postalCode} setPostalCode={setPostalCode}
+                        deliveryInstructions={deliveryInstructions} setDeliveryInstructions={setDeliveryInstructions}
+                        deliveryFees={deliveryFees}
                     />
                 )}
                 {step === 3 && (
@@ -235,6 +263,8 @@ export default function Wizard({ products, locations }) {
                         allProducts={allProducts}
                         locationName={locationName}
                         pickupType={pickupType}
+                        deliveryType={deliveryType}
+                        deliveryFee={deliveryFee}
                         specialInstructions={specialInstructions}
                         setSpecialInstructions={setSpecialInstructions}
                     />
@@ -243,6 +273,7 @@ export default function Wizard({ products, locations }) {
                     <Step5
                         activeItems={activeItems}
                         allProducts={allProducts}
+                        deliveryFee={deliveryFee}
                         bkashRef={bkashRef}
                         setBkashRef={setBkashRef}
                         auth={auth}
@@ -353,7 +384,18 @@ function Step1({ service, onSelect }) {
     );
 }
 
-function Step2({ products, items, setQty, locations, locationId, setLocationId, pickupType, setPickupType }) {
+const inputDark = 'w-full rounded-lg border border-white/20 bg-navy-light px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold';
+
+function Step2({
+    products, items, setQty, locations,
+    locationId, setLocationId,
+    pickupType, setPickupType,
+    deliveryType, setDeliveryType,
+    flat, setFlat, road, setRoad, block, setBlock,
+    postalCode, setPostalCode,
+    deliveryInstructions, setDeliveryInstructions,
+    deliveryFees,
+}) {
     return (
         <div>
             <h2 className="text-xl font-bold text-white sm:text-2xl">
@@ -422,7 +464,7 @@ function Step2({ products, items, setQty, locations, locationId, setLocationId, 
                 })}
             </div>
 
-            {/* Delivery Type */}
+            {/* Pickup / Delivery Toggle */}
             <div className="mt-6">
                 <label className="block text-sm font-medium text-white/60">
                     Delivery Method
@@ -455,7 +497,7 @@ function Step2({ products, items, setQty, locations, locationId, setLocationId, 
                     <button
                         type="button"
                         onClick={() => setPickupType('delivery')}
-                        className={`relative rounded-lg border p-4 text-left transition-all ${
+                        className={`rounded-lg border p-4 text-left transition-all ${
                             pickupType === 'delivery'
                                 ? 'border-gold bg-gold/10'
                                 : 'border-white/20 bg-white/[0.03] hover:border-white/40'
@@ -471,37 +513,103 @@ function Step2({ products, items, setQty, locations, locationId, setLocationId, 
                             </div>
                             <div>
                                 <p className="text-sm font-semibold text-white">Home Delivery</p>
-                                <p className="text-xs text-white/40">Delivered to your address</p>
+                                <p className="text-xs text-white/40">Steadfast Courier</p>
                             </div>
                         </div>
-                        {pickupType === 'delivery' && (
-                            <div className="mt-2 rounded-lg border border-gold/20 bg-gold/5 px-2.5 py-1.5">
-                                <p className="text-xs text-gold">
-                                    Coming soon — pricing TBD
-                                </p>
-                            </div>
-                        )}
                     </button>
                 </div>
             </div>
 
-            {/* Location Dropdown */}
-            <div className="mt-6">
-                <label className="block text-sm font-medium text-white/60">
-                    Pickup Location
-                </label>
-                <select
-                    value={locationId}
-                    onChange={(e) => setLocationId(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-white/20 bg-navy-light px-3 py-2.5 text-sm text-white focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
-                >
-                    {locations.map((loc) => (
-                        <option key={loc.id} value={loc.id}>
-                            {loc.name} — {loc.address}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            {/* Studio — location dropdown */}
+            {pickupType === 'studio' && (
+                <div className="mt-4">
+                    <label className="block text-sm font-medium text-white/60">
+                        Pickup Location <span className="text-red-400">*</span>
+                    </label>
+                    <select
+                        value={locationId}
+                        onChange={(e) => setLocationId(e.target.value)}
+                        className={inputDark + ' mt-1.5'}
+                    >
+                        <option value="">Select studio...</option>
+                        {locations.map((loc) => (
+                            <option key={loc.id} value={loc.id}>
+                                {loc.name} — {loc.address}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {/* Delivery — type + address */}
+            {pickupType === 'delivery' && (
+                <div className="mt-4 space-y-4">
+                    {/* Delivery type */}
+                    <div>
+                        <label className="block text-sm font-medium text-white/60">
+                            Delivery Speed <span className="text-red-400">*</span>
+                        </label>
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setDeliveryType('regular')}
+                                className={`rounded-lg border p-3 text-left transition-all ${
+                                    deliveryType === 'regular'
+                                        ? 'border-gold bg-gold/10'
+                                        : 'border-white/20 bg-white/[0.03] hover:border-white/40'
+                                }`}
+                            >
+                                <p className={`text-sm font-semibold ${deliveryType === 'regular' ? 'text-gold' : 'text-white'}`}>Regular</p>
+                                <p className="text-xs text-white/40">2–3 days</p>
+                                <p className={`mt-1 text-sm font-bold ${deliveryType === 'regular' ? 'text-gold' : 'text-white'}`}>+৳{deliveryFees.regular}</p>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDeliveryType('express')}
+                                className={`rounded-lg border p-3 text-left transition-all ${
+                                    deliveryType === 'express'
+                                        ? 'border-gold bg-gold/10'
+                                        : 'border-white/20 bg-white/[0.03] hover:border-white/40'
+                                }`}
+                            >
+                                <p className={`text-sm font-semibold ${deliveryType === 'express' ? 'text-gold' : 'text-white'}`}>Express</p>
+                                <p className="text-xs text-white/40">Next day</p>
+                                <p className={`mt-1 text-sm font-bold ${deliveryType === 'express' ? 'text-gold' : 'text-white'}`}>+৳{deliveryFees.express}</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Address */}
+                    <div>
+                        <label className="block text-sm font-medium text-white/60">
+                            Delivery Address <span className="text-red-400">*</span>
+                        </label>
+                        <div className="mt-2 space-y-2">
+                            <input type="text" value={flat} onChange={(e) => setFlat(e.target.value)} placeholder="Flat / Apt / House No." className={inputDark} />
+                            <input type="text" value={road} onChange={(e) => setRoad(e.target.value)} placeholder="Road / Street" className={inputDark} />
+                            <input type="text" value={block} onChange={(e) => setBlock(e.target.value)} placeholder="Block / Avenue / Area (optional)" className={inputDark} />
+                            <div className="grid grid-cols-2 gap-2">
+                                <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postal Code" className={inputDark} />
+                                <input type="text" value="Dhaka" disabled className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/30" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Delivery instructions */}
+                    <div>
+                        <label className="block text-sm font-medium text-white/60">
+                            Note for Delivery Man <span className="text-white/30 font-normal">(Optional)</span>
+                        </label>
+                        <textarea
+                            value={deliveryInstructions}
+                            onChange={(e) => setDeliveryInstructions(e.target.value)}
+                            placeholder="e.g. Call before arriving, leave with guard..."
+                            rows={2}
+                            className={inputDark + ' mt-1.5 resize-none'}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -568,6 +676,8 @@ function Step4({
     allProducts,
     locationName,
     pickupType,
+    deliveryType,
+    deliveryFee,
     specialInstructions,
     setSpecialInstructions,
 }) {
@@ -586,6 +696,8 @@ function Step4({
                     products={allProducts}
                     locationName={locationName}
                     pickupType={pickupType}
+                    deliveryType={deliveryType}
+                    deliveryFee={deliveryFee}
                 />
             </div>
 
@@ -606,11 +718,12 @@ function Step4({
     );
 }
 
-function Step5({ activeItems, allProducts, bkashRef, setBkashRef, auth, submitting, onSubmit }) {
-    const total = activeItems.reduce((sum, item) => {
+function Step5({ activeItems, allProducts, deliveryFee, bkashRef, setBkashRef, auth, submitting, onSubmit }) {
+    const productTotal = activeItems.reduce((sum, item) => {
         const product = allProducts.find((p) => p.id === item.product_id);
         return sum + (product ? parseFloat(product.price) * item.quantity : 0);
     }, 0);
+    const total = productTotal + deliveryFee;
 
     return (
         <div>

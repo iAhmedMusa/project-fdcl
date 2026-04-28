@@ -12,6 +12,10 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
     const [uploadProgress, setUploadProgress] = useState({});
     const [smsSending, setSmsSending] = useState(null);
     const [smsMessage, setSmsMessage] = useState(null);
+    const [showDispatchModal, setShowDispatchModal] = useState(false);
+    const [dispatchItemType, setDispatchItemType] = useState('parcel');
+    const [dispatchWeight, setDispatchWeight] = useState('0.5');
+    const [dispatchSubmitting, setDispatchSubmitting] = useState(false);
 
     const sendSms = async (type) => {
         const routeName = type === 'ready' ? 'staff.orders.ready-sms' : 'staff.orders.invoice-sms';
@@ -52,6 +56,19 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                 setShowPaymentForm(false);
                 setData({ amount: order.balance.toFixed(2), method: 'cash', reference: '', notes: '' });
             },
+        });
+    };
+
+    const handleDispatch = (e) => {
+        e.preventDefault();
+        setDispatchSubmitting(true);
+        router.post(`/staff/orders/${order.id}/dispatch`, {
+            item_type: dispatchItemType,
+            weight: parseFloat(dispatchWeight),
+        }, {
+            preserveScroll: true,
+            onSuccess: () => setShowDispatchModal(false),
+            onFinish: () => setDispatchSubmitting(false),
         });
     };
 
@@ -96,11 +113,15 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
             pending: ['processing', 'cancelled'],
             processing: ['ready', 'cancelled'],
             ready: ['delivered', 'cancelled'],
+            out_for_delivery: ['delivered', 'cancelled'],
             delivered: [],
             cancelled: [],
         };
         return transitions[order.status]?.includes(newStatus) || false;
     };
+
+    const isDeliveryOrder = order.pickup_type === 'delivery';
+    const canDispatch = isDeliveryOrder && order.status === 'ready' && !order.steadfast_consignment_id;
 
     const statusActions = [
         { status: 'processing', label: 'Start Processing', color: 'primary' },
@@ -258,6 +279,18 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                                     </Button>
                                                 )
                                             ))}
+                                            {canDispatch && (
+                                                <Button
+                                                    variant="primary"
+                                                    size="sm"
+                                                    onClick={() => setShowDispatchModal(true)}
+                                                >
+                                                    <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0h3m-9 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m6 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h-6m6 0h3m-9 0h-3" />
+                                                    </svg>
+                                                    Dispatch via Steadfast
+                                                </Button>
+                                            )}
                                         </div>
                                     )}
                                 </CardContent>
@@ -453,19 +486,65 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                     ))}
                                 </div>
 
-                                {/* Pickup location */}
+                                {/* Pickup / Delivery info */}
                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <div className="flex items-start gap-2">
-                                        <svg className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                                        </svg>
-                                        <div>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Pickup Location</p>
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white">{order.location.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">{order.location.address}</p>
+                                    {isDeliveryOrder ? (
+                                        <div className="space-y-3">
+                                            <div className="flex items-start gap-2">
+                                                <svg className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0h3m-9 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m6 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h-6m6 0h3m-9 0h-3" />
+                                                </svg>
+                                                <div>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                                                        Home Delivery — <span className="capitalize">{order.delivery_type || 'regular'}</span>
+                                                        {order.delivery_fee > 0 && ` · ৳${order.delivery_fee.toFixed(0)}`}
+                                                    </p>
+                                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{order.delivery_address || '—'}</p>
+                                                    {order.delivery_instructions && (
+                                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 italic">{order.delivery_instructions}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {order.steadfast_tracking_code && (
+                                                <div className="flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2">
+                                                    <svg className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0h3m-9 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m6 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h-6m6 0h3m-9 0h-3" />
+                                                    </svg>
+                                                    <div>
+                                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Steadfast Tracking</p>
+                                                        <p className="font-mono text-sm font-bold text-blue-900 dark:text-blue-100">{order.steadfast_tracking_code}</p>
+                                                        {order.steadfast_delivery_status && (
+                                                            <p className="text-xs text-blue-500 dark:text-blue-300 capitalize">{order.steadfast_delivery_status.replace(/_/g, ' ')}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {order.location && (
+                                                <div className="flex items-start gap-2">
+                                                    <svg className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                                    </svg>
+                                                    <div>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Dispatching Studio</p>
+                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">{order.location.name}</p>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="flex items-start gap-2">
+                                            <svg className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                            </svg>
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Pickup Location</p>
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white">{order.location?.name ?? '—'}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">{order.location?.address}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -601,6 +680,52 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                     </div>
                 </div>
             </div>
+
+            {/* Dispatch modal */}
+            {showDispatchModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <Card className="w-full max-w-md">
+                        <CardContent className="p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Dispatch via Steadfast</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                Delivery to: <span className="font-medium text-gray-700 dark:text-gray-200">{order.delivery_address}</span>
+                            </p>
+                            <form onSubmit={handleDispatch} className="space-y-4">
+                                <div>
+                                    <Label>Item Type</Label>
+                                    <Select
+                                        value={dispatchItemType}
+                                        onChange={(e) => setDispatchItemType(e.target.value)}
+                                    >
+                                        <option value="document">Document</option>
+                                        <option value="parcel">Parcel</option>
+                                        <option value="other">Other</option>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label>Weight (kg)</Label>
+                                    <Input
+                                        type="number"
+                                        step="0.1"
+                                        min="0.1"
+                                        max="50"
+                                        value={dispatchWeight}
+                                        onChange={(e) => setDispatchWeight(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <Button type="button" variant="outline" className="flex-1" onClick={() => setShowDispatchModal(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" variant="primary" className="flex-1" disabled={dispatchSubmitting}>
+                                        {dispatchSubmitting ? 'Dispatching…' : 'Dispatch'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* Payment modal */}
             {showPaymentForm && (
