@@ -3,6 +3,7 @@ const steps = [
     { num: 2, label: 'Products' },
     { num: 3, label: 'Photos' },
     { num: 4, label: 'Review' },
+    { num: 5, label: 'Payment' },
 ];
 
 export default function StepIndicator({ current }) {
