@@ -1,5 +1,5 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 import DeliverySection from '@/Components/Order/DeliverySection';
@@ -207,6 +207,12 @@ export default function Frame({ products, locations, deliveryFees }) {
                         </div>
                     </div>
 
+                    {/* Special Instructions */}
+                    <div className="rounded-lg border bg-card p-5">
+                        <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
+                        <textarea value={specialInstructions} onChange={(e) => setSpecialInstructions(e.target.value)} placeholder="e.g. Matte paper, do not crop..." rows={2} className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100" />
+                    </div>
+
                     {/* Delivery Section */}
                     <DeliverySection
                         pickupType={pickupType} setPickupType={setPickupType}
@@ -215,14 +221,10 @@ export default function Frame({ products, locations, deliveryFees }) {
                         block={block} setBlock={setBlock} postalCode={postalCode} setPostalCode={setPostalCode}
                         deliveryInstructions={deliveryInstructions} setDeliveryInstructions={setDeliveryInstructions}
                         locationId={locationId} setLocationId={setLocationId}
-                        locations={locations} regularFee={deliveryFees.regular} expressFee={deliveryFees.express} errors={errors}
+                        locations={locations} regularFee={deliveryFees.regular} expressFee={deliveryFees.express}
+                        userAddress={usePage().props.auth?.user?.address}
+                        errors={errors}
                     />
-
-                    {/* Special Instructions */}
-                    <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
-                        <textarea value={specialInstructions} onChange={(e) => setSpecialInstructions(e.target.value)} placeholder="e.g. Matte paper, do not crop..." rows={2} className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100" />
-                    </div>
 
                     {/* Order Summary */}
                     <div className="rounded-lg border bg-card p-5">

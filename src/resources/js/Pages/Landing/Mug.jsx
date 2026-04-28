@@ -319,6 +319,7 @@ export default function Mug({ products, locations, deliveryFees }) {
                             locations={locations}
                             regularFee={deliveryFees.regular}
                             expressFee={deliveryFees.express}
+                            userAddress={usePage().props.auth?.user?.address}
                             errors={errors}
                         />
 

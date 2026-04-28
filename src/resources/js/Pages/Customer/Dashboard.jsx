@@ -147,7 +147,7 @@ export default function Dashboard({ auth, orders, photoRegistries }) {
                                     <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                         <span>{order.created_at}</span>
                                         {order.pickup_type === 'delivery'
-                                            ? <span>{order.steadfast_tracking_code ? `Tracking: ${order.steadfast_tracking_code}` : 'Home Delivery'}</span>
+                                            ? <span>{order.pathao_consignment_id ? `Tracking: ${order.pathao_consignment_id}` : 'Home Delivery'}</span>
                                             : order.location && <span>{order.location.name}</span>
                                         }
                                         {order.items_summary && <span>{order.items_summary}</span>}

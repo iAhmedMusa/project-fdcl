@@ -31,8 +31,8 @@ trait HandlesDelivery
             $validated['flat']        ?? null,
             $validated['road']        ?? null,
             $validated['block']       ?? null,
-            $validated['postal_code'] ?? null,
             'Dhaka',
+            $validated['postal_code'] ?? null,
         ]));
     }
 
@@ -43,8 +43,8 @@ trait HandlesDelivery
         }
 
         return $validated['delivery_type'] === 'express'
-            ? (float) config('services.steadfast.express_fee')
-            : (float) config('services.steadfast.regular_fee');
+            ? (float) config('services.pathao.express_fee')
+            : (float) config('services.pathao.regular_fee');
     }
 
     protected function deliveryOrderFields(array $validated): array
@@ -73,8 +73,8 @@ trait HandlesDelivery
     protected function deliveryFees(): array
     {
         return [
-            'regular' => config('services.steadfast.regular_fee'),
-            'express' => config('services.steadfast.express_fee'),
+            'regular' => config('services.pathao.regular_fee'),
+            'express' => config('services.pathao.express_fee'),
         ];
     }
 }

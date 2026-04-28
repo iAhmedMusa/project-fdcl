@@ -461,6 +461,7 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                             locations={locations}
                             regularFee={deliveryFees.regular}
                             expressFee={deliveryFees.express}
+                            userAddress={usePage().props.auth?.user?.address}
                             errors={errors}
                         />
 

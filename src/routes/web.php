@@ -19,13 +19,13 @@ use App\Http\Controllers\Staff\OrderController;
 use App\Http\Controllers\Staff\PaymentController;
 use App\Http\Controllers\Staff\PhotoStorageController;
 use App\Http\Controllers\Staff\WalkInOrderController;
-use App\Http\Controllers\Webhooks\SteadfastWebhookController;
+use App\Http\Controllers\Webhooks\PathaoWebhookController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Steadfast webhook — CSRF excluded in bootstrap/app.php, verified by Bearer token inside controller
-Route::post('/webhooks/steadfast', [SteadfastWebhookController::class, 'handle'])
-    ->name('webhooks.steadfast');
+// Pathao webhook — CSRF excluded in bootstrap/app.php, verified by Bearer token inside controller
+Route::post('/webhooks/pathao', [PathaoWebhookController::class, 'handle'])
+    ->name('webhooks.pathao');
 
 // Public routes
 Route::get('/', function () {

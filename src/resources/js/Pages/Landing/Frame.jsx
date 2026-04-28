@@ -333,6 +333,7 @@ export default function Frame({ products, locations, deliveryFees }) {
                             locations={locations}
                             regularFee={deliveryFees.regular}
                             expressFee={deliveryFees.express}
+                            userAddress={usePage().props.auth?.user?.address}
                             errors={errors}
                         />
 

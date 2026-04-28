@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         $middleware->validateCsrfTokens(except: [
-            'webhooks/steadfast',
+            'webhooks/pathao',
         ]);
 
         $middleware->web(append: [

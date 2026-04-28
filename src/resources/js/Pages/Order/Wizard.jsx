@@ -513,7 +513,7 @@ function Step2({
                             </div>
                             <div>
                                 <p className="text-sm font-semibold text-white">Home Delivery</p>
-                                <p className="text-xs text-white/40">Steadfast Courier</p>
+                                <p className="text-xs text-white/40">Pathao Courier</p>
                             </div>
                         </div>
                     </button>

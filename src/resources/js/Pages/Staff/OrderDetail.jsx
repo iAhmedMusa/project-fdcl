@@ -13,7 +13,7 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
     const [smsSending, setSmsSending] = useState(null);
     const [smsMessage, setSmsMessage] = useState(null);
     const [showDispatchModal, setShowDispatchModal] = useState(false);
-    const [dispatchItemType, setDispatchItemType] = useState('parcel');
+    const [dispatchItemType, setDispatchItemType] = useState('2');
     const [dispatchWeight, setDispatchWeight] = useState('0.5');
     const [dispatchSubmitting, setDispatchSubmitting] = useState(false);
 
@@ -121,7 +121,7 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
     };
 
     const isDeliveryOrder = order.pickup_type === 'delivery';
-    const canDispatch = isDeliveryOrder && order.status === 'ready' && !order.steadfast_consignment_id;
+    const canDispatch = isDeliveryOrder && order.status === 'ready' && !order.pathao_consignment_id;
 
     const statusActions = [
         { status: 'processing', label: 'Start Processing', color: 'primary' },
@@ -288,7 +288,7 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                                     <svg className="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0h3m-9 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m6 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h-6m6 0h3m-9 0h-3" />
                                                     </svg>
-                                                    Dispatch via Steadfast
+                                                    Dispatch via Pathao
                                                 </Button>
                                             )}
                                         </div>
@@ -505,16 +505,16 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                                     )}
                                                 </div>
                                             </div>
-                                            {order.steadfast_tracking_code && (
+                                            {order.pathao_consignment_id && (
                                                 <div className="flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-2">
                                                     <svg className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0h3m-9 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m6 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h-6m6 0h3m-9 0h-3" />
                                                     </svg>
                                                     <div>
-                                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Steadfast Tracking</p>
-                                                        <p className="font-mono text-sm font-bold text-blue-900 dark:text-blue-100">{order.steadfast_tracking_code}</p>
-                                                        {order.steadfast_delivery_status && (
-                                                            <p className="text-xs text-blue-500 dark:text-blue-300 capitalize">{order.steadfast_delivery_status.replace(/_/g, ' ')}</p>
+                                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Pathao Consignment</p>
+                                                        <p className="font-mono text-sm font-bold text-blue-900 dark:text-blue-100">{order.pathao_consignment_id}</p>
+                                                        {order.pathao_delivery_status && (
+                                                            <p className="text-xs text-blue-500 dark:text-blue-300 capitalize">{order.pathao_delivery_status.replace(/_/g, ' ')}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -686,7 +686,7 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <Card className="w-full max-w-md">
                         <CardContent className="p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Dispatch via Steadfast</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Dispatch via Pathao</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                                 Delivery to: <span className="font-medium text-gray-700 dark:text-gray-200">{order.delivery_address}</span>
                             </p>
@@ -697,9 +697,8 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                         value={dispatchItemType}
                                         onChange={(e) => setDispatchItemType(e.target.value)}
                                     >
-                                        <option value="document">Document</option>
-                                        <option value="parcel">Parcel</option>
-                                        <option value="other">Other</option>
+                                        <option value="1">Document</option>
+                                        <option value="2">Parcel</option>
                                     </Select>
                                 </div>
                                 <div>

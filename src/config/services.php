@@ -48,13 +48,16 @@ return [
         'balance_url' => env('BULKSMS_BALANCE_URL', 'http://bulksmsbd.net/api/getBalanceApi'),
     ],
 
-    'steadfast' => [
-        'api_key'        => env('STEADFAST_API_KEY'),
-        'secret_key'     => env('STEADFAST_API_SECRET'),
-        'base_url'       => env('STEADFAST_BASE_URL', 'https://portal.steadfast.com.bd/public/api/v1'),
-        'callback_token' => env('STEADFAST_CALLBACK_TOKEN'),
-        'regular_fee'    => (int) env('STEADFAST_REGULAR_FEE', 80),
-        'express_fee'    => (int) env('STEADFAST_EXPRESS_FEE', 150),
+    'pathao' => [
+        'base_url'         => env('PATHAO_BASE_URL', 'https://courier-api-sandbox.pathao.com'),
+        'client_id'        => env('PATHAO_CLIENT_ID'),
+        'client_secret'    => env('PATHAO_CLIENT_SECRET'),
+        'username'         => env('PATHAO_USERNAME'),
+        'password'         => env('PATHAO_PASSWORD'),
+        'webhook_token'    => env('PATHAO_WEBHOOK_TOKEN'),
+        'default_store_id' => env('PATHAO_DEFAULT_STORE_ID'),
+        'regular_fee'      => (int) env('PATHAO_REGULAR_FEE', 80),
+        'express_fee'      => (int) env('PATHAO_EXPRESS_FEE', 150),
     ],
 
 ];

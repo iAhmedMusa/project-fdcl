@@ -184,12 +184,12 @@ export default function OrderDetail({ auth, order, invoiceToken }) {
                                     {order.delivery_address && (
                                         <p className="text-xs text-muted-foreground">{order.delivery_address}</p>
                                     )}
-                                    {order.steadfast_tracking_code && (
+                                    {order.pathao_consignment_id && (
                                         <div className="mt-2 rounded border border-primary/20 bg-primary/5 px-3 py-2">
-                                            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Steadfast Tracking</p>
-                                            <p className="mt-0.5 font-mono text-sm font-bold">{order.steadfast_tracking_code}</p>
-                                            {order.steadfast_delivery_status && (
-                                                <p className="mt-0.5 text-xs text-muted-foreground capitalize">{order.steadfast_delivery_status.replace(/_/g, ' ')}</p>
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Pathao Tracking</p>
+                                            <p className="mt-0.5 font-mono text-sm font-bold">{order.pathao_consignment_id}</p>
+                                            {order.pathao_delivery_status && (
+                                                <p className="mt-0.5 text-xs text-muted-foreground capitalize">{order.pathao_delivery_status.replace(/_/g, ' ')}</p>
                                             )}
                                         </div>
                                     )}

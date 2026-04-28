@@ -10,7 +10,7 @@ use App\Models\PhotoRegistry;
 use App\Services\InvoiceService;
 use App\Services\OrderNumberGenerator;
 use App\Services\PhotoStorage;
-use App\Services\SteadfastService;
+use App\Services\PathaoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +22,7 @@ class OrderController extends Controller
     public function __construct(
         private readonly OrderNumberGenerator $orderNumbers,
         private readonly PhotoStorage $photoStorage,
-        private readonly SteadfastService $steadfast,
+        private readonly PathaoService $pathao,
     ) {}
 
     public function index(Request $request): Response
@@ -102,7 +102,7 @@ class OrderController extends Controller
                 'location' => $order->location ? ['name' => $order->location->name] : null,
                 'pickup_type' => $order->pickup_type,
                 'delivery_type' => $order->delivery_type,
-                'steadfast_tracking_code' => $order->steadfast_tracking_code,
+                'pathao_consignment_id' => $order->pathao_consignment_id,
                 'items_count' => $order->items->count(),
                 'items_summary' => $order->items->pluck('product.name')->join(', '),
                 'service_types' => $order->items->pluck('product.category')->filter()->unique()->values()->all(),
@@ -152,9 +152,8 @@ class OrderController extends Controller
                 'delivery_address' => $order->delivery_address,
                 'delivery_instructions' => $order->delivery_instructions,
                 'delivery_fee' => (float) $order->delivery_fee,
-                'steadfast_consignment_id' => $order->steadfast_consignment_id,
-                'steadfast_tracking_code' => $order->steadfast_tracking_code,
-                'steadfast_delivery_status' => $order->steadfast_delivery_status,
+                'pathao_consignment_id' => $order->pathao_consignment_id,
+                'pathao_delivery_status' => $order->pathao_delivery_status,
                 'created_at' => $order->created_at->format('M d, Y \a\t H:i'),
                 'updated_at' => $order->updated_at->format('M d, Y \a\t H:i'),
                 'is_awaiting_photo' => $order->isAwaitingPhoto(),
@@ -273,44 +272,43 @@ class OrderController extends Controller
             return back()->with('error', 'Order must be in "ready" status before dispatching.');
         }
 
-        if ($order->steadfast_consignment_id) {
+        if ($order->pathao_consignment_id) {
             return back()->with('error', 'This order has already been dispatched.');
         }
 
         $validated = $request->validate([
-            'item_type' => 'required|string|in:document,parcel,other',
-            'weight'    => 'required|numeric|min:0.1|max:50',
+            'item_type' => 'required|integer|in:1,2',
+            'weight'    => 'required|numeric|min:0.5|max:10',
         ]);
 
         try {
-            $result = $this->steadfast->createConsignment(
+            $result = $this->pathao->createOrder(
                 $order,
-                $validated['item_type'],
+                (int) $validated['item_type'],
                 (float) $validated['weight']
             );
 
-            $consignment = $result['consignment'] ?? null;
+            $consignmentId = $result['data']['consignment_id'] ?? null;
 
-            if (! $consignment) {
-                return back()->with('error', 'Steadfast returned an unexpected response. Please try again.');
+            if (! $consignmentId) {
+                return back()->with('error', 'Pathao returned an unexpected response. Please try again.');
             }
 
             $staffUser = $request->user();
             $oldStatus = $order->status;
 
-            $order->steadfast_consignment_id  = $consignment['consignment_id'];
-            $order->steadfast_tracking_code   = $consignment['tracking_code'] ?? null;
-            $order->steadfast_delivery_status = 'pending';
-            $order->location_id               = $staffUser->location_id;
-            $order->status                    = 'out_for_delivery';
-            $order->notified_at               = now();
+            $order->pathao_consignment_id  = $consignmentId;
+            $order->pathao_delivery_status = 'Pending';
+            $order->location_id            = $staffUser->location_id;
+            $order->status                 = 'out_for_delivery';
+            $order->notified_at            = now();
             $order->save();
 
             event(new OrderStatusChanged($order, $oldStatus));
 
-            return back()->with('success', "Dispatched via Steadfast. Tracking: {$order->steadfast_tracking_code}");
+            return back()->with('success', "Dispatched via Pathao. Consignment: {$consignmentId}");
         } catch (\RuntimeException $e) {
-            return back()->with('error', 'Steadfast error: ' . $e->getMessage());
+            return back()->with('error', 'Pathao error: ' . $e->getMessage());
         }
     }
 
