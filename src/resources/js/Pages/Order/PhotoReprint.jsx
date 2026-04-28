@@ -1,6 +1,7 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 
 export default function PhotoReprint({ products, locations, prefilledCode }) {
     const { auth } = usePage().props;
@@ -25,6 +26,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
     const [quantity, setQuantity] = useState(4);
     const [deliveryMethod, setDeliveryMethod] = useState('pickup');
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
@@ -34,7 +36,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
     // Whether we have a photo ready (either from lookup or upload)
     const hasPhoto = (activeTab === 'id' && foundRegistry) || (activeTab === 'upload' && uploadedFile);
-    const canSubmit = hasPhoto && selectedProduct && quantity > 0;
+    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && bkashRef.trim();
 
     // ── Lookup ───────────────────────────────────────────────────────────
 
@@ -91,7 +93,6 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
         setSubmitting(true);
 
         if (activeTab === 'id') {
-            // Registry-based reprint
             router.post('/order/reprint', {
                 registry_code: foundRegistry.code,
                 product_id: parseInt(selectedProduct),
@@ -99,18 +100,19 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                 location_id: parseInt(selectedLocation),
                 paper_type: paperType,
                 special_instructions: specialInstructions || null,
+                bkash_reference: bkashRef,
             }, {
                 onError: (errs) => setErrors(errs),
                 onFinish: () => setSubmitting(false),
             });
         } else {
-            // Upload-based reprint
             const formData = new FormData();
             formData.append('photo', uploadedFile);
             formData.append('product_id', selectedProduct);
             formData.append('quantity', quantity);
             formData.append('location_id', selectedLocation);
             formData.append('paper_type', paperType);
+            formData.append('bkash_reference', bkashRef);
             if (specialInstructions) formData.append('special_instructions', specialInstructions);
 
             router.post('/order/reprint', formData, {
@@ -479,9 +481,19 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                             </div>
                         )}
 
+                        {/* bKash Payment */}
+                        <div className="mt-6">
+                            <BkashPaymentSection
+                                total={total}
+                                value={bkashRef}
+                                onChange={setBkashRef}
+                                error={errors.bkash_reference}
+                            />
+                        </div>
+
                         {/* Upload progress */}
                         {uploadProgress !== null && (
-                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                            <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
                                 <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-primary">
                                     <span>Uploading photo...</span>
                                     <span>{uploadProgress}%</span>

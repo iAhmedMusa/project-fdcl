@@ -97,6 +97,7 @@ class ReprintController extends Controller
                 'location_id' => 'required|exists:locations,id',
                 'paper_type' => 'nullable|in:glossy,matte',
                 'special_instructions' => 'nullable|string|max:500',
+                'bkash_reference' => 'required|string|max:100',
             ]);
 
             $registry = PhotoRegistry::where('registry_code', strtoupper($validated['registry_code']))->firstOrFail();
@@ -110,6 +111,7 @@ class ReprintController extends Controller
                 'location_id' => 'required|exists:locations,id',
                 'paper_type' => 'nullable|in:glossy,matte',
                 'special_instructions' => 'nullable|string|max:500',
+                'bkash_reference' => 'required|string|max:100',
             ]);
 
             $uploadedRegistryCode = $this->orderNumbers->generateRegistryCode();
@@ -132,6 +134,7 @@ class ReprintController extends Controller
                 'amount_paid' => 0,
                 'paper_type' => $validated['paper_type'] ?? 'glossy',
                 'special_instructions' => $validated['special_instructions'] ?? null,
+                'bkash_reference' => $validated['bkash_reference'],
             ]);
 
             OrderItem::create([

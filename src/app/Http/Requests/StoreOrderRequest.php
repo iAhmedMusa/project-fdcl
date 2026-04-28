@@ -22,6 +22,7 @@ class StoreOrderRequest extends FormRequest
             'items.*.photos' => 'nullable|array',
             'items.*.photos.*' => 'file|mimes:jpg,jpeg,png,webp,heic|max:10240',
             'special_instructions' => 'nullable|string|max:1000',
+            'bkash_reference' => 'required|string|max:100',
         ];
     }
 }

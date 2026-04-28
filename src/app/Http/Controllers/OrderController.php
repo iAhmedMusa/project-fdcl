@@ -71,6 +71,7 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount,
                 'amount_paid' => 0,
                 'special_instructions' => $validated['special_instructions'] ?? null,
+                'bkash_reference' => $validated['bkash_reference'],
             ]);
 
             $allPhotoPaths = [];

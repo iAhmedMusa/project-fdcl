@@ -118,7 +118,7 @@ export const en = {
             cta: 'Order Frame',
         },
         photoMug: {
-            title: 'Photo Mug Print',
+            title: 'Mug Print',
             description: 'Personalized ceramic mugs with your photos — ideal for gifts, corporate promotions, and branded merchandise. Vibrant full-color printing that lasts.',
             features: [
                 'Single or bulk orders',

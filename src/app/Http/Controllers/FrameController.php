@@ -68,6 +68,7 @@ class FrameController extends Controller
                 'location_id' => 'required|exists:locations,id',
                 'item_specific_notes' => 'nullable|string|max:1000',
                 'special_instructions' => 'nullable|string|max:500',
+                'bkash_reference' => 'required|string|max:100',
             ]);
 
             $registryCode = $this->orderNumbers->generateRegistryCode();
@@ -82,6 +83,7 @@ class FrameController extends Controller
                 'location_id' => 'required|exists:locations,id',
                 'item_specific_notes' => 'nullable|string|max:1000',
                 'special_instructions' => 'nullable|string|max:500',
+                'bkash_reference' => 'required|string|max:100',
             ]);
 
             $product = Product::findOrFail($validated['product_id']);
@@ -101,6 +103,7 @@ class FrameController extends Controller
                 'total_amount' => $product->price * $validated['quantity'],
                 'amount_paid' => 0,
                 'special_instructions' => $validated['special_instructions'] ?? null,
+                'bkash_reference' => $validated['bkash_reference'],
             ]);
 
             OrderItem::create([

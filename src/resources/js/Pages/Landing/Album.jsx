@@ -1,6 +1,7 @@
 import LandingLayout from '@/Layouts/LandingLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 
 const STORAGE_KEY = 'pending_album_order';
 
@@ -13,6 +14,7 @@ export default function Album({ products, locations }) {
     const [photoSource, setPhotoSource] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -28,6 +30,7 @@ export default function Album({ products, locations }) {
                 if (data.photoSource) setPhotoSource(data.photoSource);
                 if (data.itemNotes) setItemNotes(data.itemNotes);
                 if (data.specialInstructions) setSpecialInstructions(data.specialInstructions);
+                if (data.bkashRef) setBkashRef(data.bkashRef);
                 localStorage.removeItem(STORAGE_KEY);
             }
         } catch {}
@@ -35,7 +38,7 @@ export default function Album({ products, locations }) {
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
     const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
-    const canSubmit = selectedProduct && quantity > 0 && selectedLocation;
+    const canSubmit = selectedProduct && quantity > 0 && selectedLocation && (!auth.user || bkashRef.trim());
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -49,6 +52,7 @@ export default function Album({ products, locations }) {
                 photoSource,
                 itemNotes,
                 specialInstructions,
+                bkashRef,
             }));
             setShowLoginModal(true);
             return;
@@ -63,6 +67,7 @@ export default function Album({ products, locations }) {
             photo_source: photoSource || null,
             item_specific_notes: itemNotes || null,
             special_instructions: specialInstructions || null,
+            bkash_reference: bkashRef,
         }, {
             onError: (errs) => setErrors(errs),
             onFinish: () => {
@@ -219,10 +224,19 @@ export default function Album({ products, locations }) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Payment:</span>
-                                    <span className="font-medium text-amber-600">Pay at pickup</span>
+                                    <span className="font-medium text-pink-600 dark:text-pink-400">bKash</span>
                                 </div>
                             </div>
                         </div>
+
+                        {auth.user && (
+                            <BkashPaymentSection
+                                total={total}
+                                value={bkashRef}
+                                onChange={setBkashRef}
+                                error={errors.bkash_reference}
+                            />
+                        )}
 
                         <button
                             type="submit"
