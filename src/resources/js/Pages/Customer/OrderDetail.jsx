@@ -5,6 +5,7 @@ const STATUS_COLORS = {
     pending: 'bg-secondary text-secondary-foreground',
     processing: 'bg-blue-50 text-blue-700',
     ready: 'bg-amber-50 text-amber-700',
+    out_for_delivery: 'bg-purple-50 text-purple-700',
     delivered: 'bg-green-50 text-green-700',
     cancelled: 'bg-red-50 text-red-700',
 };
@@ -15,10 +16,16 @@ const PAYMENT_COLORS = {
     paid: 'bg-green-50 text-green-700',
 };
 
-const STATUS_TIMELINE = ['pending', 'processing', 'ready', 'delivered'];
-const STATUS_LABELS = { pending: 'Placed', processing: 'Processing', ready: 'Ready', delivered: 'Delivered', cancelled: 'Cancelled' };
+const STUDIO_TIMELINE = ['pending', 'processing', 'ready', 'delivered'];
+const DELIVERY_TIMELINE = ['pending', 'processing', 'ready', 'out_for_delivery', 'delivered'];
+const STATUS_LABELS = {
+    pending: 'Placed', processing: 'Processing', ready: 'Ready',
+    out_for_delivery: 'On the Way', delivered: 'Delivered', cancelled: 'Cancelled',
+};
 
 export default function OrderDetail({ auth, order, invoiceToken }) {
+    const isDeliveryOrder = order.pickup_type === 'delivery';
+    const STATUS_TIMELINE = isDeliveryOrder ? DELIVERY_TIMELINE : STUDIO_TIMELINE;
     const currentIndex = STATUS_TIMELINE.indexOf(order.status);
     const isCancelled = order.status === 'cancelled';
 
@@ -157,36 +164,56 @@ export default function OrderDetail({ auth, order, invoiceToken }) {
 
                 {/* Right column — 2 cols */}
                 <div className="space-y-4 lg:col-span-2">
-                    {/* Location */}
+                    {/* Location / Delivery */}
                     <div className="rounded-lg border bg-card p-4">
                         <h2 className="text-sm font-semibold">Delivery Method</h2>
                         <div className="mt-2 rounded-md bg-muted p-3">
-                            <div className="flex items-center gap-2">
-                                {order.pickup_type === 'delivery' ? (
-                                    <>
-                                        <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            {isDeliveryOrder ? (
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <svg className="h-4 w-4 shrink-0 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0h3m-9 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m6 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h-6m6 0h3" />
                                         </svg>
                                         <span className="text-sm font-medium">Home Delivery</span>
-                                        <span className="rounded bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400">Coming Soon</span>
-                                    </>
-                                ) : (
-                                    <>
+                                        {order.delivery_type && (
+                                            <span className="rounded bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-400 capitalize">
+                                                {order.delivery_type}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {order.delivery_address && (
+                                        <p className="text-xs text-muted-foreground">{order.delivery_address}</p>
+                                    )}
+                                    {order.pathao_consignment_id && (
+                                        <div className="mt-2 rounded border border-primary/20 bg-primary/5 px-3 py-2">
+                                            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">Pathao Tracking</p>
+                                            <p className="mt-0.5 font-mono text-sm font-bold">{order.pathao_consignment_id}</p>
+                                            {order.pathao_delivery_status && (
+                                                <p className="mt-0.5 text-xs text-muted-foreground capitalize">{order.pathao_delivery_status.replace(/_/g, ' ')}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="flex items-center gap-2">
                                         <svg className="h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                                         </svg>
                                         <span className="text-sm font-medium">Studio Pickup</span>
-                                    </>
-                                )}
-                            </div>
-                            {order.pickup_type === 'studio' && (
-                                <div className="mt-2">
-                                    <p className="text-sm font-medium text-foreground">{order.location.name}</p>
-                                    <p className="text-xs text-muted-foreground">{order.location.address}</p>
-                                    <a href={order.location.google_maps_url} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-flex text-xs text-primary hover:text-primary/80">
-                                        Open in Maps
-                                    </a>
+                                    </div>
+                                    {order.location?.name && (
+                                        <div className="mt-2">
+                                            <p className="text-sm font-medium text-foreground">{order.location.name}</p>
+                                            <p className="text-xs text-muted-foreground">{order.location.address}</p>
+                                            {order.location.google_maps_url && (
+                                                <a href={order.location.google_maps_url} target="_blank" rel="noopener noreferrer" className="mt-1.5 inline-flex text-xs text-primary hover:text-primary/80">
+                                                    Open in Maps
+                                                </a>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

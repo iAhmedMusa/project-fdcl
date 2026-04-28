@@ -29,6 +29,7 @@ const STATUS_CONFIG = {
     pending: { label: 'Pending', bg: 'bg-orange-50', text: 'text-orange-700', dot: 'bg-orange-500', border: 'border-orange-200' },
     processing: { label: 'Processing', bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', border: 'border-blue-200' },
     ready: { label: 'Ready', bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', border: 'border-emerald-200' },
+    out_for_delivery: { label: 'Out for Delivery', bg: 'bg-purple-50', text: 'text-purple-700', dot: 'bg-purple-500', border: 'border-purple-200' },
     delivered: { label: 'Delivered', bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', border: 'border-gray-200' },
     cancelled: { label: 'Cancelled', bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', border: 'border-red-200' },
 };
@@ -334,7 +335,7 @@ export default function Orders({ orders, filters }) {
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                                                 </svg>
-                                                {order.location.name}
+                                                {order.location?.name ?? 'Unassigned'}
                                             </div>
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-3.5 text-right">
@@ -430,7 +431,7 @@ export default function Orders({ orders, filters }) {
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                                             </svg>
-                                            {order.location.name}
+                                            {order.location?.name ?? 'Unassigned'}
                                         </div>
                                         <PaymentBadge status={order.payment_status} />
                                     </div>

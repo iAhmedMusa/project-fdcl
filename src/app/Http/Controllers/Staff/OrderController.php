@@ -10,6 +10,7 @@ use App\Models\PhotoRegistry;
 use App\Services\InvoiceService;
 use App\Services\OrderNumberGenerator;
 use App\Services\PhotoStorage;
+use App\Services\PathaoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -21,6 +22,7 @@ class OrderController extends Controller
     public function __construct(
         private readonly OrderNumberGenerator $orderNumbers,
         private readonly PhotoStorage $photoStorage,
+        private readonly PathaoService $pathao,
     ) {}
 
     public function index(Request $request): Response
@@ -70,19 +72,16 @@ class OrderController extends Controller
             });
         }
 
-        // Restrict awaiting photo orders to staff's own location
+        // Location scoping: show this staff's studio orders + all unassigned delivery orders
         $user = request()->user();
         if ($user && $user->location_id) {
             $query->where(function ($q) use ($user) {
-                // Not awaiting photo: has photo registries OR has no reprint items
-                $q->whereHas('photoRegistries')
-                    ->orWhereDoesntHave('items', function ($itemQ) {
-                        $itemQ->whereHas('product', function ($productQ) {
-                            $productQ->where('category', 'reprint');
-                        });
-                    })
-                    // OR awaiting photo but from staff's location
-                    ->orWhere('location_id', $user->location_id);
+                // Own studio orders (all states)
+                $q->where('location_id', $user->location_id)
+                  // Unassigned delivery orders visible to all staff
+                  ->orWhere(function ($q2) {
+                      $q2->where('pickup_type', 'delivery')->whereNull('location_id');
+                  });
             });
         }
 
@@ -100,9 +99,10 @@ class OrderController extends Controller
                     'name' => $order->user->name,
                     'phone' => $order->user->phone ?? 'N/A',
                 ],
-                'location' => [
-                    'name' => $order->location->name,
-                ],
+                'location' => $order->location ? ['name' => $order->location->name] : null,
+                'pickup_type' => $order->pickup_type,
+                'delivery_type' => $order->delivery_type,
+                'pathao_consignment_id' => $order->pathao_consignment_id,
                 'items_count' => $order->items->count(),
                 'items_summary' => $order->items->pluck('product.name')->join(', '),
                 'service_types' => $order->items->pluck('product.category')->filter()->unique()->values()->all(),
@@ -147,6 +147,13 @@ class OrderController extends Controller
                 'notes' => $order->notes,
                 'special_instructions' => $order->special_instructions,
                 'paper_type' => $order->paper_type,
+                'pickup_type' => $order->pickup_type,
+                'delivery_type' => $order->delivery_type,
+                'delivery_address' => $order->delivery_address,
+                'delivery_instructions' => $order->delivery_instructions,
+                'delivery_fee' => (float) $order->delivery_fee,
+                'pathao_consignment_id' => $order->pathao_consignment_id,
+                'pathao_delivery_status' => $order->pathao_delivery_status,
                 'created_at' => $order->created_at->format('M d, Y \a\t H:i'),
                 'updated_at' => $order->updated_at->format('M d, Y \a\t H:i'),
                 'is_awaiting_photo' => $order->isAwaitingPhoto(),
@@ -156,12 +163,12 @@ class OrderController extends Controller
                     'phone' => $order->user->phone ?? 'Not provided',
                     'address' => $order->user->address ?? null,
                 ],
-                'location' => [
+                'location' => $order->location ? [
                     'name' => $order->location->name,
                     'address' => $order->location->address,
                     'phone' => $order->location->phone,
                     'google_maps_url' => $order->location->google_maps_url,
-                ],
+                ] : null,
                 'items' => $order->items->map(function ($item) use ($order) {
                     $registryCode = null;
                     if ($item->product && $item->product->category === 'reprint' && ! empty($item->photo_paths)) {
@@ -219,23 +226,28 @@ class OrderController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,processing,ready,delivered,cancelled',
+            'status' => 'required|in:pending,processing,ready,out_for_delivery,delivered,cancelled',
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $validated['status'];
 
-        // Staff can only make valid forward transitions
         $validTransitions = [
-            'pending' => ['processing', 'cancelled'],
-            'processing' => ['ready', 'cancelled'],
-            'ready' => ['delivered', 'cancelled'],
-            'delivered' => [], // Cannot change
-            'cancelled' => [], // Cannot change
+            'pending'          => ['processing', 'cancelled'],
+            'processing'       => ['ready', 'cancelled'],
+            'ready'            => ['out_for_delivery', 'delivered', 'cancelled'],
+            'out_for_delivery' => ['delivered', 'cancelled'],
+            'delivered'        => [],
+            'cancelled'        => [],
         ];
 
         if (! in_array($newStatus, $validTransitions[$oldStatus] ?? [])) {
             return back()->with('error', "Invalid status transition from {$oldStatus} to {$newStatus}.");
+        }
+
+        // Only delivery orders can go to out_for_delivery
+        if ($newStatus === 'out_for_delivery' && ! $order->isDelivery()) {
+            return back()->with('error', 'Studio pickup orders cannot be set to out_for_delivery.');
         }
 
         $order->status = $newStatus;
@@ -248,6 +260,56 @@ class OrderController extends Controller
         }
 
         return back()->with('success', "Order status updated to {$newStatus}.");
+    }
+
+    public function dispatch(Request $request, Order $order): RedirectResponse
+    {
+        if (! $order->isDelivery()) {
+            return back()->with('error', 'This order is not a delivery order.');
+        }
+
+        if ($order->status !== 'ready') {
+            return back()->with('error', 'Order must be in "ready" status before dispatching.');
+        }
+
+        if ($order->pathao_consignment_id) {
+            return back()->with('error', 'This order has already been dispatched.');
+        }
+
+        $validated = $request->validate([
+            'item_type' => 'required|integer|in:1,2',
+            'weight'    => 'required|numeric|min:0.5|max:10',
+        ]);
+
+        try {
+            $result = $this->pathao->createOrder(
+                $order,
+                (int) $validated['item_type'],
+                (float) $validated['weight']
+            );
+
+            $consignmentId = $result['data']['consignment_id'] ?? null;
+
+            if (! $consignmentId) {
+                return back()->with('error', 'Pathao returned an unexpected response. Please try again.');
+            }
+
+            $staffUser = $request->user();
+            $oldStatus = $order->status;
+
+            $order->pathao_consignment_id  = $consignmentId;
+            $order->pathao_delivery_status = 'Pending';
+            $order->location_id            = $staffUser->location_id;
+            $order->status                 = 'out_for_delivery';
+            $order->notified_at            = now();
+            $order->save();
+
+            event(new OrderStatusChanged($order, $oldStatus));
+
+            return back()->with('success', "Dispatched via Pathao. Consignment: {$consignmentId}");
+        } catch (\RuntimeException $e) {
+            return back()->with('error', 'Pathao error: ' . $e->getMessage());
+        }
     }
 
     public function updateNotes(Request $request, Order $order)
