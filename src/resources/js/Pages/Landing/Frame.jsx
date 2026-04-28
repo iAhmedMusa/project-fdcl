@@ -2,10 +2,11 @@ import LandingLayout from '@/Layouts/LandingLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
+import DeliverySection from '@/Components/Order/DeliverySection';
 
 const STORAGE_KEY = 'pending_frame_order';
 
-export default function Frame({ products, locations }) {
+export default function Frame({ products, locations, deliveryFees }) {
     const { auth } = usePage().props;
 
     const [activeTab, setActiveTab] = useState('upload');
@@ -15,7 +16,6 @@ export default function Frame({ products, locations }) {
     const [photoSource, setPhotoSource] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [selectedLocation, setSelectedLocation] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [bkashRef, setBkashRef] = useState('');
@@ -23,6 +23,16 @@ export default function Frame({ products, locations }) {
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
     const [showLoginModal, setShowLoginModal] = useState(false);
+
+    // Delivery state
+    const [pickupType, setPickupType] = useState('studio');
+    const [deliveryType, setDeliveryType] = useState('regular');
+    const [locationId, setLocationId] = useState('');
+    const [flat, setFlat] = useState('');
+    const [road, setRoad] = useState('');
+    const [block, setBlock] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
     useEffect(() => {
         try {
@@ -33,27 +43,39 @@ export default function Frame({ products, locations }) {
                 if (data.photoSource) setPhotoSource(data.photoSource);
                 if (data.selectedProduct) setSelectedProduct(data.selectedProduct);
                 if (data.quantity) setQuantity(data.quantity);
-                if (data.selectedLocation) setSelectedLocation(data.selectedLocation);
                 if (data.itemNotes) setItemNotes(data.itemNotes);
                 if (data.specialInstructions) setSpecialInstructions(data.specialInstructions);
                 if (data.bkashRef) setBkashRef(data.bkashRef);
+                if (data.pickupType) setPickupType(data.pickupType);
+                if (data.deliveryType) setDeliveryType(data.deliveryType);
+                if (data.locationId) setLocationId(data.locationId);
+                if (data.flat) setFlat(data.flat);
+                if (data.road) setRoad(data.road);
+                if (data.block) setBlock(data.block);
+                if (data.postalCode) setPostalCode(data.postalCode);
+                if (data.deliveryInstructions) setDeliveryInstructions(data.deliveryInstructions);
                 localStorage.removeItem(STORAGE_KEY);
             }
         } catch {}
     }, []);
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
-    const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    const productTotal = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    const deliveryFee = pickupType === 'delivery'
+        ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
+        : 0;
+    const total = productTotal + deliveryFee;
 
     const hasPhoto = (activeTab === 'upload' && uploadedFile) || (activeTab === 'source' && photoSource.trim());
-    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation && (!auth.user || bkashRef.trim());
+    const deliveryAddressComplete = flat.trim() && road.trim() && postalCode.trim();
+    const canSubmit = hasPhoto && selectedProduct && quantity > 0
+        && (pickupType === 'studio' ? locationId : deliveryAddressComplete && deliveryType)
+        && (!auth.user || bkashRef.trim());
 
     function handleFileChange(e) {
         const file = e.target.files[0];
         if (!file) return;
-
         setUploadedFile(file);
-
         const reader = new FileReader();
         reader.onload = (ev) => setUploadPreview(ev.target.result);
         reader.readAsDataURL(file);
@@ -65,20 +87,28 @@ export default function Frame({ products, locations }) {
         if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
+    function appendDeliveryFields(formData) {
+        formData.append('pickup_type', pickupType);
+        if (pickupType === 'studio') {
+            formData.append('location_id', locationId);
+        } else {
+            formData.append('delivery_type', deliveryType);
+            formData.append('flat', flat);
+            formData.append('road', road);
+            if (block) formData.append('block', block);
+            formData.append('postal_code', postalCode);
+            if (deliveryInstructions) formData.append('delivery_instructions', deliveryInstructions);
+        }
+    }
+
     function handleSubmit(e) {
         e.preventDefault();
         if (!canSubmit) return;
 
         if (!auth.user) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                activeTab,
-                photoSource,
-                selectedProduct,
-                quantity,
-                selectedLocation,
-                itemNotes,
-                specialInstructions,
-                bkashRef,
+                activeTab, photoSource, selectedProduct, quantity, itemNotes, specialInstructions, bkashRef,
+                pickupType, deliveryType, locationId, flat, road, block, postalCode, deliveryInstructions,
             }));
             setShowLoginModal(true);
             return;
@@ -91,10 +121,10 @@ export default function Frame({ products, locations }) {
             formData.append('photo', uploadedFile);
             formData.append('product_id', selectedProduct);
             formData.append('quantity', quantity);
-            formData.append('location_id', selectedLocation);
             formData.append('bkash_reference', bkashRef);
             if (itemNotes) formData.append('item_specific_notes', itemNotes);
             if (specialInstructions) formData.append('special_instructions', specialInstructions);
+            appendDeliveryFields(formData);
 
             router.post('/order/frame', formData, {
                 forceFormData: true,
@@ -110,8 +140,15 @@ export default function Frame({ products, locations }) {
             router.post('/order/frame', {
                 photo_source: photoSource,
                 product_id: parseInt(selectedProduct),
-                quantity: quantity,
-                location_id: parseInt(selectedLocation),
+                quantity,
+                pickup_type: pickupType,
+                location_id: pickupType === 'studio' ? parseInt(locationId) : null,
+                delivery_type: pickupType === 'delivery' ? deliveryType : null,
+                flat: pickupType === 'delivery' ? flat : null,
+                road: pickupType === 'delivery' ? road : null,
+                block: pickupType === 'delivery' ? block : null,
+                postal_code: pickupType === 'delivery' ? postalCode : null,
+                delivery_instructions: pickupType === 'delivery' ? deliveryInstructions : null,
                 item_specific_notes: itemNotes || null,
                 special_instructions: specialInstructions || null,
                 bkash_reference: bkashRef,
@@ -217,7 +254,6 @@ export default function Frame({ products, locations }) {
                                         onChange={handleFileChange}
                                         className="hidden"
                                     />
-
                                     {!uploadedFile ? (
                                         <button
                                             type="button"
@@ -275,51 +311,31 @@ export default function Frame({ products, locations }) {
                         <div className="rounded-lg border bg-card p-5">
                             <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Quantity <span className="text-red-500">*</span></h2>
                             <div className="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
-                                >
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
-                                    </svg>
+                                <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" /></svg>
                                 </button>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    max="100"
-                                    value={quantity}
-                                    onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                                    className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setQuantity(Math.min(100, quantity + 1))}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
-                                >
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
+                                <input type="number" min="1" max="100" value={quantity} onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))} className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100" />
+                                <button type="button" onClick={() => setQuantity(Math.min(100, quantity + 1))} className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Pickup Location <span className="text-red-500">*</span></h2>
-                            <select
-                                value={selectedLocation}
-                                onChange={(e) => setSelectedLocation(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                            >
-                                <option value="">Select location...</option>
-                                {locations.map((loc) => (
-                                    <option key={loc.id} value={loc.id}>
-                                        {loc.name} — {loc.address}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.location_id && <p className="mt-2 text-sm text-red-500">{errors.location_id}</p>}
-                        </div>
+                        <DeliverySection
+                            pickupType={pickupType} setPickupType={setPickupType}
+                            deliveryType={deliveryType} setDeliveryType={setDeliveryType}
+                            flat={flat} setFlat={setFlat}
+                            road={road} setRoad={setRoad}
+                            block={block} setBlock={setBlock}
+                            postalCode={postalCode} setPostalCode={setPostalCode}
+                            deliveryInstructions={deliveryInstructions} setDeliveryInstructions={setDeliveryInstructions}
+                            locationId={locationId} setLocationId={setLocationId}
+                            locations={locations}
+                            regularFee={deliveryFees.regular}
+                            expressFee={deliveryFees.express}
+                            userAddress={usePage().props.auth?.user?.address}
+                            errors={errors}
+                        />
 
                         <div className="rounded-lg border bg-card p-5">
                             <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
@@ -337,17 +353,19 @@ export default function Frame({ products, locations }) {
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Frame:</span>
-                                    <span className="font-medium">
-                                        {selectedProductData ? `${selectedProductData.name} × ${quantity}` : '-'}
-                                    </span>
+                                    <span className="font-medium">{selectedProductData ? `${selectedProductData.name} × ${quantity}` : '-'}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Photo:</span>
-                                    <span className="font-medium">
-                                        {activeTab === 'upload' ? (uploadedFile ? 'Uploaded' : 'Not provided') : (photoSource ? 'Link provided' : 'Not provided')}
-                                    </span>
+                                    <span className="font-medium">{activeTab === 'upload' ? (uploadedFile ? 'Uploaded' : 'Not provided') : (photoSource ? 'Link provided' : 'Not provided')}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                {pickupType === 'delivery' && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 dark:text-gray-400">Delivery ({deliveryType}):</span>
+                                        <span className="font-medium">৳{deliveryFee}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between border-t pt-2 dark:border-gray-700">
                                     <span className="text-gray-500 dark:text-gray-400">Total:</span>
                                     <span className="font-bold text-lg">৳{total.toFixed(0)}</span>
                                 </div>
@@ -374,10 +392,7 @@ export default function Frame({ products, locations }) {
                                     <span>{uploadProgress}%</span>
                                 </div>
                                 <div className="w-full rounded-full bg-primary/20 h-2 overflow-hidden">
-                                    <div
-                                        className="h-2 rounded-full bg-primary transition-all duration-200"
-                                        style={{ width: `${uploadProgress}%` }}
-                                    />
+                                    <div className="h-2 rounded-full bg-primary transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
                                 </div>
                             </div>
                         )}
@@ -408,22 +423,13 @@ export default function Frame({ products, locations }) {
                             </p>
                         </div>
                         <div className="mt-6 flex flex-col gap-3">
-                            <Link
-                                href={route('login') + '?intended=' + encodeURIComponent(window.location.pathname)}
-                                className="w-full rounded-lg bg-primary py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90"
-                            >
+                            <Link href={route('login') + '?intended=' + encodeURIComponent(window.location.pathname)} className="w-full rounded-lg bg-primary py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90">
                                 Login
                             </Link>
-                            <Link
-                                href={route('register') + '?intended=' + encodeURIComponent(window.location.pathname)}
-                                className="w-full rounded-lg border border-gray-300 py-3 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                            >
+                            <Link href={route('register') + '?intended=' + encodeURIComponent(window.location.pathname)} className="w-full rounded-lg border border-gray-300 py-3 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
                                 Create Account
                             </Link>
-                            <button
-                                onClick={() => setShowLoginModal(false)}
-                                className="mt-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-                            >
+                            <button onClick={() => setShowLoginModal(false)} className="mt-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
                                 Cancel
                             </button>
                         </div>

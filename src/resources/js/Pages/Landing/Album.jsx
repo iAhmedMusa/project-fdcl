@@ -2,15 +2,15 @@ import LandingLayout from '@/Layouts/LandingLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
+import DeliverySection from '@/Components/Order/DeliverySection';
 
 const STORAGE_KEY = 'pending_album_order';
 
-export default function Album({ products, locations }) {
+export default function Album({ products, locations, deliveryFees }) {
     const { auth } = usePage().props;
 
     const [selectedProduct, setSelectedProduct] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [selectedLocation, setSelectedLocation] = useState('');
     const [photoSource, setPhotoSource] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
@@ -19,6 +19,16 @@ export default function Album({ products, locations }) {
     const [errors, setErrors] = useState({});
     const [showLoginModal, setShowLoginModal] = useState(false);
 
+    // Delivery state
+    const [pickupType, setPickupType] = useState('studio');
+    const [deliveryType, setDeliveryType] = useState('regular');
+    const [locationId, setLocationId] = useState('');
+    const [flat, setFlat] = useState('');
+    const [road, setRoad] = useState('');
+    const [block, setBlock] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [deliveryInstructions, setDeliveryInstructions] = useState('');
+
     useEffect(() => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -26,19 +36,34 @@ export default function Album({ products, locations }) {
                 const data = JSON.parse(saved);
                 if (data.selectedProduct) setSelectedProduct(data.selectedProduct);
                 if (data.quantity) setQuantity(data.quantity);
-                if (data.selectedLocation) setSelectedLocation(data.selectedLocation);
                 if (data.photoSource) setPhotoSource(data.photoSource);
                 if (data.itemNotes) setItemNotes(data.itemNotes);
                 if (data.specialInstructions) setSpecialInstructions(data.specialInstructions);
                 if (data.bkashRef) setBkashRef(data.bkashRef);
+                if (data.pickupType) setPickupType(data.pickupType);
+                if (data.deliveryType) setDeliveryType(data.deliveryType);
+                if (data.locationId) setLocationId(data.locationId);
+                if (data.flat) setFlat(data.flat);
+                if (data.road) setRoad(data.road);
+                if (data.block) setBlock(data.block);
+                if (data.postalCode) setPostalCode(data.postalCode);
+                if (data.deliveryInstructions) setDeliveryInstructions(data.deliveryInstructions);
                 localStorage.removeItem(STORAGE_KEY);
             }
         } catch {}
     }, []);
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
-    const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
-    const canSubmit = selectedProduct && quantity > 0 && selectedLocation && (!auth.user || bkashRef.trim());
+    const productTotal = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    const deliveryFee = pickupType === 'delivery'
+        ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
+        : 0;
+    const total = productTotal + deliveryFee;
+
+    const deliveryAddressComplete = flat.trim() && road.trim() && postalCode.trim();
+    const canSubmit = selectedProduct && quantity > 0
+        && (pickupType === 'studio' ? locationId : deliveryAddressComplete && deliveryType)
+        && (!auth.user || bkashRef.trim());
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -46,13 +71,8 @@ export default function Album({ products, locations }) {
 
         if (!auth.user) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                selectedProduct,
-                quantity,
-                selectedLocation,
-                photoSource,
-                itemNotes,
-                specialInstructions,
-                bkashRef,
+                selectedProduct, quantity, photoSource, itemNotes, specialInstructions, bkashRef,
+                pickupType, deliveryType, locationId, flat, road, block, postalCode, deliveryInstructions,
             }));
             setShowLoginModal(true);
             return;
@@ -62,8 +82,15 @@ export default function Album({ products, locations }) {
 
         router.post('/order/album', {
             product_id: parseInt(selectedProduct),
-            quantity: quantity,
-            location_id: parseInt(selectedLocation),
+            quantity,
+            pickup_type: pickupType,
+            location_id: pickupType === 'studio' ? parseInt(locationId) : null,
+            delivery_type: pickupType === 'delivery' ? deliveryType : null,
+            flat: pickupType === 'delivery' ? flat : null,
+            road: pickupType === 'delivery' ? road : null,
+            block: pickupType === 'delivery' ? block : null,
+            postal_code: pickupType === 'delivery' ? postalCode : null,
+            delivery_instructions: pickupType === 'delivery' ? deliveryInstructions : null,
             photo_source: photoSource || null,
             item_specific_notes: itemNotes || null,
             special_instructions: specialInstructions || null,
@@ -181,22 +208,21 @@ export default function Album({ products, locations }) {
                             </div>
                         </div>
 
-                        <div className="rounded-lg border bg-card p-5">
-                            <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Pickup Location <span className="text-red-500">*</span></h2>
-                            <select
-                                value={selectedLocation}
-                                onChange={(e) => setSelectedLocation(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                            >
-                                <option value="">Select location...</option>
-                                {locations.map((loc) => (
-                                    <option key={loc.id} value={loc.id}>
-                                        {loc.name} — {loc.address}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.location_id && <p className="mt-2 text-sm text-red-500">{errors.location_id}</p>}
-                        </div>
+                        <DeliverySection
+                            pickupType={pickupType} setPickupType={setPickupType}
+                            deliveryType={deliveryType} setDeliveryType={setDeliveryType}
+                            flat={flat} setFlat={setFlat}
+                            road={road} setRoad={setRoad}
+                            block={block} setBlock={setBlock}
+                            postalCode={postalCode} setPostalCode={setPostalCode}
+                            deliveryInstructions={deliveryInstructions} setDeliveryInstructions={setDeliveryInstructions}
+                            locationId={locationId} setLocationId={setLocationId}
+                            locations={locations}
+                            regularFee={deliveryFees.regular}
+                            expressFee={deliveryFees.express}
+                            userAddress={usePage().props.auth?.user?.address}
+                            errors={errors}
+                        />
 
                         <div className="rounded-lg border bg-card p-5">
                             <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Special Instructions <span className="font-normal text-gray-400">(Optional)</span></h2>
@@ -214,11 +240,15 @@ export default function Album({ products, locations }) {
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Album:</span>
-                                    <span className="font-medium">
-                                        {selectedProductData ? `${selectedProductData.name} × ${quantity}` : '-'}
-                                    </span>
+                                    <span className="font-medium">{selectedProductData ? `${selectedProductData.name} × ${quantity}` : '-'}</span>
                                 </div>
-                                <div className="flex justify-between">
+                                {pickupType === 'delivery' && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 dark:text-gray-400">Delivery ({deliveryType}):</span>
+                                        <span className="font-medium">৳{deliveryFee}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between border-t pt-2 dark:border-gray-700">
                                     <span className="text-gray-500 dark:text-gray-400">Total:</span>
                                     <span className="font-bold text-lg">৳{total.toFixed(0)}</span>
                                 </div>

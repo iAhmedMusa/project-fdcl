@@ -15,6 +15,26 @@ export default function UpdateProfileInformation({
 }) {
     const user = usePage().props.auth.user;
 
+    const parseAddress = (addr) => {
+        if (!addr) return { flat: '', road: '', block: '', postalCode: '' };
+        const parts = addr.split(', ').filter(p => p !== 'Dhaka');
+        return {
+            flat: parts[0] || '',
+            road: parts[1] || '',
+            block: parts[2] || '',
+            postalCode: parts[3] || '',
+        };
+    };
+
+    const parsed = parseAddress(user.address);
+    const [flat, setFlat] = useState(parsed.flat);
+    const [road, setRoad] = useState(parsed.road);
+    const [block, setBlock] = useState(parsed.block);
+    const [postalCode, setPostalCode] = useState(parsed.postalCode);
+
+    const buildAddress = (f, r, b, p) =>
+        [f, r, b, 'Dhaka', p].filter(Boolean).join(', ');
+
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
             name: user.name,
@@ -153,16 +173,44 @@ export default function UpdateProfileInformation({
                             <InputError className="mt-1" message={errors.phone} />
                         )}
                     </div>
-                    <div>
-                        <InputLabel htmlFor="address" value="Delivery Address" />
-                        <textarea
-                            id="address"
-                            className="mt-1 flex w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            value={data.address}
-                            onChange={(e) => setData('address', e.target.value)}
-                            rows={2}
-                            placeholder="Full address for delivery"
-                        />
+                    <div className="space-y-2">
+                        <InputLabel value="Delivery Address" />
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <TextInput
+                                    className="w-full"
+                                    value={flat}
+                                    onChange={(e) => { setFlat(e.target.value); setData('address', buildAddress(e.target.value, road, block, postalCode)); }}
+                                    placeholder="Flat / Apt No."
+                                />
+                            </div>
+                            <div>
+                                <TextInput
+                                    className="w-full"
+                                    value={road}
+                                    onChange={(e) => { setRoad(e.target.value); setData('address', buildAddress(flat, e.target.value, block, postalCode)); }}
+                                    placeholder="Road / Street"
+                                />
+                            </div>
+                            <div>
+                                <TextInput
+                                    className="w-full"
+                                    value={block}
+                                    onChange={(e) => { setBlock(e.target.value); setData('address', buildAddress(flat, road, e.target.value, postalCode)); }}
+                                    placeholder="Block / Area"
+                                />
+                            </div>
+                            <div>
+                                <TextInput
+                                    className="w-full"
+                                    value={postalCode}
+                                    onChange={(e) => { setPostalCode(e.target.value); setData('address', buildAddress(flat, road, block, e.target.value)); }}
+                                    placeholder="Postal Code"
+                                    inputMode="numeric"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">City: Dhaka</p>
                         <InputError className="mt-1" message={errors.address} />
                     </div>
                 </div>

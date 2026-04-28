@@ -19,8 +19,13 @@ use App\Http\Controllers\Staff\OrderController;
 use App\Http\Controllers\Staff\PaymentController;
 use App\Http\Controllers\Staff\PhotoStorageController;
 use App\Http\Controllers\Staff\WalkInOrderController;
+use App\Http\Controllers\Webhooks\PathaoWebhookController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
+// Pathao webhook — CSRF excluded in bootstrap/app.php, verified by Bearer token inside controller
+Route::post('/webhooks/pathao', [PathaoWebhookController::class, 'handle'])
+    ->name('webhooks.pathao');
 
 // Public routes
 Route::get('/', function () {
@@ -100,6 +105,7 @@ Route::middleware(['auth', 'staff'])->prefix('staff')->group(function () {
     Route::post('/orders/{order}/payments', [PaymentController::class, 'store'])->name('staff.orders.payments');
     Route::post('/orders/{order}/send-invoice-sms', [InvoiceController::class, 'sendSms'])->name('staff.orders.invoice-sms');
     Route::post('/orders/{order}/send-ready-sms', [InvoiceController::class, 'sendReadySms'])->name('staff.orders.ready-sms');
+    Route::post('/orders/{order}/dispatch', [OrderController::class, 'dispatch'])->name('staff.orders.dispatch');
     // Appointments
     Route::get('/appointments', [StaffAppointmentController::class, 'index'])->name('staff.appointments.index');
     Route::patch('/appointments/{appointment}/status', [StaffAppointmentController::class, 'updateStatus'])->name('staff.appointments.status');

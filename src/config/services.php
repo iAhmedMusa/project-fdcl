@@ -48,4 +48,16 @@ return [
         'balance_url' => env('BULKSMS_BALANCE_URL', 'http://bulksmsbd.net/api/getBalanceApi'),
     ],
 
+    'pathao' => [
+        'base_url'         => env('PATHAO_BASE_URL', 'https://courier-api-sandbox.pathao.com'),
+        'client_id'        => env('PATHAO_CLIENT_ID'),
+        'client_secret'    => env('PATHAO_CLIENT_SECRET'),
+        'username'         => env('PATHAO_USERNAME'),
+        'password'         => env('PATHAO_PASSWORD'),
+        'webhook_token'    => env('PATHAO_WEBHOOK_TOKEN'),
+        'default_store_id' => env('PATHAO_DEFAULT_STORE_ID'),
+        'regular_fee'      => (int) env('PATHAO_REGULAR_FEE', 80),
+        'express_fee'      => (int) env('PATHAO_EXPRESS_FEE', 150),
+    ],
+
 ];

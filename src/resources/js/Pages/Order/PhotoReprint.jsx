@@ -2,8 +2,9 @@ import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
+import DeliverySection from '@/Components/Order/DeliverySection';
 
-export default function PhotoReprint({ products, locations, prefilledCode }) {
+export default function PhotoReprint({ products, locations, deliveryFees, prefilledCode }) {
     const { auth } = usePage().props;
 
     const [activeTab, setActiveTab] = useState('id'); // 'id' or 'upload'
@@ -20,23 +21,37 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
     const fileInputRef = useRef(null);
 
     // Common order fields
-    const [selectedLocation, setSelectedLocation] = useState('');
     const [selectedProduct, setSelectedProduct] = useState('');
     const [paperType, setPaperType] = useState('glossy');
     const [quantity, setQuantity] = useState(4);
-    const [deliveryMethod, setDeliveryMethod] = useState('pickup');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
 
-    const selectedProductData = products.find((p) => p.id == selectedProduct);
-    const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    // Delivery state
+    const [pickupType, setPickupType] = useState('studio');
+    const [deliveryType, setDeliveryType] = useState('regular');
+    const [locationId, setLocationId] = useState('');
+    const [flat, setFlat] = useState('');
+    const [road, setRoad] = useState('');
+    const [block, setBlock] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
-    // Whether we have a photo ready (either from lookup or upload)
+    const selectedProductData = products.find((p) => p.id == selectedProduct);
+    const productTotal = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    const deliveryFee = pickupType === 'delivery'
+        ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
+        : 0;
+    const total = productTotal + deliveryFee;
+
     const hasPhoto = (activeTab === 'id' && foundRegistry) || (activeTab === 'upload' && uploadedFile);
-    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && bkashRef.trim();
+    const deliveryAddressComplete = flat.trim() && road.trim() && postalCode.trim();
+    const canSubmit = hasPhoto && selectedProduct && quantity > 0
+        && (pickupType === 'studio' ? locationId : deliveryAddressComplete && deliveryType)
+        && bkashRef.trim();
 
     // ── Lookup ───────────────────────────────────────────────────────────
 
@@ -72,7 +87,6 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
 
         setUploadedFile(file);
 
-        // Create preview
         const reader = new FileReader();
         reader.onload = (ev) => setUploadPreview(ev.target.result);
         reader.readAsDataURL(file);
@@ -82,6 +96,20 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
         setUploadedFile(null);
         setUploadPreview(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+
+    function appendDeliveryFields(formData) {
+        formData.append('pickup_type', pickupType);
+        if (pickupType === 'studio') {
+            formData.append('location_id', locationId);
+        } else {
+            formData.append('delivery_type', deliveryType);
+            formData.append('flat', flat);
+            formData.append('road', road);
+            if (block) formData.append('block', block);
+            formData.append('postal_code', postalCode);
+            if (deliveryInstructions) formData.append('delivery_instructions', deliveryInstructions);
+        }
     }
 
     // ── Submit ───────────────────────────────────────────────────────────
@@ -96,8 +124,15 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
             router.post('/order/reprint', {
                 registry_code: foundRegistry.code,
                 product_id: parseInt(selectedProduct),
-                quantity: quantity,
-                location_id: parseInt(selectedLocation),
+                quantity,
+                pickup_type: pickupType,
+                location_id: pickupType === 'studio' ? parseInt(locationId) : null,
+                delivery_type: pickupType === 'delivery' ? deliveryType : null,
+                flat: pickupType === 'delivery' ? flat : null,
+                road: pickupType === 'delivery' ? road : null,
+                block: pickupType === 'delivery' ? block : null,
+                postal_code: pickupType === 'delivery' ? postalCode : null,
+                delivery_instructions: pickupType === 'delivery' ? deliveryInstructions : null,
                 paper_type: paperType,
                 special_instructions: specialInstructions || null,
                 bkash_reference: bkashRef,
@@ -110,10 +145,10 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
             formData.append('photo', uploadedFile);
             formData.append('product_id', selectedProduct);
             formData.append('quantity', quantity);
-            formData.append('location_id', selectedLocation);
             formData.append('paper_type', paperType);
             formData.append('bkash_reference', bkashRef);
             if (specialInstructions) formData.append('special_instructions', specialInstructions);
+            appendDeliveryFields(formData);
 
             router.post('/order/reprint', formData, {
                 forceFormData: true,
@@ -241,7 +276,6 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                                                     key={i}
                                                     className="h-16 w-16 rounded border border-green-200 bg-white"
                                                     style={{
-                                                        // backgroundImage: `url(/storage/${photo})`,
                                                         backgroundImage: `url(${photo})`,
                                                         backgroundSize: 'cover',
                                                         backgroundPosition: 'center',
@@ -308,192 +342,162 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                     )}
                 </div>
 
-                {/* ── Step 2: Size & Copies (only show when photo is ready) ──── */}
+                {/* ── Step 2: Print Details (only show when photo is ready) ── */}
                 {hasPhoto && (
-                    <form onSubmit={handleSubmit} className="mt-6 rounded-lg border bg-card p-5">
-                        <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Print Details</h2>
+                    <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+                        <div className="rounded-lg border bg-card p-5">
+                            <h2 className="text-base font-semibold text-gray-900 dark:text-gray-100">Print Details</h2>
 
-                        {/* Photo size dropdown */}
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Photo size <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                                value={selectedProduct}
-                                onChange={(e) => setSelectedProduct(e.target.value)}
-                                required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                            >
-                                <option value="">Select size...</option>
-                                {products.map((product) => (
-                                    <option key={product.id} value={product.id}>
-                                        {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.product_id && (
-                                <p className="mt-1 text-sm text-red-600">{errors.product_id}</p>
-                            )}
-                        </div>
-
-                        {/* Number of copies */}
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Number of copies <span className="text-red-500">*</span>
-                                <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum 4 copies per order</span>
-                            </label>
-                            <div className="flex items-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setQuantity(Math.max(4, quantity - 2))}
-                                    disabled={quantity <= 4}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
-                                >
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
-                                    </svg>
-                                </button>
-                                <input
-                                    type="number"
-                                    min="4"
-                                    max="100"
-                                    step="2"
-                                    value={quantity}
-                                    onChange={(e) => {
-                                        const val = parseInt(e.target.value) || 4;
-                                        const clamped = Math.min(100, Math.max(4, val));
-                                        setQuantity(clamped % 2 === 0 ? clamped : clamped + 1);
-                                    }}
-                                    className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setQuantity(Math.min(100, quantity + 2))}
-                                    disabled={quantity >= 100}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
-                                >
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                                    </svg>
-                                </button>
-                            </div>
-                            {errors.quantity && (
-                                <p className="mt-1 text-sm text-red-600">{errors.quantity}</p>
-                            )}
-                        </div>
-
-                        {/* Paper type */}
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Paper type
-                            </label>
-                            <select
-                                value={paperType}
-                                onChange={(e) => setPaperType(e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                            >
-                                <option value="glossy">Glossy</option>
-                                <option value="matte">Matte</option>
-                            </select>
-                        </div>
-
-                        {/* Delivery method */}
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Delivery method <span className="text-red-500">*</span>
-                            </label>
-                            <div className="flex flex-col gap-2">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="deliveryMethod"
-                                        value="pickup"
-                                        checked={deliveryMethod === 'pickup'}
-                                        onChange={() => setDeliveryMethod('pickup')}
-                                        className="h-4 w-4 text-primary focus:ring-primary"
-                                    />
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">Pickup from studio</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-not-allowed opacity-50">
-                                    <input
-                                        type="radio"
-                                        name="deliveryMethod"
-                                        value="home"
-                                        disabled
-                                        className="h-4 w-4 text-primary focus:ring-primary"
-                                    />
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">Home delivery</span>
-                                    <span className="text-xs text-gray-400 dark:text-gray-500">(Coming soon)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        {/* Pickup location dropdown */}
-                        {deliveryMethod === 'pickup' && (
+                            {/* Photo size dropdown */}
                             <div className="mt-4">
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Pickup studio <span className="text-red-500">*</span>
+                                    Photo size <span className="text-red-500">*</span>
                                 </label>
                                 <select
-                                    value={selectedLocation}
-                                    onChange={(e) => setSelectedLocation(e.target.value)}
+                                    value={selectedProduct}
+                                    onChange={(e) => setSelectedProduct(e.target.value)}
                                     required
                                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                 >
-                                    <option value="">Select location...</option>
-                                    {locations.map((location) => (
-                                        <option key={location.id} value={location.id}>
-                                            {location.name} — {location.address}
+                                    <option value="">Select size...</option>
+                                    {products.map((product) => (
+                                        <option key={product.id} value={product.id}>
+                                            {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
                                         </option>
                                     ))}
                                 </select>
-                                {errors.location_id && (
-                                    <p className="mt-1 text-sm text-red-600">{errors.location_id}</p>
+                                {errors.product_id && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.product_id}</p>
                                 )}
                             </div>
-                        )}
 
-                        {/* Special instructions */}
-                        <div className="mt-4">
-                            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Special instructions
-                                <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">(optional)</span>
-                            </label>
-                            <textarea
-                                rows={3}
-                                value={specialInstructions}
-                                onChange={(e) => setSpecialInstructions(e.target.value)}
-                                placeholder="e.g. Do not crop, specific colour notes, border preference..."
-                                className="w-full resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
-                            />
+                            {/* Number of copies */}
+                            <div className="mt-4">
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Number of copies <span className="text-red-500">*</span>
+                                    <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum 4 copies per order</span>
+                                </label>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setQuantity(Math.max(4, quantity - 2))}
+                                        disabled={quantity <= 4}
+                                        className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                                    >
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
+                                        </svg>
+                                    </button>
+                                    <input
+                                        type="number"
+                                        min="4"
+                                        max="100"
+                                        step="2"
+                                        value={quantity}
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value) || 4;
+                                            const clamped = Math.min(100, Math.max(4, val));
+                                            setQuantity(clamped % 2 === 0 ? clamped : clamped + 1);
+                                        }}
+                                        className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setQuantity(Math.min(100, quantity + 2))}
+                                        disabled={quantity >= 100}
+                                        className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                                    >
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                {errors.quantity && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.quantity}</p>
+                                )}
+                            </div>
+
+                            {/* Paper type */}
+                            <div className="mt-4">
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Paper type
+                                </label>
+                                <select
+                                    value={paperType}
+                                    onChange={(e) => setPaperType(e.target.value)}
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                >
+                                    <option value="glossy">Glossy</option>
+                                    <option value="matte">Matte</option>
+                                </select>
+                            </div>
+
+                            {/* Special instructions */}
+                            <div className="mt-4">
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Special instructions
+                                    <span className="ml-1 font-normal text-gray-400 dark:text-gray-500">(optional)</span>
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    value={specialInstructions}
+                                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                                    placeholder="e.g. Do not crop, specific colour notes, border preference..."
+                                    className="w-full resize-none rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+                                />
+                            </div>
                         </div>
 
-                        {/* Total */}
+                        {/* Delivery Section */}
+                        <DeliverySection
+                            pickupType={pickupType} setPickupType={setPickupType}
+                            deliveryType={deliveryType} setDeliveryType={setDeliveryType}
+                            flat={flat} setFlat={setFlat}
+                            road={road} setRoad={setRoad}
+                            block={block} setBlock={setBlock}
+                            postalCode={postalCode} setPostalCode={setPostalCode}
+                            deliveryInstructions={deliveryInstructions} setDeliveryInstructions={setDeliveryInstructions}
+                            locationId={locationId} setLocationId={setLocationId}
+                            locations={locations}
+                            regularFee={deliveryFees.regular}
+                            expressFee={deliveryFees.express}
+                            userAddress={usePage().props.auth?.user?.address}
+                            errors={errors}
+                        />
+
+                        {/* Order Summary */}
                         {selectedProduct && (
-                            <div className="mt-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Total</span>
-                                    <span className="text-xl font-bold text-gray-900 dark:text-gray-100">৳{total.toFixed(0)}</span>
+                            <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                                <div className="space-y-1 text-sm">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">{selectedProductData?.name} ({selectedProductData?.size_label}) × {quantity}</span>
+                                        <span className="font-medium">৳{productTotal.toFixed(0)}</span>
+                                    </div>
+                                    {pickupType === 'delivery' && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-gray-600 dark:text-gray-400">Delivery ({deliveryType})</span>
+                                            <span className="font-medium">৳{deliveryFee}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center justify-between border-t pt-2 dark:border-gray-700">
+                                        <span className="text-gray-600 dark:text-gray-400">Total</span>
+                                        <span className="text-xl font-bold text-gray-900 dark:text-gray-100">৳{total.toFixed(0)}</span>
+                                    </div>
                                 </div>
-                                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                                    {selectedProductData?.name} ({selectedProductData?.size_label}) × {quantity}
-                                </p>
                             </div>
                         )}
 
                         {/* bKash Payment */}
-                        <div className="mt-6">
-                            <BkashPaymentSection
-                                total={total}
-                                value={bkashRef}
-                                onChange={setBkashRef}
-                                error={errors.bkash_reference}
-                            />
-                        </div>
+                        <BkashPaymentSection
+                            total={total}
+                            value={bkashRef}
+                            onChange={setBkashRef}
+                            error={errors.bkash_reference}
+                        />
 
                         {/* Upload progress */}
                         {uploadProgress !== null && (
-                            <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
+                            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
                                 <div className="mb-1.5 flex items-center justify-between text-xs font-medium text-primary">
                                     <span>Uploading photo...</span>
                                     <span>{uploadProgress}%</span>
@@ -511,7 +515,7 @@ export default function PhotoReprint({ products, locations, prefilledCode }) {
                         <button
                             type="submit"
                             disabled={!canSubmit || submitting}
-                            className="mt-6 w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent disabled:opacity-50"
+                            className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent disabled:opacity-50"
                         >
                             {submitting ? 'Placing order...' : 'Place Order'}
                         </button>

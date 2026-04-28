@@ -1,9 +1,10 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
+import DeliverySection from '@/Components/Order/DeliverySection';
 
-export default function Mug({ products, locations }) {
+export default function Mug({ products, locations, deliveryFees }) {
     const [activeTab, setActiveTab] = useState('upload');
 
     // Upload
@@ -17,7 +18,6 @@ export default function Mug({ products, locations }) {
     // Common fields
     const [selectedProduct, setSelectedProduct] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [selectedLocation, setSelectedLocation] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [bkashRef, setBkashRef] = useState('');
@@ -25,11 +25,28 @@ export default function Mug({ products, locations }) {
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
 
+    // Delivery state
+    const [pickupType, setPickupType] = useState('studio');
+    const [deliveryType, setDeliveryType] = useState('regular');
+    const [locationId, setLocationId] = useState('');
+    const [flat, setFlat] = useState('');
+    const [road, setRoad] = useState('');
+    const [block, setBlock] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [deliveryInstructions, setDeliveryInstructions] = useState('');
+
     const selectedProductData = products.find((p) => p.id == selectedProduct);
-    const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    const productTotal = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
+    const deliveryFee = pickupType === 'delivery'
+        ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
+        : 0;
+    const total = productTotal + deliveryFee;
 
     const hasPhoto = (activeTab === 'upload' && uploadedFile) || (activeTab === 'source' && photoSource.trim());
-    const canSubmit = hasPhoto && selectedProduct && quantity > 0 && selectedLocation && bkashRef.trim();
+    const deliveryAddressComplete = flat.trim() && road.trim() && postalCode.trim();
+    const canSubmit = hasPhoto && selectedProduct && quantity > 0
+        && (pickupType === 'studio' ? locationId : deliveryAddressComplete && deliveryType)
+        && bkashRef.trim();
 
     function handleFileChange(e) {
         const file = e.target.files[0];
@@ -48,6 +65,20 @@ export default function Mug({ products, locations }) {
         if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
+    function appendDeliveryFields(formData) {
+        formData.append('pickup_type', pickupType);
+        if (pickupType === 'studio') {
+            formData.append('location_id', locationId);
+        } else {
+            formData.append('delivery_type', deliveryType);
+            formData.append('flat', flat);
+            formData.append('road', road);
+            if (block) formData.append('block', block);
+            formData.append('postal_code', postalCode);
+            if (deliveryInstructions) formData.append('delivery_instructions', deliveryInstructions);
+        }
+    }
+
     function handleSubmit(e) {
         e.preventDefault();
         if (!canSubmit) return;
@@ -59,10 +90,10 @@ export default function Mug({ products, locations }) {
             formData.append('photo', uploadedFile);
             formData.append('product_id', selectedProduct);
             formData.append('quantity', quantity);
-            formData.append('location_id', selectedLocation);
             formData.append('bkash_reference', bkashRef);
             if (itemNotes) formData.append('item_specific_notes', itemNotes);
             if (specialInstructions) formData.append('special_instructions', specialInstructions);
+            appendDeliveryFields(formData);
 
             router.post('/order/mug', formData, {
                 forceFormData: true,
@@ -74,8 +105,15 @@ export default function Mug({ products, locations }) {
             router.post('/order/mug', {
                 photo_source: photoSource,
                 product_id: parseInt(selectedProduct),
-                quantity: quantity,
-                location_id: parseInt(selectedLocation),
+                quantity,
+                pickup_type: pickupType,
+                location_id: pickupType === 'studio' ? parseInt(locationId) : null,
+                delivery_type: pickupType === 'delivery' ? deliveryType : null,
+                flat: pickupType === 'delivery' ? flat : null,
+                road: pickupType === 'delivery' ? road : null,
+                block: pickupType === 'delivery' ? block : null,
+                postal_code: pickupType === 'delivery' ? postalCode : null,
+                delivery_instructions: pickupType === 'delivery' ? deliveryInstructions : null,
                 item_specific_notes: itemNotes || null,
                 special_instructions: specialInstructions || null,
                 bkash_reference: bkashRef,
@@ -277,24 +315,6 @@ export default function Mug({ products, locations }) {
                         </div>
                     </div>
 
-                    {/* Pickup Location */}
-                    <div className="rounded-lg border bg-card p-5">
-                        <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Pickup Location <span className="text-red-500">*</span></h2>
-                        <select
-                            value={selectedLocation}
-                            onChange={(e) => setSelectedLocation(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                        >
-                            <option value="">Select location...</option>
-                            {locations.map((loc) => (
-                                <option key={loc.id} value={loc.id}>
-                                    {loc.name} — {loc.address}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.location_id && <p className="mt-2 text-sm text-red-500">{errors.location_id}</p>}
-                    </div>
-
                     {/* Special Instructions */}
                     <div className="rounded-lg border bg-card p-5">
                         <h2 className="mb-4 text-base font-semibold text-gray-900 dark:text-gray-100">Special Instructions <span className="font-normal text-gray-400 dark:text-gray-500">(Optional)</span></h2>
@@ -306,6 +326,23 @@ export default function Mug({ products, locations }) {
                             className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
                         />
                     </div>
+
+                    {/* Delivery Section */}
+                    <DeliverySection
+                        pickupType={pickupType} setPickupType={setPickupType}
+                        deliveryType={deliveryType} setDeliveryType={setDeliveryType}
+                        flat={flat} setFlat={setFlat}
+                        road={road} setRoad={setRoad}
+                        block={block} setBlock={setBlock}
+                        postalCode={postalCode} setPostalCode={setPostalCode}
+                        deliveryInstructions={deliveryInstructions} setDeliveryInstructions={setDeliveryInstructions}
+                        locationId={locationId} setLocationId={setLocationId}
+                        locations={locations}
+                        regularFee={deliveryFees.regular}
+                        expressFee={deliveryFees.express}
+                        userAddress={usePage().props.auth?.user?.address}
+                        errors={errors}
+                    />
 
                     {/* Order Summary */}
                     <div className="rounded-lg border bg-card p-5">
@@ -323,7 +360,13 @@ export default function Mug({ products, locations }) {
                                     {activeTab === 'upload' ? (uploadedFile ? 'Uploaded' : 'Not provided') : (photoSource ? 'Link provided' : 'Not provided')}
                                 </span>
                             </div>
-                            <div className="flex justify-between">
+                            {pickupType === 'delivery' && (
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">Delivery ({deliveryType}):</span>
+                                    <span className="font-medium">৳{deliveryFee}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between border-t pt-2 dark:border-gray-700">
                                 <span className="text-gray-500 dark:text-gray-400">Total:</span>
                                 <span className="font-bold text-lg">৳{total.toFixed(0)}</span>
                             </div>
