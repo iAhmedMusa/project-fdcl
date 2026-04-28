@@ -4,6 +4,7 @@ import OrderLayout from '@/Layouts/OrderLayout';
 import StepIndicator from '@/Components/Order/StepIndicator';
 import PhotoUpload from '@/Components/Order/PhotoUpload';
 import OrderSummary from '@/Components/Order/OrderSummary';
+import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 
 // ─── Service definitions (icons match landing page) ──────────────────────────
 
@@ -92,6 +93,7 @@ export default function Wizard({ products, locations }) {
     const [locationId, setLocationId] = useState(locations[0]?.id || '');
     const [pickupType, setPickupType] = useState('studio');
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     // Flat array of all products
@@ -123,12 +125,13 @@ export default function Wizard({ products, locations }) {
     function canAdvance() {
         if (step === 1) return !!service;
         if (step === 2) return activeItems.length > 0 && locationId;
-        if (step === 3) return true; // photos are optional client-side
+        if (step === 3) return true;
+        if (step === 4) return true;
         return false;
     }
 
     function next() {
-        if (canAdvance() && step < 4) setStep(step + 1);
+        if (canAdvance() && step < 5) setStep(step + 1);
     }
 
     function back() {
@@ -165,13 +168,14 @@ export default function Wizard({ products, locations }) {
             location_id: parseInt(locationId),
             pickup_type: pickupType,
             special_instructions: specialInstructions || null,
+            bkash_reference: bkashRef,
             items: activeItems.map((item) => {
                 const product = allProducts.find((p) => p.id === item.product_id);
                 return {
                     product_id: item.product_id,
                     quantity: item.quantity,
                     unit_price: parseFloat(product.price),
-                    photo_paths: null, // file upload handled separately in future
+                    photo_paths: null,
                 };
             }),
         };
@@ -233,6 +237,14 @@ export default function Wizard({ products, locations }) {
                         pickupType={pickupType}
                         specialInstructions={specialInstructions}
                         setSpecialInstructions={setSpecialInstructions}
+                    />
+                )}
+                {step === 5 && (
+                    <Step5
+                        activeItems={activeItems}
+                        allProducts={allProducts}
+                        bkashRef={bkashRef}
+                        setBkashRef={setBkashRef}
                         auth={auth}
                         submitting={submitting}
                         onSubmit={handleSubmit}
@@ -254,7 +266,7 @@ export default function Wizard({ products, locations }) {
                             Back
                         </button>
                     )}
-                    {step < 4 && step > 1 && (
+                    {step < 5 && step > 1 && (
                         <button
                             onClick={next}
                             disabled={!canAdvance()}
@@ -263,10 +275,10 @@ export default function Wizard({ products, locations }) {
                             Next
                         </button>
                     )}
-                    {step === 4 && auth.user && (
+                    {step === 5 && auth.user && (
                         <button
                             onClick={handleSubmit}
-                            disabled={submitting}
+                            disabled={!bkashRef.trim() || submitting}
                             className="flex-1 rounded-lg bg-gold py-2.5 text-sm font-bold text-navy transition-colors disabled:opacity-40"
                         >
                             {submitting ? 'Placing…' : 'Place Order'}
@@ -287,7 +299,7 @@ export default function Wizard({ products, locations }) {
                         </svg>
                         Back
                     </button>
-                    {step < 4 && (
+                    {step < 5 && (
                         <button
                             onClick={next}
                             disabled={!canAdvance()}
@@ -558,9 +570,6 @@ function Step4({
     pickupType,
     specialInstructions,
     setSpecialInstructions,
-    auth,
-    submitting,
-    onSubmit,
 }) {
     return (
         <div>
@@ -568,7 +577,7 @@ function Step4({
                 Review your order
             </h2>
             <p className="mt-1 text-sm text-white/50">
-                Check everything is correct before placing your order.
+                Check everything is correct before proceeding to payment.
             </p>
 
             <div className="mt-6">
@@ -593,13 +602,40 @@ function Step4({
                     className="mt-1.5 w-full rounded-lg border border-white/20 bg-navy-light px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold"
                 />
             </div>
+        </div>
+    );
+}
+
+function Step5({ activeItems, allProducts, bkashRef, setBkashRef, auth, submitting, onSubmit }) {
+    const total = activeItems.reduce((sum, item) => {
+        const product = allProducts.find((p) => p.id === item.product_id);
+        return sum + (product ? parseFloat(product.price) * item.quantity : 0);
+    }, 0);
+
+    return (
+        <div>
+            <h2 className="text-xl font-bold text-white sm:text-2xl">
+                Payment
+            </h2>
+            <p className="mt-1 text-sm text-white/50">
+                Pay via bKash and enter your reference to place the order.
+            </p>
+
+            <div className="mt-6">
+                <BkashPaymentSection
+                    total={total}
+                    value={bkashRef}
+                    onChange={setBkashRef}
+                    dark={true}
+                />
+            </div>
 
             {/* Submit / Login prompt */}
-            <div className="mt-8 hidden sm:block">
+            <div className="mt-6 hidden sm:block">
                 {auth.user ? (
                     <button
                         onClick={onSubmit}
-                        disabled={submitting}
+                        disabled={!bkashRef.trim() || submitting}
                         className="w-full rounded-lg bg-gold py-3.5 text-base font-bold text-navy transition-colors hover:bg-gold-light disabled:opacity-40 sm:w-auto sm:px-10"
                     >
                         {submitting ? 'Placing order…' : 'Place Order'}
@@ -619,7 +655,6 @@ function Step4({
                 )}
             </div>
 
-            {/* Mobile login prompt (bottom bar handles submit for logged-in users) */}
             {!auth.user && (
                 <div className="mt-6 rounded-xl border border-gold/20 bg-gold/5 p-4 text-center sm:hidden">
                     <p className="text-sm text-white/60">

@@ -1,6 +1,7 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 
 export default function Album({ products, locations }) {
     const [selectedProduct, setSelectedProduct] = useState('');
@@ -9,12 +10,13 @@ export default function Album({ products, locations }) {
     const [photoSource, setPhotoSource] = useState('');
     const [itemNotes, setItemNotes] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
+    const [bkashRef, setBkashRef] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
     const total = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
-    const canSubmit = selectedProduct && quantity > 0 && selectedLocation;
+    const canSubmit = selectedProduct && quantity > 0 && selectedLocation && bkashRef.trim();
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -29,6 +31,7 @@ export default function Album({ products, locations }) {
             photo_source: photoSource || null,
             item_specific_notes: itemNotes || null,
             special_instructions: specialInstructions || null,
+            bkash_reference: bkashRef,
         }, {
             onError: (errs) => setErrors(errs),
             onFinish: () => setSubmitting(false),
@@ -188,10 +191,18 @@ export default function Album({ products, locations }) {
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 dark:text-gray-400">Payment:</span>
-                                <span className="font-medium text-amber-600">Pay at pickup</span>
+                                <span className="font-medium text-pink-600 dark:text-pink-400">bKash</span>
                             </div>
                         </div>
                     </div>
+
+                    {/* bKash Payment */}
+                    <BkashPaymentSection
+                        total={total}
+                        value={bkashRef}
+                        onChange={setBkashRef}
+                        error={errors.bkash_reference}
+                    />
 
                     {/* Submit */}
                     <button
