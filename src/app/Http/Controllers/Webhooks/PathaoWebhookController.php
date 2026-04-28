@@ -30,13 +30,7 @@ class PathaoWebhookController extends Controller
 
     public function handle(Request $request): Response
     {
-        $secret   = config('services.pathao.webhook_token');
-        $received = $request->header('X-Pathao-Merchant-Webhook-Integration-Secret', '');
-
-        if ($secret && $received !== $secret) {
-            Log::warning('Pathao webhook: invalid secret', ['received' => $received]);
-            return response('Unauthorized', 401);
-        }
+        $secret = config('services.pathao.webhook_token');
 
         Log::info('Pathao webhook received', $request->all());
 
