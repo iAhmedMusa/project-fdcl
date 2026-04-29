@@ -14,7 +14,7 @@ class CustomerSeeder extends Seeder
             [
                 'name' => 'Ahmed Musa',
                 'phone' => '01713194608',
-                'email' => 'ahmed@focusdigitalcolorlab.com',
+                'email' => 'ahmedfdcl@gmail.com',
                 'address' => 'House 470, Road 06, Avenue 06, Mirpur DOHS',
             ],
             [
@@ -40,30 +40,6 @@ class CustomerSeeder extends Seeder
                 'phone' => '01987654321',
                 'email' => 'fatima@example.com',
                 'address' => '456 Gulshan, Dhaka',
-            ],
-            [
-                'name' => 'Karim Hossain',
-                'phone' => '01611122233',
-                'email' => 'karim@example.com',
-                'address' => '789 Uttara, Dhaka',
-            ],
-            [
-                'name' => 'Nusrat Jahan',
-                'phone' => '01733344455',
-                'email' => 'nusrat@example.com',
-                'address' => '321 Mirpur, Dhaka',
-            ],
-            [
-                'name' => 'Abdul Rahman',
-                'phone' => '01855566677',
-                'email' => 'abdul@example.com',
-                'address' => '654 Mohammadpur, Dhaka',
-            ],
-            [
-                'name' => 'Tasnim Akter',
-                'phone' => '01977788899',
-                'email' => 'tasnim@example.com',
-                'address' => '987 Banani, Dhaka',
             ],
             [
                 'name' => 'Imran Khan',

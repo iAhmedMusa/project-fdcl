@@ -27,7 +27,7 @@ class LocationSeeder extends Seeder
                     'google_maps_url'  => 'https://maps.app.goo.gl/uLh3GKExPgmbjY8H8',
                     'phone'            => '01973140768',
                     'is_active'        => true,
-                    'pathao_store_id'  => null, // TODO: set real Pathao store_id after production setup
+                    'pathao_store_id'  => '392840', // TODO: set real Pathao store_id after production setup
                     'created_at'       => now(),
                     'updated_at'       => now(),
                 ],
