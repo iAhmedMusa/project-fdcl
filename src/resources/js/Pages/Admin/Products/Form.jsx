@@ -21,6 +21,8 @@ export default function ProductForm({ product }) {
         height_mm: product?.height_mm || '',
         price: product?.price || '',
         copies_per_sheet: product?.copies_per_sheet || 1,
+        min_quantity: product?.min_quantity ?? 4,
+        quantity_step: product?.quantity_step ?? 2,
         description: product?.description || '',
         is_active: product?.is_active ?? true,
     });
@@ -193,6 +195,42 @@ export default function ProductForm({ product }) {
                                 />
                                 {errors.copies_per_sheet && (
                                     <p className="mt-1 text-sm text-destructive">{errors.copies_per_sheet}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Quantity settings */}
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                                    Minimum Quantity <span className="text-destructive">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={data.min_quantity}
+                                    onChange={(e) => setData('min_quantity', parseInt(e.target.value) || 1)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-sm transition placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    placeholder="4"
+                                />
+                                {errors.min_quantity && (
+                                    <p className="mt-1 text-sm text-destructive">{errors.min_quantity}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-sm font-medium text-foreground">
+                                    Increased By <span className="text-destructive">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={data.quantity_step}
+                                    onChange={(e) => setData('quantity_step', parseInt(e.target.value) || 1)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-sm transition placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    placeholder="2"
+                                />
+                                {errors.quantity_step && (
+                                    <p className="mt-1 text-sm text-destructive">{errors.quantity_step}</p>
                                 )}
                             </div>
                         </div>

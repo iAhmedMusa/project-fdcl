@@ -38,6 +38,8 @@ class ProductController extends Controller
                 'size_label' => $product->size_label,
                 'price' => (float) $product->price,
                 'copies_per_sheet' => $product->copies_per_sheet,
+                'min_quantity' => $product->min_quantity,
+                'quantity_step' => $product->quantity_step,
                 'is_active' => $product->is_active,
             ];
         });
@@ -65,6 +67,8 @@ class ProductController extends Controller
             'height_mm' => 'nullable|numeric|min:1',
             'price' => 'required|numeric|min:0',
             'copies_per_sheet' => 'required|integer|min:1',
+            'min_quantity' => 'required|integer|min:1',
+            'quantity_step' => 'required|integer|min:1',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
         ]);
@@ -87,6 +91,8 @@ class ProductController extends Controller
                 'height_mm' => $product->height_mm,
                 'price' => $product->price,
                 'copies_per_sheet' => $product->copies_per_sheet,
+                'min_quantity' => $product->min_quantity,
+                'quantity_step' => $product->quantity_step,
                 'description' => $product->description,
                 'is_active' => $product->is_active,
             ],
@@ -103,6 +109,8 @@ class ProductController extends Controller
             'height_mm' => 'nullable|numeric|min:1',
             'price' => 'required|numeric|min:0',
             'copies_per_sheet' => 'required|integer|min:1',
+            'min_quantity' => 'required|integer|min:1',
+            'quantity_step' => 'required|integer|min:1',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
         ]);

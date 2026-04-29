@@ -1,6 +1,6 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 import DeliverySection from '@/Components/Order/DeliverySection';
 
@@ -41,6 +41,15 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
     const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
+    const minQty = selectedProductData?.min_quantity ?? 4;
+    const qtyStep = selectedProductData?.quantity_step ?? 2;
+
+    useEffect(() => {
+        if (selectedProductData) {
+            setQuantity(selectedProductData.min_quantity ?? 4);
+        }
+    }, [selectedProduct]);
+
     const productTotal = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
     const deliveryFee = pickupType === 'delivery'
         ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
@@ -362,7 +371,7 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                     <option value="">Select size...</option>
                                     {products.map((product) => (
                                         <option key={product.id} value={product.id}>
-                                            {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
+                                            {product.name} ({product.size_label})
                                         </option>
                                     ))}
                                 </select>
@@ -375,13 +384,13 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                             <div className="mt-4">
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Number of copies <span className="text-red-500">*</span>
-                                    <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum 4 copies per order</span>
+                                    <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum {minQty} per order</span>
                                 </label>
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => setQuantity(Math.max(4, quantity - 2))}
-                                        disabled={quantity <= 4}
+                                        onClick={() => setQuantity(Math.max(minQty, quantity - qtyStep))}
+                                        disabled={quantity <= minQty}
                                         className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                     >
                                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -390,20 +399,21 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                     </button>
                                     <input
                                         type="number"
-                                        min="4"
+                                        min={minQty}
                                         max="100"
-                                        step="2"
+                                        step={qtyStep}
                                         value={quantity}
                                         onChange={(e) => {
-                                            const val = parseInt(e.target.value) || 4;
-                                            const clamped = Math.min(100, Math.max(4, val));
-                                            setQuantity(clamped % 2 === 0 ? clamped : clamped + 1);
+                                            const val = parseInt(e.target.value) || minQty;
+                                            const clamped = Math.min(100, Math.max(minQty, val));
+                                            const remainder = (clamped - minQty) % qtyStep;
+                                            setQuantity(remainder === 0 ? clamped : clamped + (qtyStep - remainder));
                                         }}
                                         className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => setQuantity(Math.min(100, quantity + 2))}
+                                        onClick={() => setQuantity(Math.min(100, quantity + qtyStep))}
                                         disabled={quantity >= 100}
                                         className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                     >

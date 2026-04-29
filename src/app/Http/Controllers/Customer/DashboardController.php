@@ -108,6 +108,7 @@ class DashboardController extends Controller
                             'product_name' => $item->product?->name,
                             'category' => $item->product?->category,
                             'size_label' => $item->product?->size_label,
+                            'product_description' => $item->product?->description,
                             'quantity' => $item->quantity,
                             'unit_price' => (float) $item->unit_price,
                             'subtotal' => (float) $item->subtotal,

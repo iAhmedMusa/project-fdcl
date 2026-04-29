@@ -104,80 +104,89 @@ export default function ProductsIndex({ products, filters }) {
                 </div>
 
                 {/* Products Table */}
-                <div className="overflow-x-auto rounded-lg bg-card shadow-sm">
-                    <table className="min-w-full divide-y text-sm">
-                        <thead className="bg-muted">
-                            <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+                    <table className="min-w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-border bg-muted/60">
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     Product
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     Category
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     Size
                                 </th>
-                                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     Price
                                 </th>
-                                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Active
+                                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Min Qty
                                 </th>
-                                <th className="relative px-4 py-3">
-                                    <span className="sr-only">Actions</span>
+                                <th className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Status
+                                </th>
+                                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Actions
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y bg-card">
+                        <tbody>
                             {productsData.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-4 py-12 text-center text-muted-foreground">
+                                    <td colSpan={7} className="px-5 py-14 text-center text-muted-foreground">
                                         No products found
                                     </td>
                                 </tr>
                             ) : (
-                                productsData.map((product) => (
-                                    <tr key={product.id} className="transition-colors hover:bg-muted">
-                                        <td className="whitespace-nowrap px-4 py-3">
-                                            <div className="text-sm font-semibold text-foreground">
-                                                {product.name}
-                                            </div>
+                                productsData.map((product, idx) => (
+                                    <tr
+                                        key={product.id}
+                                        className={`border-b border-border/50 transition-colors hover:bg-muted/40 ${idx % 2 === 0 ? '' : 'bg-muted/20'}`}
+                                    >
+                                        <td className="px-5 py-3.5">
+                                            <span className="font-medium text-foreground">{product.name}</span>
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3">
-                                            <span className="inline-flex rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                                                {product.category.replace('_', ' ')}
+                                        <td className="px-5 py-3.5">
+                                            <span className="inline-flex items-center rounded-md bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary ring-1 ring-inset ring-primary/20">
+                                                {product.category.replace(/_/g, ' ')}
                                             </span>
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
+                                        <td className="whitespace-nowrap px-5 py-3.5 text-muted-foreground">
                                             {product.size_label}
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-right">
-                                            <div className="text-sm font-bold text-foreground">
-                                                ৳{product.price.toFixed(0)}
-                                            </div>
+                                        <td className="whitespace-nowrap px-5 py-3.5 text-right">
+                                            <span className="font-semibold text-foreground">৳{product.price.toFixed(0)}</span>
                                             {product.copies_per_sheet > 1 && (
-                                                <div className="text-xs text-muted-foreground">
-                                                    / {product.copies_per_sheet}copies
-                                                </div>
+                                                <span className="ml-1 text-xs text-muted-foreground">/{product.copies_per_sheet}pc</span>
                                             )}
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-center">
+                                        <td className="whitespace-nowrap px-5 py-3.5 text-center">
+                                            <span className="font-medium text-foreground">{product.min_quantity}</span>
+                                            <span className="ml-1 text-xs text-muted-foreground">+{product.quantity_step}</span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-3.5 text-center">
                                             <button
                                                 onClick={() => handleToggleActive(product.id)}
-                                                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors ${
                                                     product.is_active
-                                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                                                        ? 'bg-green-100 text-green-700 ring-1 ring-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-800'
+                                                        : 'bg-red-100 text-red-700 ring-1 ring-red-200 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:ring-red-800'
                                                 }`}
                                             >
+                                                <span className={`h-1.5 w-1.5 rounded-full ${product.is_active ? 'bg-green-500' : 'bg-red-500'}`} />
                                                 {product.is_active ? 'Active' : 'Inactive'}
                                             </button>
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-right">
+                                        <td className="whitespace-nowrap px-5 py-3.5 text-right">
                                             <Link
                                                 href={`/admin/products/${product.id}/edit`}
-                                                className="text-sm text-primary hover:underline"
+                                                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                                             >
+                                                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 7.125L18 8.625" />
+                                                </svg>
                                                 Edit
                                             </Link>
                                         </td>
