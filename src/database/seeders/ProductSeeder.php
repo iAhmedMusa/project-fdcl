@@ -20,56 +20,42 @@ class ProductSeeder extends Seeder
             // ['name' => '5R Print', 'category' => 'photo_studio', 'size_label' => '5R', 'width_mm' => 127, 'height_mm' => 178, 'price' => 50, 'copies_per_sheet' => 1],
             // ['name' => 'A4 Print', 'category' => 'photo_studio', 'size_label' => 'A4', 'width_mm' => 210, 'height_mm' => 297, 'price' => 120, 'copies_per_sheet' => 1],
 
-            // Photo Studio
-            ['name' => 'Passport Size', 'category' => 'reprint', 'size_label' => '45×55mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 8],
-            ['name' => 'BD E-Passport', 'category' => 'reprint', 'size_label' => '45×35mm', 'width_mm' => 45, 'height_mm' => 35, 'price' => 10, 'copies_per_sheet' => 8],
-            // ['name' => '3R Print', 'category' => 'reprint', 'size_label' => '3R', 'width_mm' => 89, 'height_mm' => 127, 'price' => 25, 'copies_per_sheet' => 1],
-            // ['name' => '4R Print', 'category' => 'reprint', 'size_label' => '4R', 'width_mm' => 102, 'height_mm' => 152, 'price' => 30, 'copies_per_sheet' => 1],
-            // ['name' => '5R Print', 'category' => 'reprint', 'size_label' => '5R', 'width_mm' => 127, 'height_mm' => 178, 'price' => 50, 'copies_per_sheet' => 1],
-            // ['name' => 'A4 Print', 'category' => 'reprint', 'size_label' => 'A4', 'width_mm' => 210, 'height_mm' => 297, 'price' => 120, 'copies_per_sheet' => 1],
+            // Photo Prints (2R–8R)
 
             // Reprint / Visa Photos
-            ['name' => 'Afghanistan', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Albania', 'category' => 'reprint', 'size_label' => '36×47mm', 'width_mm' => 36, 'height_mm' => 47, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Algeria', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Angola', 'category' => 'reprint', 'size_label' => '30×40mm', 'width_mm' => 30, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Argentina', 'category' => 'reprint', 'size_label' => '40×40mm', 'width_mm' => 40, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Armenia', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Australia', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Austria', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Azerbaijan', 'category' => 'reprint', 'size_label' => '30×40mm', 'width_mm' => 30, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bahamas', 'category' => 'reprint', 'size_label' => '51×51mm', 'width_mm' => 51, 'height_mm' => 51, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bahrain', 'category' => 'reprint', 'size_label' => '40×60mm', 'width_mm' => 40, 'height_mm' => 60, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bangladesh', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Barbados', 'category' => 'reprint', 'size_label' => '50×50mm', 'width_mm' => 50, 'height_mm' => 50, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Belarus', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Belgium', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Belize', 'category' => 'reprint', 'size_label' => '51×51mm', 'width_mm' => 51, 'height_mm' => 51, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Benin', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bhutan', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bolivia', 'category' => 'reprint', 'size_label' => '30×30mm', 'width_mm' => 30, 'height_mm' => 30, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bosnia and Herzegovina', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Botswana', 'category' => 'reprint', 'size_label' => '30×40mm', 'width_mm' => 30, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Brazil', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Brunei', 'category' => 'reprint', 'size_label' => '35×42mm', 'width_mm' => 35, 'height_mm' => 42, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Bulgaria', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Burkina Faso', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Cambodia', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Cameroon', 'category' => 'reprint', 'size_label' => '40×40mm', 'width_mm' => 40, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Canada', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Chad', 'category' => 'reprint', 'size_label' => '50×50mm', 'width_mm' => 50, 'height_mm' => 50, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Chile', 'category' => 'reprint', 'size_label' => '20×30mm', 'width_mm' => 20, 'height_mm' => 30, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'China', 'category' => 'reprint', 'size_label' => '33×48mm', 'width_mm' => 33, 'height_mm' => 48, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Colombia', 'category' => 'reprint', 'size_label' => '30×40mm', 'width_mm' => 30, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Comoros', 'category' => 'reprint', 'size_label' => '51×51mm', 'width_mm' => 51, 'height_mm' => 51, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Congo', 'category' => 'reprint', 'size_label' => '40×40mm', 'width_mm' => 40, 'height_mm' => 40, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Costa Rica', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Croatia', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Cuba', 'category' => 'reprint', 'size_label' => '45×45mm', 'width_mm' => 45, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Cyprus', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Czech Republic', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Denmark', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
-            ['name' => 'Germany', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1],
+            // Visa photos are a common reprint category with specific size and background requirements. We can seed a variety of popular visa photo types to cover most customer needs.
+            ['name' => 'Passport size (Bangladesh)', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1, 'description' => 'White background, matte finish, no glasses.'],
+            ['name' => 'Australia', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'Plain light colored background, clear focus.'],
+            ['name' => 'Bhutan', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, matte finish preferred, 60-80% face coverage.'],
+            ['name' => 'Canada (Visa)', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, specific face height requirements.'],
+            ['name' => 'China', 'category' => 'reprint', 'size_label' => '33×48mm', 'width_mm' => 33, 'height_mm' => 48, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, dark clothing recommended.'],
+            ['name' => 'Finland', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'Plain light background, ears must be visible, no smiling.'],
+            ['name' => 'Germany', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White or Light Gray background, 70-80% face coverage, biometric.'],
+            ['name' => 'India (Visa)', 'category' => 'reprint', 'size_label' => '51×51mm', 'width_mm' => 51, 'height_mm' => 51, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, square format, 2x2 inches.'],
+            ['name' => 'Indonesia', 'category' => 'reprint', 'size_label' => '40×60mm', 'width_mm' => 40, 'height_mm' => 60, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, recent photo.'],
+            ['name' => 'Italy', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, high resolution, recent photo.'],
+            ['name' => 'Japan', 'category' => 'reprint', 'size_label' => '45×45mm', 'width_mm' => 45, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, taken within last 6 months.'],
+            ['name' => 'Malaysia', 'category' => 'reprint', 'size_label' => '35×50mm', 'width_mm' => 35, 'height_mm' => 50, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background for e-Visa.'],
+            ['name' => 'Nepal', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, borderless, recent.'],
+            ['name' => 'Netherlands', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'Light gray or white background, neutral expression.'],
+            ['name' => 'Saudi Arabia', 'category' => 'reprint', 'size_label' => '40×60mm', 'width_mm' => 40, 'height_mm' => 60, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, no glasses, recent photo.'],
+            ['name' => 'Singapore', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, matte finish, no borders.'],
+            ['name' => 'South Korea', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, clothes should not be white.'],
+            ['name' => 'Thailand', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White or light background, matte finish preferred.'],
+            ['name' => 'Turkey', 'category' => 'reprint', 'size_label' => '50×60mm', 'width_mm' => 50, 'height_mm' => 60, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, biometric style.'],
+            ['name' => 'United Arab Emirates', 'category' => 'reprint', 'size_label' => '43×55mm', 'width_mm' => 43, 'height_mm' => 55, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, high resolution.'],
+            ['name' => 'United Kingdom', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'Cream or light gray background, no smiling.'],
+            ['name' => 'USA (Visa/DV)', 'category' => 'reprint', 'size_label' => '51×51mm', 'width_mm' => 51, 'height_mm' => 51, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, 2x2 inches, no eyeglasses.'],
+            ['name' => 'Vietnam', 'category' => 'reprint', 'size_label' => '40×60mm', 'width_mm' => 40, 'height_mm' => 60, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, straight look, no hat.'],
+
+
+            //---Standardized pricing for all reprint sizes for simplicity
+            ['name' => '2R Print', 'category' => 'reprint', 'size_label' => '2R', 'width_mm' => 64, 'height_mm' => 89, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '2.5×3.5 inches, standard wallet size print.'],
+            ['name' => '3R Print', 'category' => 'reprint', 'size_label' => '3R', 'width_mm' => 89, 'height_mm' => 127, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '3.5×5 inches, standard small print size.'],
+            ['name' => '4R Print', 'category' => 'reprint', 'size_label' => '4R', 'width_mm' => 102, 'height_mm' => 152, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '4×6 inches, most popular photo print size.'],
+            ['name' => '5R Print', 'category' => 'reprint', 'size_label' => '5R', 'width_mm' => 127, 'height_mm' => 178, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '5×7 inches, ideal for framing and gifting.'],
+            ['name' => '6R Print', 'category' => 'reprint', 'size_label' => '6R', 'width_mm' => 152, 'height_mm' => 203, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '6×8 inches, great for display and albums.'],
+            ['name' => '8R Print', 'category' => 'reprint', 'size_label' => '8R', 'width_mm' => 203, 'height_mm' => 254, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '8×10 inches, large display print.'],
 
             // Albums
             ['name' => '50-Page Album', 'category' => 'album', 'size_label' => '- Fits up to 200 photos', 'width_mm' => null, 'height_mm' => null, 'price' => 500, 'copies_per_sheet' => 1],
@@ -100,7 +86,7 @@ class ProductSeeder extends Seeder
 
         foreach ($products as &$product) {
             $product['is_active'] = true;
-            $product['description'] = null;
+            $product['description'] ??= null;
             $product['created_at'] = $now;
             $product['updated_at'] = $now;
         }
@@ -108,7 +94,7 @@ class ProductSeeder extends Seeder
         Product::upsert(
             $products,
             uniqueBy: ['name', 'category'],
-            update: ['size_label', 'width_mm', 'height_mm', 'price', 'copies_per_sheet', 'is_active', 'updated_at']
+            update: ['size_label', 'width_mm', 'height_mm', 'price', 'copies_per_sheet', 'is_active', 'description', 'updated_at']
         );
     }
 }
