@@ -93,9 +93,12 @@ class ReprintController extends Controller
         $registry        = null;
         $uploadedRegistryCode = null;
 
+        $product = Product::find($request->input('product_id'));
+        $minQty  = $product ? (int) $product->min_quantity : 1;
+
         $extraRules = [
             'product_id'           => 'required|exists:products,id',
-            'quantity'             => 'required|integer|min:4|max:100',
+            'quantity'             => "required|integer|min:{$minQty}|max:100",
             'paper_type'           => 'nullable|in:glossy,matte',
             'special_instructions' => 'nullable|string|max:500',
             'bkash_reference'      => 'required|string|max:100',

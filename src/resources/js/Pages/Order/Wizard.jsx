@@ -5,6 +5,7 @@ import StepIndicator from '@/Components/Order/StepIndicator';
 import PhotoUpload from '@/Components/Order/PhotoUpload';
 import OrderSummary from '@/Components/Order/OrderSummary';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
+import CustomSelect from '@/Components/CustomSelect';
 
 // ─── Service definitions (icons match landing page) ──────────────────────────
 
@@ -526,18 +527,18 @@ function Step2({
                     <label className="block text-sm font-medium text-white/60">
                         Pickup Location <span className="text-red-400">*</span>
                     </label>
-                    <select
+                    <CustomSelect
+                        options={locations.map((loc) => ({
+                            value: loc.id,
+                            label: loc.name,
+                            subtitle: loc.address,
+                        }))}
                         value={locationId}
-                        onChange={(e) => setLocationId(e.target.value)}
-                        className={inputDark + ' mt-1.5'}
-                    >
-                        <option value="">Select studio...</option>
-                        {locations.map((loc) => (
-                            <option key={loc.id} value={loc.id}>
-                                {loc.name} — {loc.address}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={setLocationId}
+                        placeholder="Select studio..."
+                        variant="dark"
+                        className="mt-1.5"
+                    />
                 </div>
             )}
 

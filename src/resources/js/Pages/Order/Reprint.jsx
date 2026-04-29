@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import OrderLayout from '@/Layouts/OrderLayout';
+import CustomSelect from '@/Components/CustomSelect';
 
 export default function Reprint({ products, locations, prefilledCode }) {
     const { auth } = usePage().props;
@@ -182,19 +183,17 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                         <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                             Print Size
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={products.map((p) => ({
+                                                value: p.id,
+                                                label: p.name,
+                                                subtitle: p.size_label,
+                                                icon: p.flag_emoji || null,
+                                            }))}
                                             value={selectedProduct}
-                                            onChange={(e) => setSelectedProduct(e.target.value)}
-                                            required
-                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                        >
-                                            <option value="">Select size...</option>
-                                            {products.map((product) => (
-                                                <option key={product.id} value={product.id}>
-                                                    {product.name} ({product.size_label}) - ৳{product.price}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={setSelectedProduct}
+                                            placeholder="Select size..."
+                                        />
                                     </div>
 
                                     <div>
@@ -215,19 +214,16 @@ export default function Reprint({ products, locations, prefilledCode }) {
                                         <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-300">
                                             Pickup Location
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={locations.map((loc) => ({
+                                                value: loc.id,
+                                                label: loc.name,
+                                                subtitle: loc.address,
+                                            }))}
                                             value={locationId}
-                                            onChange={(e) => setLocationId(e.target.value)}
-                                            required
-                                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                        >
-                                            <option value="">Select location...</option>
-                                            {locations.map((loc) => (
-                                                <option key={loc.id} value={loc.id}>
-                                                    {loc.name} — {loc.address}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={setLocationId}
+                                            placeholder="Select location..."
+                                        />
                                     </div>
 
                                     {selectedProduct && (

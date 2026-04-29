@@ -436,6 +436,14 @@ export default function OrderDetail({ order, invoiceToken, smsSent, hasPhone }) 
                                                     <span className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">Copies</span>
                                                     <span className="font-medium text-gray-900 dark:text-white">{item.quantity}</span>
                                                 </div>
+                                                <div>
+                                                    {item.product_description ? (
+                                                        <>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">Description</span>
+                                                            <span className="text-sm text-gray-700 dark:text-gray-300 leading-snug">{item.product_description}</span>
+                                                        </>
+                                                    ) : null}
+                                                </div>
                                                 {order.paper_type && (
                                                     <div>
                                                         <span className="text-xs text-gray-500 dark:text-gray-400 block mb-0.5">Paper Type</span>

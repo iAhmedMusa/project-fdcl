@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import StaffLayout from '@/Layouts/StaffLayout';
+import CustomSelect from '@/Components/CustomSelect';
 
 const INPUT = 'mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring';
 const LABEL = 'block text-sm font-medium text-foreground';
@@ -102,19 +103,19 @@ export default function EditOrder({ order, products, locations }) {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label className={LABEL}>Photo Size</label>
-                            <select
+                            <CustomSelect
+                                options={reprintProducts.map((p) => ({
+                                    value: p.id,
+                                    label: p.name,
+                                    subtitle: `${p.size_label} — ৳${parseFloat(p.price).toFixed(0)}`,
+                                    icon: p.flag_emoji || null,
+                                }))}
                                 value={reprintProductId}
-                                onChange={(e) => setReprintProductId(e.target.value)}
-                                className={INPUT}
-                            >
-                                <option value="">Select size...</option>
-                                {reprintProducts.map((product) => (
-                                    <option key={product.id} value={product.id}>
-                                        {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.reprint_product_id && <p className={ERR}>{errors.reprint_product_id}</p>}
+                                onChange={setReprintProductId}
+                                placeholder="Select size..."
+                                error={errors.reprint_product_id}
+                                className="mt-1"
+                            />
                         </div>
 
                         <div>
@@ -152,14 +153,15 @@ export default function EditOrder({ order, products, locations }) {
 
                     <div className="mt-4">
                         <label className={LABEL}>Paper Type</label>
-                        <select
+                        <CustomSelect
+                            options={[
+                                { value: 'glossy', label: 'Glossy' },
+                                { value: 'matte', label: 'Matte' },
+                            ]}
                             value={paperType}
-                            onChange={(e) => setPaperType(e.target.value)}
-                            className={INPUT}
-                        >
-                            <option value="glossy">Glossy</option>
-                            <option value="matte">Matte</option>
-                        </select>
+                            onChange={setPaperType}
+                            className="mt-1"
+                        />
                     </div>
 
                     {reprintProductId && (
@@ -205,19 +207,18 @@ export default function EditOrder({ order, products, locations }) {
 
                     <div className="mb-4">
                         <label className={LABEL}>Pickup Studio</label>
-                        <select
+                        <CustomSelect
+                            options={locations.map((loc) => ({
+                                value: loc.id,
+                                label: loc.name,
+                                subtitle: loc.address,
+                            }))}
                             value={locationId}
-                            onChange={(e) => setLocationId(e.target.value)}
-                            className={INPUT}
-                        >
-                            <option value="">Select location...</option>
-                            {locations.map((loc) => (
-                                <option key={loc.id} value={loc.id}>
-                                    {loc.name} — {loc.address}
-                                </option>
-                            ))}
-                        </select>
-                        {errors.location_id && <p className={ERR}>{errors.location_id}</p>}
+                            onChange={setLocationId}
+                            placeholder="Select location..."
+                            error={errors.location_id}
+                            className="mt-1"
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

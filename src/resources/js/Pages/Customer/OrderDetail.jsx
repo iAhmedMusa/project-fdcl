@@ -106,6 +106,9 @@ export default function OrderDetail({ auth, order, invoiceToken }) {
                                     <div>
                                         <p className="text-sm font-medium">{item.product_name}</p>
                                         <p className="text-xs text-muted-foreground">{item.size_label} — Qty: {item.quantity} x {item.unit_price.toFixed(0)}</p>
+                                        {item.product_description && (
+                                            <p className="mt-1 text-xs text-muted-foreground italic">{item.product_description}</p>
+                                        )}
                                     </div>
                                     <span className="text-sm font-semibold">{item.subtotal.toFixed(0)}</span>
                                 </div>

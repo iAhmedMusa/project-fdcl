@@ -1,5 +1,6 @@
 import InputError from '@/Components/InputError';
 import LandingLayout from '@/Layouts/LandingLayout';
+import CustomSelect from '@/Components/CustomSelect';
 import { Head, router } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
@@ -152,18 +153,23 @@ export default function PhotoStudio({ locations }) {
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="text-sm font-medium">Service type <span className="text-destructive">*</span></label>
-                        <select value={serviceType} onChange={(e) => setServiceType(e.target.value)} className={selectClass + ' mt-1'}>
-                            <option value="">Select...</option>
-                            {SERVICE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                        </select>
-                        <InputError message={errors.service_type} className="mt-1" />
+                        <CustomSelect
+                            options={[{ value: '', label: 'Select...' }, ...SERVICE_TYPES]}
+                            value={serviceType}
+                            onChange={setServiceType}
+                            className="mt-1"
+                            error={errors.service_type}
+                        />
                     </div>
                     <div>
                         <label className="text-sm font-medium">Location <span className="text-destructive">*</span></label>
-                        <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className={selectClass + ' mt-1'}>
-                            {locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
-                        </select>
-                        <InputError message={errors.location_id} className="mt-1" />
+                        <CustomSelect
+                            options={locations.map((l) => ({ value: l.id, label: l.name }))}
+                            value={locationId}
+                            onChange={setLocationId}
+                            className="mt-1"
+                            error={errors.location_id}
+                        />
                     </div>
                 </div>
 
@@ -182,19 +188,18 @@ export default function PhotoStudio({ locations }) {
                     </div>
                     <div>
                         <label className="text-sm font-medium">Time <span className="text-destructive">*</span></label>
-                        <select
+                        <CustomSelect
+                            options={availableSlots.map((s) => ({ value: s, label: s }))}
                             value={appointmentTime}
-                            onChange={(e) => setAppointmentTime(e.target.value)}
+                            onChange={setAppointmentTime}
+                            placeholder={appointmentDate ? 'Select time...' : 'Pick a date first'}
                             disabled={!appointmentDate}
-                            className={selectClass + ' mt-1 disabled:opacity-50'}
-                        >
-                            <option value="">{appointmentDate ? 'Select time...' : 'Pick a date first'}</option>
-                            {availableSlots.map((s) => <option key={s} value={s}>{s}</option>)}
-                        </select>
+                            className="mt-1"
+                            error={errors.appointment_time}
+                        />
                         {appointmentDate && isFriday(appointmentDate) && (
                             <p className="mt-1 text-xs text-muted-foreground">Friday hours: 3:00 PM – 9:00 PM</p>
                         )}
-                        <InputError message={errors.appointment_time} className="mt-1" />
                     </div>
                 </div>
 

@@ -188,6 +188,7 @@ class OrderController extends Controller
                         'product_name' => $item->product ? $item->product->name : ($item->reprint_source === 'studio_fee' ? 'Studio Fee' : 'N/A'),
                         'category' => $item->product ? $item->product->category : ($item->reprint_source === 'studio_fee' ? 'studio_fee' : null),
                         'size_label' => $item->product?->size_label,
+                        'product_description' => $item->product?->description,
                         'quantity' => $item->quantity,
                         'unit_price' => (float) $item->unit_price,
                         'subtotal' => (float) $item->subtotal,
