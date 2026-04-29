@@ -23,7 +23,7 @@ class ProductSeeder extends Seeder
             // Photo Prints (2R–8R)
 
             // Reprint / Visa Photos
-            // Visa photos are a common reprint category with specific size and background requirements. We can seed a variety of popular visa photo types to cover most customer needs.
+            // Visa photos are a common reprint category with specific size and background requirements. We can seed a variety of popular visa photo types to cover most customer needs. 
             ['name' => 'Passport size (Bangladesh)', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 10, 'copies_per_sheet' => 1, 'description' => 'White background, matte finish, no glasses.'],
             ['name' => 'Australia', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'Plain light colored background, clear focus.'],
             ['name' => 'Bhutan', 'category' => 'reprint', 'size_label' => '35×45mm', 'width_mm' => 35, 'height_mm' => 45, 'price' => 20, 'copies_per_sheet' => 1, 'description' => 'White background, matte finish preferred, 60-80% face coverage.'],
