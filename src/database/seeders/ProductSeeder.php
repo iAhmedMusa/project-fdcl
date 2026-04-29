@@ -50,12 +50,12 @@ class ProductSeeder extends Seeder
 
 
             //---Standardized pricing for all reprint sizes for simplicity
-            ['name' => '2R Print', 'flag_emoji' => null, 'category' => 'reprint', 'size_label' => '2R', 'width_mm' => 64, 'height_mm' => 89, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '2.5×3.5 inches, standard wallet size print.'],
-            ['name' => '3R Print', 'flag_emoji' => null, 'category' => 'reprint', 'size_label' => '3R', 'width_mm' => 89, 'height_mm' => 127, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '3.5×5 inches, standard small print size.'],
-            ['name' => '4R Print', 'flag_emoji' => null, 'category' => 'reprint', 'size_label' => '4R', 'width_mm' => 102, 'height_mm' => 152, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '4×6 inches, most popular photo print size.'],
-            ['name' => '5R Print', 'flag_emoji' => null, 'category' => 'reprint', 'size_label' => '5R', 'width_mm' => 127, 'height_mm' => 178, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '5×7 inches, ideal for framing and gifting.'],
-            ['name' => '6R Print', 'flag_emoji' => null, 'category' => 'reprint', 'size_label' => '6R', 'width_mm' => 152, 'height_mm' => 203, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '6×8 inches, great for display and albums.'],
-            ['name' => '8R Print', 'flag_emoji' => null, 'category' => 'reprint', 'size_label' => '8R', 'width_mm' => 203, 'height_mm' => 254, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '8×10 inches, large display print.'],
+            ['name' => '2R Print', 'flag_emoji' => '🖼️', 'category' => 'reprint', 'size_label' => '2R', 'width_mm' => 64, 'height_mm' => 89, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '2.5×3.5 inches, standard wallet size print.'],
+            ['name' => '3R Print', 'flag_emoji' => '🖼️', 'category' => 'reprint', 'size_label' => '3R', 'width_mm' => 89, 'height_mm' => 127, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '3.5×5 inches, standard small print size.'],
+            ['name' => '4R Print', 'flag_emoji' => '🖼️', 'category' => 'reprint', 'size_label' => '4R', 'width_mm' => 102, 'height_mm' => 152, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '4×6 inches, most popular photo print size.'],
+            ['name' => '5R Print', 'flag_emoji' => '🖼️', 'category' => 'reprint', 'size_label' => '5R', 'width_mm' => 127, 'height_mm' => 178, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '5×7 inches, ideal for framing and gifting.'],
+            ['name' => '6R Print', 'flag_emoji' => '🖼️', 'category' => 'reprint', 'size_label' => '6R', 'width_mm' => 152, 'height_mm' => 203, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '6×8 inches, great for display and albums.'],
+            ['name' => '8R Print', 'flag_emoji' => '🖼️', 'category' => 'reprint', 'size_label' => '8R', 'width_mm' => 203, 'height_mm' => 254, 'price' => 35, 'copies_per_sheet' => 1, 'description' => '8×10 inches, large display print.'],
 
             // Albums
             ['name' => '50-Page Album', 'category' => 'album', 'size_label' => '- Fits up to 200 photos', 'width_mm' => null, 'height_mm' => null, 'price' => 500, 'copies_per_sheet' => 1],
@@ -89,7 +89,7 @@ class ProductSeeder extends Seeder
             $product['flag_emoji']     ??= null;
             $product['description']    ??= null;
             $product['min_quantity']   ??= 4;
-            $product['quantity_step']  ??= 2;
+            $product['quantity_step']  ??= 4;
             $product['created_at']     = $now;
             $product['updated_at']     = $now;
         }
