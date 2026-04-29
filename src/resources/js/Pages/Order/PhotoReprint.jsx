@@ -1,6 +1,6 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 import DeliverySection from '@/Components/Order/DeliverySection';
 
@@ -29,6 +29,19 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
     const [submitting, setSubmitting] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
+
+    const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
+    const sizeDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (sizeDropdownRef.current && !sizeDropdownRef.current.contains(e.target)) {
+                setSizeDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Delivery state
     const [pickupType, setPickupType] = useState('studio');
@@ -362,19 +375,71 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Photo size <span className="text-red-500">*</span>
                                 </label>
-                                <select
-                                    value={selectedProduct}
-                                    onChange={(e) => setSelectedProduct(e.target.value)}
-                                    required
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                >
-                                    <option value="">Select size...</option>
-                                    {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
-                                            {product.name} ({product.size_label})
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative" ref={sizeDropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSizeDropdownOpen((o) => !o)}
+                                        className={`flex w-full items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-primary ${
+                                            sizeDropdownOpen
+                                                ? 'border-primary ring-1 ring-primary'
+                                                : 'border-gray-300 dark:border-gray-600'
+                                        } bg-white dark:bg-gray-800 text-left`}
+                                    >
+                                        {selectedProductData ? (
+                                            <span className="flex items-center gap-2.5">
+                                                {selectedProductData.flag_emoji && (
+                                                    <span className="text-xl leading-none">{selectedProductData.flag_emoji}</span>
+                                                )}
+                                                <span className="font-medium text-gray-900 dark:text-gray-100">{selectedProductData.name}</span>
+                                                <span className="text-gray-400 dark:text-gray-500">·</span>
+                                                <span className="text-gray-500 dark:text-gray-400">{selectedProductData.size_label}</span>
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 dark:text-gray-500">Select size...</span>
+                                        )}
+                                        <svg
+                                            className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${sizeDropdownOpen ? 'rotate-180' : ''}`}
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    {sizeDropdownOpen && (
+                                        <div className="absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                            <div className="max-h-64 overflow-y-auto">
+                                                {products.map((product) => (
+                                                    <button
+                                                        key={product.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedProduct(String(product.id));
+                                                            setSizeDropdownOpen(false);
+                                                        }}
+                                                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/60 ${
+                                                            selectedProduct == product.id
+                                                                ? 'bg-primary/5 dark:bg-primary/10'
+                                                                : ''
+                                                        }`}
+                                                    >
+                                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700 text-lg leading-none">
+                                                            {product.flag_emoji || '📷'}
+                                                        </span>
+                                                        <span className="flex-1 min-w-0">
+                                                            <span className="block font-medium text-gray-900 dark:text-gray-100 truncate">{product.name}</span>
+                                                            <span className="block text-xs text-gray-400 dark:text-gray-500">{product.size_label}</span>
+                                                        </span>
+                                                        {selectedProduct == product.id && (
+                                                            <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                                 {errors.product_id && (
                                     <p className="mt-1 text-sm text-red-600">{errors.product_id}</p>
                                 )}

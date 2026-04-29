@@ -11,6 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'flag_emoji',
         'category',
         'size_label',
         'width_mm',

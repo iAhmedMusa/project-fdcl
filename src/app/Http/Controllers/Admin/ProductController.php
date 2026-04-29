@@ -34,6 +34,7 @@ class ProductController extends Controller
             return [
                 'id' => $product->id,
                 'name' => $product->name,
+                'flag_emoji' => $product->flag_emoji,
                 'category' => $product->category,
                 'size_label' => $product->size_label,
                 'price' => (float) $product->price,
@@ -61,6 +62,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'flag_emoji' => 'nullable|string|max:10',
             'category' => 'required|in:photo_studio,reprint,album,frame,mug,print',
             'size_label' => 'required|string|max:50',
             'width_mm' => 'nullable|numeric|min:1',
@@ -85,6 +87,7 @@ class ProductController extends Controller
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
+                'flag_emoji' => $product->flag_emoji,
                 'category' => $product->category,
                 'size_label' => $product->size_label,
                 'width_mm' => $product->width_mm,
@@ -103,6 +106,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'flag_emoji' => 'nullable|string|max:10',
             'category' => 'required|in:photo_studio,reprint,album,frame,mug,print',
             'size_label' => 'required|string|max:50',
             'width_mm' => 'nullable|numeric|min:1',

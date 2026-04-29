@@ -145,7 +145,12 @@ export default function ProductsIndex({ products, filters }) {
                                         className={`border-b border-border/50 transition-colors hover:bg-muted/40 ${idx % 2 === 0 ? '' : 'bg-muted/20'}`}
                                     >
                                         <td className="px-5 py-3.5">
-                                            <span className="font-medium text-foreground">{product.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                {product.flag_emoji && (
+                                                    <span className="text-lg leading-none">{product.flag_emoji}</span>
+                                                )}
+                                                <span className="font-medium text-foreground">{product.name}</span>
+                                            </div>
                                         </td>
                                         <td className="px-5 py-3.5">
                                             <span className="inline-flex items-center rounded-md bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary ring-1 ring-inset ring-primary/20">

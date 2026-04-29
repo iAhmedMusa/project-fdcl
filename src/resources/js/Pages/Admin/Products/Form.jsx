@@ -1,4 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 const CATEGORIES = [
@@ -12,9 +13,11 @@ const CATEGORIES = [
 
 export default function ProductForm({ product }) {
     const isEditing = product !== null;
+    const [showFlagTip, setShowFlagTip] = useState(false);
 
     const { data, setData, post, put, processing, errors } = useForm({
         name: product?.name || '',
+        flag_emoji: product?.flag_emoji || '',
         category: product?.category || 'photo_studio',
         size_label: product?.size_label || '',
         width_mm: product?.width_mm || '',
@@ -85,6 +88,52 @@ export default function ProductForm({ product }) {
                             />
                             {errors.name && (
                                 <p className="mt-1 text-sm text-destructive">{errors.name}</p>
+                            )}
+                        </div>
+
+                        {/* Flag Emoji */}
+                        <div>
+                            <div className="mb-1.5 flex items-center gap-1.5">
+                                <label className="text-sm font-medium text-foreground">Flag Emoji</label>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onMouseEnter={() => setShowFlagTip(true)}
+                                        onMouseLeave={() => setShowFlagTip(false)}
+                                        onFocus={() => setShowFlagTip(true)}
+                                        onBlur={() => setShowFlagTip(false)}
+                                        className="flex h-4 w-4 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                                        aria-label="Flag emoji help"
+                                    >
+                                        <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    {showFlagTip && (
+                                        <div className="absolute left-6 top-1/2 z-50 w-72 -translate-y-1/2 rounded-lg border bg-popover p-3 shadow-lg text-xs text-popover-foreground">
+                                            <p className="font-semibold mb-1">How to get flag emojis</p>
+                                            <p className="text-muted-foreground leading-relaxed">
+                                                Go to <span className="font-mono bg-muted px-1 rounded">emojipedia.org/flags</span> and copy any flag emoji. Each country flag is two letters — e.g. BD→🇧🇩, US→🇺🇸, GB→🇬🇧. Paste it directly into this field.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-14 items-center justify-center rounded-md border border-input bg-muted text-2xl">
+                                    {data.flag_emoji || <span className="text-xs text-muted-foreground">—</span>}
+                                </div>
+                                <input
+                                    type="text"
+                                    value={data.flag_emoji}
+                                    onChange={(e) => setData('flag_emoji', e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-sm transition placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    placeholder="e.g. 🇧🇩"
+                                    maxLength={10}
+                                />
+                            </div>
+                            {errors.flag_emoji && (
+                                <p className="mt-1 text-sm text-destructive">{errors.flag_emoji}</p>
                             )}
                         </div>
 
