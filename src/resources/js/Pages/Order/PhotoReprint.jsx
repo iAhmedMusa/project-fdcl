@@ -1,8 +1,9 @@
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 import DeliverySection from '@/Components/Order/DeliverySection';
+import CustomSelect from '@/Components/CustomSelect';
 
 export default function PhotoReprint({ products, locations, deliveryFees, prefilledCode }) {
     const { auth } = usePage().props;
@@ -30,6 +31,19 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
     const [uploadProgress, setUploadProgress] = useState(null);
     const [errors, setErrors] = useState({});
 
+    const [sizeDropdownOpen, setSizeDropdownOpen] = useState(false);
+    const sizeDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (sizeDropdownRef.current && !sizeDropdownRef.current.contains(e.target)) {
+                setSizeDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     // Delivery state
     const [pickupType, setPickupType] = useState('studio');
     const [deliveryType, setDeliveryType] = useState('regular');
@@ -41,6 +55,15 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
     const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
     const selectedProductData = products.find((p) => p.id == selectedProduct);
+    const minQty = selectedProductData?.min_quantity ?? 4;
+    const qtyStep = selectedProductData?.quantity_step ?? 2;
+
+    useEffect(() => {
+        if (selectedProductData) {
+            setQuantity(selectedProductData.min_quantity ?? 4);
+        }
+    }, [selectedProduct]);
+
     const productTotal = selectedProductData ? parseFloat(selectedProductData.price) * quantity : 0;
     const deliveryFee = pickupType === 'delivery'
         ? (deliveryType === 'express' ? deliveryFees.express : deliveryFees.regular)
@@ -353,19 +376,71 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Photo size <span className="text-red-500">*</span>
                                 </label>
-                                <select
-                                    value={selectedProduct}
-                                    onChange={(e) => setSelectedProduct(e.target.value)}
-                                    required
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                >
-                                    <option value="">Select size...</option>
-                                    {products.map((product) => (
-                                        <option key={product.id} value={product.id}>
-                                            {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="relative" ref={sizeDropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSizeDropdownOpen((o) => !o)}
+                                        className={`flex w-full items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm transition-colors focus:outline-none focus:ring-1 focus:ring-primary ${
+                                            sizeDropdownOpen
+                                                ? 'border-primary ring-1 ring-primary'
+                                                : 'border-gray-300 dark:border-gray-600'
+                                        } bg-white dark:bg-gray-800 text-left`}
+                                    >
+                                        {selectedProductData ? (
+                                            <span className="flex items-center gap-2.5">
+                                                {selectedProductData.flag_emoji && (
+                                                    <span className="text-xl leading-none">{selectedProductData.flag_emoji}</span>
+                                                )}
+                                                <span className="font-medium text-gray-900 dark:text-gray-100">{selectedProductData.name}</span>
+                                                <span className="text-gray-400 dark:text-gray-500">·</span>
+                                                <span className="text-gray-500 dark:text-gray-400">{selectedProductData.size_label}</span>
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 dark:text-gray-500">Select size...</span>
+                                        )}
+                                        <svg
+                                            className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${sizeDropdownOpen ? 'rotate-180' : ''}`}
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    {sizeDropdownOpen && (
+                                        <div className="absolute z-50 mt-1.5 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                                            <div className="max-h-64 overflow-y-auto">
+                                                {products.map((product) => (
+                                                    <button
+                                                        key={product.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedProduct(String(product.id));
+                                                            setSizeDropdownOpen(false);
+                                                        }}
+                                                        className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/60 ${
+                                                            selectedProduct == product.id
+                                                                ? 'bg-primary/5 dark:bg-primary/10'
+                                                                : ''
+                                                        }`}
+                                                    >
+                                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-700 text-lg leading-none">
+                                                            {product.flag_emoji || '📷'}
+                                                        </span>
+                                                        <span className="flex-1 min-w-0">
+                                                            <span className="block font-medium text-gray-900 dark:text-gray-100 truncate">{product.name}</span>
+                                                            <span className="block text-xs text-gray-400 dark:text-gray-500">{product.size_label}</span>
+                                                        </span>
+                                                        {selectedProduct == product.id && (
+                                                            <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                            </svg>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                                 {errors.product_id && (
                                     <p className="mt-1 text-sm text-red-600">{errors.product_id}</p>
                                 )}
@@ -375,13 +450,13 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                             <div className="mt-4">
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Number of copies <span className="text-red-500">*</span>
-                                    <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum 4 copies per order</span>
+                                    <span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">Minimum {minQty} per order</span>
                                 </label>
                                 <div className="flex items-center gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => setQuantity(Math.max(4, quantity - 2))}
-                                        disabled={quantity <= 4}
+                                        onClick={() => setQuantity(Math.max(minQty, quantity - qtyStep))}
+                                        disabled={quantity <= minQty}
                                         className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                     >
                                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -390,20 +465,21 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                     </button>
                                     <input
                                         type="number"
-                                        min="4"
+                                        min={minQty}
                                         max="100"
-                                        step="2"
+                                        step={qtyStep}
                                         value={quantity}
                                         onChange={(e) => {
-                                            const val = parseInt(e.target.value) || 4;
-                                            const clamped = Math.min(100, Math.max(4, val));
-                                            setQuantity(clamped % 2 === 0 ? clamped : clamped + 1);
+                                            const val = parseInt(e.target.value) || minQty;
+                                            const clamped = Math.min(100, Math.max(minQty, val));
+                                            const remainder = (clamped - minQty) % qtyStep;
+                                            setQuantity(remainder === 0 ? clamped : clamped + (qtyStep - remainder));
                                         }}
                                         className="w-20 rounded-lg border border-gray-300 px-4 py-2 text-center text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => setQuantity(Math.min(100, quantity + 2))}
+                                        onClick={() => setQuantity(Math.min(100, quantity + qtyStep))}
                                         disabled={quantity >= 100}
                                         className="rounded-lg border border-gray-300 px-3 py-2 text-gray-500 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
                                     >
@@ -422,14 +498,14 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Paper type
                                 </label>
-                                <select
+                                <CustomSelect
+                                    options={[
+                                        { value: 'glossy', label: 'Glossy' },
+                                        { value: 'matte', label: 'Matte' },
+                                    ]}
                                     value={paperType}
-                                    onChange={(e) => setPaperType(e.target.value)}
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                >
-                                    <option value="glossy">Glossy</option>
-                                    <option value="matte">Matte</option>
-                                </select>
+                                    onChange={setPaperType}
+                                />
                             </div>
 
                             {/* Special instructions */}

@@ -2,6 +2,7 @@ import StaffLayout from '@/Layouts/StaffLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
+import CustomSelect from '@/Components/CustomSelect';
 
 const SERVICES = [
     { id: 'reprint', name: 'Photo Print', description: 'Photo prints from FDCL Photo ID or customer upload', icon: 'reprint' },
@@ -1202,19 +1203,18 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                         <label className="mb-2 block text-sm font-medium text-gray-700">
                                             Photo size <span className="text-red-500">*</span>
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={reprintProducts.map((p) => ({
+                                                value: p.id,
+                                                label: p.name,
+                                                subtitle: `${p.size_label} — ৳${parseFloat(p.price).toFixed(0)}`,
+                                                icon: p.flag_emoji || null,
+                                            }))}
                                             value={reprintProduct}
-                                            onChange={(e) => setReprintProduct(e.target.value)}
-                                            className={INPUT}
-                                        >
-                                            <option value="">Select size...</option>
-                                            {reprintProducts.map((product) => (
-                                                <option key={product.id} value={product.id}>
-                                                    {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.reprint_product && <p className={ERR}>{errors.reprint_product}</p>}
+                                            onChange={setReprintProduct}
+                                            placeholder="Select size..."
+                                            error={errors.reprint_product}
+                                        />
                                     </div>
 
                                     {/* Number of copies */}
@@ -1257,14 +1257,14 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                         <label className="mb-2 block text-sm font-medium text-gray-700">
                                             Paper type
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={[
+                                                { value: 'glossy', label: 'Glossy' },
+                                                { value: 'matte', label: 'Matte' },
+                                            ]}
                                             value={reprintPaperType}
-                                            onChange={(e) => setReprintPaperType(e.target.value)}
-                                            className={INPUT}
-                                        >
-                                            <option value="glossy">Glossy</option>
-                                            <option value="matte">Matte</option>
-                                        </select>
+                                            onChange={setReprintPaperType}
+                                        />
                                     </div>
 
                                     {/* Additional items (upload/awaiting only) */}
@@ -1325,18 +1325,18 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                                         <div className="grid grid-cols-2 gap-3">
                                                             <div>
                                                                 <label className="mb-1 block text-xs font-medium text-gray-600">Size <span className="text-red-500">*</span></label>
-                                                                <select
+                                                                <CustomSelect
+                                                                    options={reprintProducts.map((p) => ({
+                                                                        value: p.id,
+                                                                        label: p.name,
+                                                                        subtitle: `${p.size_label} — ৳${parseFloat(p.price).toFixed(0)}`,
+                                                                        icon: p.flag_emoji || null,
+                                                                    }))}
                                                                     value={item.product}
-                                                                    onChange={(e) => updateReprintItem(item.id, 'product', e.target.value)}
-                                                                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                                                >
-                                                                    <option value="">Select size...</option>
-                                                                    {reprintProducts.map(p => (
-                                                                        <option key={p.id} value={p.id}>
-                                                                            {p.name} ({p.size_label}) — ৳{parseFloat(p.price).toFixed(0)}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
+                                                                    onChange={(val) => updateReprintItem(item.id, 'product', val)}
+                                                                    placeholder="Select size..."
+                                                                    compact
+                                                                />
                                                             </div>
                                                             <div>
                                                                 <label className="mb-1 block text-xs font-medium text-gray-600">Copies</label>
@@ -1764,19 +1764,18 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                         <label className={LABEL}>
                                             Pickup studio <span className="text-destructive">*</span>
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={locations.map((loc) => ({
+                                                value: loc.id,
+                                                label: loc.name,
+                                                subtitle: loc.address,
+                                            }))}
                                             value={locationId}
-                                            onChange={(e) => setLocationId(e.target.value)}
-                                            className={INPUT}
-                                        >
-                                            <option value="">Select location...</option>
-                                            {locations.map((loc) => (
-                                                <option key={loc.id} value={loc.id}>
-                                                    {loc.name} — {loc.address}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.location_id && <p className={ERR}>{errors.location_id}</p>}
+                                            onChange={setLocationId}
+                                            placeholder="Select location..."
+                                            error={errors.location_id}
+                                            className="mt-1"
+                                        />
                                     </div>
                                 )}
 
@@ -2099,17 +2098,15 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                                 <label className={LABEL}>
                                                     Method <span className="text-destructive">*</span>
                                                 </label>
-                                                <select
+                                                <CustomSelect
+                                                    options={['cash', 'bkash', 'nagad', 'card', 'other'].map((m) => ({
+                                                        value: m,
+                                                        label: m.charAt(0).toUpperCase() + m.slice(1),
+                                                    }))}
                                                     value={paymentMethod}
-                                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                                    className={INPUT}
-                                                >
-                                                    {['cash', 'bkash', 'nagad', 'card', 'other'].map((m) => (
-                                                        <option key={m} value={m}>
-                                                            {m.charAt(0).toUpperCase() + m.slice(1)}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    onChange={setPaymentMethod}
+                                                    className="mt-1"
+                                                />
                                             </div>
 
                                             {['bkash', 'nagad', 'card'].includes(paymentMethod) && (
