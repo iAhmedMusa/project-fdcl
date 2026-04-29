@@ -1,6 +1,7 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import CustomSelect from '@/Components/CustomSelect';
 
 const CATEGORIES = [
     { value: 'photo_studio', label: 'Photo Studio' },
@@ -142,20 +143,12 @@ export default function ProductForm({ product }) {
                             <label className="mb-1.5 block text-sm font-medium text-foreground">
                                 Category <span className="text-destructive">*</span>
                             </label>
-                            <select
+                            <CustomSelect
+                                options={CATEGORIES}
                                 value={data.category}
-                                onChange={(e) => setData('category', e.target.value)}
-                                className="flex h-9 w-full appearance-none rounded-md border border-input bg-transparent pl-3 pr-8 text-sm shadow-sm transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            >
-                                {CATEGORIES.map((cat) => (
-                                    <option key={cat.value} value={cat.value}>
-                                        {cat.label}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.category && (
-                                <p className="mt-1 text-sm text-destructive">{errors.category}</p>
-                            )}
+                                onChange={(val) => setData('category', val)}
+                                error={errors.category}
+                            />
                         </div>
 
                         {/* Size Label */}

@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import BkashPaymentSection from '@/Components/Order/BkashPaymentSection';
 import DeliverySection from '@/Components/Order/DeliverySection';
+import CustomSelect from '@/Components/CustomSelect';
 
 export default function PhotoReprint({ products, locations, deliveryFees, prefilledCode }) {
     const { auth } = usePage().props;
@@ -497,14 +498,14 @@ export default function PhotoReprint({ products, locations, deliveryFees, prefil
                                 <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                                     Paper type
                                 </label>
-                                <select
+                                <CustomSelect
+                                    options={[
+                                        { value: 'glossy', label: 'Glossy' },
+                                        { value: 'matte', label: 'Matte' },
+                                    ]}
                                     value={paperType}
-                                    onChange={(e) => setPaperType(e.target.value)}
-                                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
-                                >
-                                    <option value="glossy">Glossy</option>
-                                    <option value="matte">Matte</option>
-                                </select>
+                                    onChange={setPaperType}
+                                />
                             </div>
 
                             {/* Special instructions */}
