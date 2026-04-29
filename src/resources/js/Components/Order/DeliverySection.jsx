@@ -1,3 +1,5 @@
+import CustomSelect from '@/Components/CustomSelect';
+
 export default function DeliverySection({
     pickupType, setPickupType,
     deliveryType, setDeliveryType,
@@ -77,19 +79,17 @@ export default function DeliverySection({
                     <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Pickup Studio <span className="text-red-500">*</span>
                     </label>
-                    <select
+                    <CustomSelect
+                        options={locations.map((loc) => ({
+                            value: loc.id,
+                            label: loc.name,
+                            subtitle: loc.address,
+                        }))}
                         value={locationId}
-                        onChange={(e) => setLocationId(e.target.value)}
-                        className={inputCls}
-                    >
-                        <option value="">Select studio...</option>
-                        {locations.map((loc) => (
-                            <option key={loc.id} value={loc.id}>
-                                {loc.name} — {loc.address}
-                            </option>
-                        ))}
-                    </select>
-                    {errors.location_id && <p className="mt-1 text-sm text-red-500">{errors.location_id}</p>}
+                        onChange={setLocationId}
+                        placeholder="Select studio..."
+                        error={errors.location_id}
+                    />
                 </div>
             )}
 

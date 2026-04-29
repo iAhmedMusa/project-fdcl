@@ -34,10 +34,13 @@ class ProductController extends Controller
             return [
                 'id' => $product->id,
                 'name' => $product->name,
+                'flag_emoji' => $product->flag_emoji,
                 'category' => $product->category,
                 'size_label' => $product->size_label,
                 'price' => (float) $product->price,
                 'copies_per_sheet' => $product->copies_per_sheet,
+                'min_quantity' => $product->min_quantity,
+                'quantity_step' => $product->quantity_step,
                 'is_active' => $product->is_active,
             ];
         });
@@ -59,12 +62,15 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'flag_emoji' => 'nullable|string|max:10',
             'category' => 'required|in:photo_studio,reprint,album,frame,mug,print',
             'size_label' => 'required|string|max:50',
             'width_mm' => 'nullable|numeric|min:1',
             'height_mm' => 'nullable|numeric|min:1',
             'price' => 'required|numeric|min:0',
             'copies_per_sheet' => 'required|integer|min:1',
+            'min_quantity' => 'required|integer|min:1',
+            'quantity_step' => 'required|integer|min:1',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
         ]);
@@ -81,12 +87,15 @@ class ProductController extends Controller
             'product' => [
                 'id' => $product->id,
                 'name' => $product->name,
+                'flag_emoji' => $product->flag_emoji,
                 'category' => $product->category,
                 'size_label' => $product->size_label,
                 'width_mm' => $product->width_mm,
                 'height_mm' => $product->height_mm,
                 'price' => $product->price,
                 'copies_per_sheet' => $product->copies_per_sheet,
+                'min_quantity' => $product->min_quantity,
+                'quantity_step' => $product->quantity_step,
                 'description' => $product->description,
                 'is_active' => $product->is_active,
             ],
@@ -97,12 +106,15 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'flag_emoji' => 'nullable|string|max:10',
             'category' => 'required|in:photo_studio,reprint,album,frame,mug,print',
             'size_label' => 'required|string|max:50',
             'width_mm' => 'nullable|numeric|min:1',
             'height_mm' => 'nullable|numeric|min:1',
             'price' => 'required|numeric|min:0',
             'copies_per_sheet' => 'required|integer|min:1',
+            'min_quantity' => 'required|integer|min:1',
+            'quantity_step' => 'required|integer|min:1',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
         ]);
