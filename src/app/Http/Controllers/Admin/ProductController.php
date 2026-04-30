@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,24 +15,21 @@ class ProductController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Product::orderBy('category')->orderBy('name');
+        $query = Product::orderBy('sort_order')->orderBy('name');
 
-        // Filter by category
         if ($request->has('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
         }
 
-        // Filter by active status
         if ($request->has('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
         }
 
-        // Search by name
         if ($request->has('search') && $request->search) {
             $query->where('name', 'like', "%{$request->search}%");
         }
 
-        $products = $query->paginate(20)->through(function ($product) {
+        $products = $query->get()->map(function ($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -42,8 +41,9 @@ class ProductController extends Controller
                 'min_quantity' => $product->min_quantity,
                 'quantity_step' => $product->quantity_step,
                 'is_active' => $product->is_active,
+                'sort_order' => $product->sort_order,
             ];
-        });
+        })->values();
 
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
@@ -73,7 +73,12 @@ class ProductController extends Controller
             'quantity_step' => 'required|integer|min:1',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
+
+        if (! isset($validated['sort_order'])) {
+            $validated['sort_order'] = (Product::max('sort_order') ?? 0) + 1;
+        }
 
         Product::create($validated);
 
@@ -98,6 +103,7 @@ class ProductController extends Controller
                 'quantity_step' => $product->quantity_step,
                 'description' => $product->description,
                 'is_active' => $product->is_active,
+                'sort_order' => $product->sort_order,
             ],
         ]);
     }
@@ -117,12 +123,30 @@ class ProductController extends Controller
             'quantity_step' => 'required|integer|min:1',
             'description' => 'nullable|string|max:500',
             'is_active' => 'boolean',
+            'sort_order' => 'nullable|integer|min:0',
         ]);
 
         $product->update($validated);
 
         return redirect()->route('admin.products.index')
             ->with('success', 'Product updated successfully.');
+    }
+
+    public function reorder(Request $request): JsonResponse
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|integer|exists:products,id',
+            'items.*.sort_order' => 'required|integer|min:0',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->items as $item) {
+                Product::where('id', $item['id'])->update(['sort_order' => $item['sort_order']]);
+            }
+        });
+
+        return response()->json(['success' => true]);
     }
 
     public function toggleActive(Product $product): RedirectResponse
