@@ -5,7 +5,21 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'Focus Digital Color Lab') }}</title>
+
+        <!-- SEO / Open Graph -->
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="Focus Digital Color Lab">
+        <meta property="og:title" content="Premium Photo Studio &amp; Lab in Dhaka">
+        <meta property="og:description" content="15+ years Experienced in Photo Studio Service | All embassy-approved visa applicant biometric/Visa photos">
+        <meta property="og:url" content="https://focusdigitalcolorlab.com">
+        <meta property="og:image" content="https://focusdigitalcolorlab.com/fdcl_og.png">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="628">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Premium Photo Studio &amp; Lab in Dhaka">
+        <meta name="twitter:description" content="15+ years Experienced in Photo Studio Service | All embassy-approved visa applicant biometric/Visa photos">
+        <meta name="twitter:image" content="https://focusdigitalcolorlab.com/fdcl_og.png">
 
         <!-- Favicon -->
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
