@@ -32,6 +32,8 @@ class ReprintController extends Controller
     {
         $products = Product::where('category', 'reprint')
             ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
             ->get();
 
         $locations = Location::where('is_active', true)
