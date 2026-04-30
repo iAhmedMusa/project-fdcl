@@ -29,6 +29,8 @@ class OrderController extends Controller
     public function create(): Response
     {
         $products = Product::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
             ->get()
             ->groupBy('category')
             ->map(fn ($group) => $group->values());

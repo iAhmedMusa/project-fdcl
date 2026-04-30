@@ -70,6 +70,12 @@ class SmsService
         return $this->send($phone, $message);
     }
 
+    public function sendPasswordResetOtp(string $phone, string $otp): bool
+    {
+        $message = "Your Focus Digital Color Lab password reset code is: {$otp}. Valid for 5 minutes. Do not share this code.";
+        return $this->send($phone, $message);
+    }
+
     public function sendInvoiceLink(string $phone, string $url, string $orderNumber, ?string $name = null): bool
     {
         $greeting = $name ? "Hi {$name}," : 'Hi,';
