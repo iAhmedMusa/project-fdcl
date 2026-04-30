@@ -77,7 +77,7 @@ export default function DeliverySection({
             {pickupType === 'studio' && (
                 <div>
                     <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Pickup Studio <span className="text-red-500">*</span>
+                        Pickup from Studio <span className="text-red-500">*</span>
                     </label>
                     <CustomSelect
                         options={locations.map((loc) => ({
