@@ -29,6 +29,7 @@ export default function ProductForm({ product }) {
         quantity_step: product?.quantity_step ?? 2,
         description: product?.description || '',
         is_active: product?.is_active ?? true,
+        sort_order: product?.sort_order ?? 0,
     });
 
     const handleSubmit = (e) => {
@@ -291,6 +292,25 @@ export default function ProductForm({ product }) {
                             />
                             {errors.description && (
                                 <p className="mt-1 text-sm text-destructive">{errors.description}</p>
+                            )}
+                        </div>
+
+                        {/* Sort Order */}
+                        <div>
+                            <label className="mb-1.5 block text-sm font-medium text-foreground">
+                                Sort Order
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                value={data.sort_order}
+                                onChange={(e) => setData('sort_order', parseInt(e.target.value) || 0)}
+                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-sm transition placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                placeholder="0"
+                            />
+                            <p className="mt-1 text-xs text-muted-foreground">Lower number = appears first in dropdown. Use drag-and-drop on the products list for bulk reordering.</p>
+                            {errors.sort_order && (
+                                <p className="mt-1 text-sm text-destructive">{errors.sort_order}</p>
                             )}
                         </div>
 

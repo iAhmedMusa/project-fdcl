@@ -22,6 +22,7 @@ class Product extends Model
         'quantity_step',
         'description',
         'is_active',
+        'sort_order',
     ];
 
     protected function casts(): array
@@ -33,6 +34,7 @@ class Product extends Model
             'min_quantity' => 'integer',
             'quantity_step' => 'integer',
             'is_active' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 }
