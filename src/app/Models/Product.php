@@ -11,14 +11,18 @@ class Product extends Model
 
     protected $fillable = [
         'name',
+        'flag_emoji',
         'category',
         'size_label',
         'width_mm',
         'height_mm',
         'price',
         'copies_per_sheet',
+        'min_quantity',
+        'quantity_step',
         'description',
         'is_active',
+        'sort_order',
     ];
 
     protected function casts(): array
@@ -27,7 +31,10 @@ class Product extends Model
             'width_mm' => 'decimal:2',
             'height_mm' => 'decimal:2',
             'price' => 'decimal:2',
+            'min_quantity' => 'integer',
+            'quantity_step' => 'integer',
             'is_active' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 }

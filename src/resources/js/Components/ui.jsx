@@ -124,6 +124,7 @@ export function StatusBadge({ status }) {
         pending: { label: 'Pending', color: 'bg-secondary text-secondary-foreground' },
         processing: { label: 'Processing', color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
         ready: { label: 'Ready', color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+        out_for_delivery: { label: 'Out for Delivery', color: 'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
         delivered: { label: 'Delivered', color: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
         cancelled: { label: 'Cancelled', color: 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
     };
@@ -133,6 +134,7 @@ export function StatusBadge({ status }) {
         pending: 'bg-muted-foreground',
         processing: 'bg-blue-500',
         ready: 'bg-amber-500',
+        out_for_delivery: 'bg-purple-500',
         delivered: 'bg-emerald-500',
         cancelled: 'bg-red-500',
     };

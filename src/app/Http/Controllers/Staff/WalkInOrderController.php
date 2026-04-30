@@ -12,6 +12,7 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PhotoRegistry;
 use App\Models\Product;
+use App\Http\Controllers\Concerns\HandlesDelivery;
 use App\Models\StudioFee;
 use App\Models\User;
 use App\Services\OrderNumberGenerator;
@@ -29,6 +30,7 @@ use Inertia\Response;
 
 class WalkInOrderController extends Controller
 {
+    use HandlesDelivery;
     public function __construct(
         private readonly OrderNumberGenerator $orderNumbers,
         private readonly PhotoStorage $photoStorage,
@@ -61,6 +63,7 @@ class WalkInOrderController extends Controller
             'locations'     => $locations,
             'studioFees'    => $studioFees,
             'staffLocation' => $staffLocation,
+            'deliveryFees'  => $this->deliveryFees(),
         ]);
     }
 
@@ -71,8 +74,14 @@ class WalkInOrderController extends Controller
             'customer_name' => 'required_without:customer_id|string|max:100',
             'customer_phone' => ['required_without:customer_id', 'string', 'max:20', 'regex:/^(\+8801|8801|01)[3-9]\d{8}$/'],
             'customer_email' => 'nullable|email|max:150',
-            'location_id' => 'required|exists:locations,id',
+            'location_id' => 'required_if:delivery_method,pickup|nullable|exists:locations,id',
             'delivery_method' => 'required|in:pickup,home',
+            'delivery_type' => 'required_if:delivery_method,home|nullable|in:regular,express',
+            'flat' => 'required_if:delivery_method,home|nullable|string|max:100',
+            'road' => 'required_if:delivery_method,home|nullable|string|max:100',
+            'block' => 'nullable|string|max:100',
+            'postal_code' => 'required_if:delivery_method,home|nullable|string|max:20',
+            'delivery_instructions' => 'nullable|string|max:500',
             'special_instructions' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:1000',
             'services' => 'required|array|min:1',
@@ -192,21 +201,46 @@ class WalkInOrderController extends Controller
                 $paymentStatus = 'partial';
             }
 
-            // Create order
-            $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => $customer->id,
-                'location_id' => $validated['location_id'],
+            // Map delivery_method (pickup/home) → pickup_type (studio/delivery) for trait helpers
+            $deliveryMapped = array_merge($validated, [
                 'pickup_type' => $validated['delivery_method'] === 'home' ? 'delivery' : 'studio',
-                'status' => 'pending',
-                'payment_status' => $paymentStatus,
-                'total_amount' => $totalAmount,
-                'discount_amount' => $validated['discount_amount'] ?? 0,
-                'amount_paid' => $paymentAmount,
-                'paper_type' => $reprintItemsData[0]['paper_type'] ?? 'glossy',
-                'special_instructions' => $validated['special_instructions'] ?? null,
-                'notes' => $validated['notes'] ?? null,
             ]);
+
+            $deliveryFee = $this->deliveryFee($deliveryMapped);
+            $totalAmount += $deliveryFee;
+            $effectiveTotal += $deliveryFee;
+
+            if ($deliveryFee > 0) {
+                if ($paymentAmount >= $effectiveTotal) {
+                    $paymentStatus = 'paid';
+                } elseif ($paymentAmount > 0) {
+                    $paymentStatus = 'partial';
+                } else {
+                    $paymentStatus = 'unpaid';
+                }
+            }
+
+            // Create order
+            $order = Order::create(array_merge(
+                [
+                    'order_number' => $orderNumber,
+                    'user_id' => $customer->id,
+                    'status' => 'pending',
+                    'payment_status' => $paymentStatus,
+                    'total_amount' => $totalAmount,
+                    'discount_amount' => $validated['discount_amount'] ?? 0,
+                    'amount_paid' => $paymentAmount,
+                    'paper_type' => $reprintItemsData[0]['paper_type'] ?? 'glossy',
+                    'special_instructions' => $validated['special_instructions'] ?? null,
+                    'notes' => $validated['notes'] ?? null,
+                ],
+                $this->deliveryOrderFields($deliveryMapped)
+            ));
+
+            // Save delivery address to customer profile if not already set
+            if ($deliveryMapped['pickup_type'] === 'delivery' && ! $customer->address) {
+                $this->saveAddressToProfile($customer, $deliveryMapped);
+            }
 
             // Create order items for reprint (one per slot)
             if (in_array('reprint', $validated['services']) && ! empty($reprintItemsData)) {
@@ -393,7 +427,7 @@ class WalkInOrderController extends Controller
                     ->orWhere('phone', 'like', "%{$query}%");
             })
             ->limit(10)
-            ->get(['id', 'name', 'phone', 'email', 'is_walk_in']);
+            ->get(['id', 'name', 'phone', 'email', 'is_walk_in', 'address']);
 
         return response()->json($customers);
     }

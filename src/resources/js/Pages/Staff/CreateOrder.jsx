@@ -2,6 +2,7 @@ import StaffLayout from '@/Layouts/StaffLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
+import CustomSelect from '@/Components/CustomSelect';
 
 const SERVICES = [
     { id: 'reprint', name: 'Photo Print', description: 'Photo prints from FDCL Photo ID or customer upload', icon: 'reprint' },
@@ -65,7 +66,7 @@ function StepHeader({ number, title, isComplete, isActive }) {
     );
 }
 
-export default function CreateOrder({ products, locations, studioFees, staffLocation }) {
+export default function CreateOrder({ products, locations, studioFees, staffLocation, deliveryFees }) {
     // ── Step 1: Customer ──────────────────────────────────────
     const [customerType, setCustomerType] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -105,6 +106,12 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
     // ── Step 3: Order details ────────────────────────────────
     const [locationId, setLocationId] = useState('');
     const [deliveryMethod, setDeliveryMethod] = useState('pickup');
+    const [deliveryType, setDeliveryType] = useState('regular');
+    const [flat, setFlat] = useState('');
+    const [road, setRoad] = useState('');
+    const [block, setBlock] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+    const [deliveryInstructions, setDeliveryInstructions] = useState('');
     const [specialInstructions, setSpecialInstructions] = useState('');
     const [notes, setNotes] = useState('');
 
@@ -201,7 +208,8 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
     };
 
     const isStep4Complete = () => {
-        return deliveryMethod === 'pickup' ? !!locationId : true;
+        if (deliveryMethod === 'pickup') return !!locationId;
+        return !!(flat.trim() && road.trim() && postalCode.trim() && deliveryType);
     };
 
     const canSubmit = () => {
@@ -209,6 +217,17 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
     };
 
     // Fetch photo registries when customer is selected
+    // Pre-fill delivery address from selected customer's saved address
+    useEffect(() => {
+        if (selectedCustomer?.address && deliveryMethod === 'home') {
+            const parts = selectedCustomer.address.split(', ').filter(p => p !== 'Dhaka');
+            setFlat(parts[0] || '');
+            setRoad(parts[1] || '');
+            setBlock(parts[2] || '');
+            setPostalCode(parts[3] || '');
+        }
+    }, [selectedCustomer, deliveryMethod]);
+
     useEffect(() => {
         if (selectedCustomer && customerType === 'existing') {
             setLoadingRegistries(true);
@@ -264,6 +283,10 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
     }, []);
 
     // Calculate total
+    const deliveryFee = deliveryMethod === 'home'
+        ? (deliveryType === 'express' ? (deliveryFees?.express ?? 0) : (deliveryFees?.regular ?? 0))
+        : 0;
+
     const calculateTotal = () => {
         let total = 0;
         if (selectedServices.has('reprint') && reprintProduct) {
@@ -274,15 +297,10 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
             });
             total += studioFeeTotal;
         }
-        if (selectedServices.has('album') && albumProduct) {
-            total += albumTotal;
-        }
-        if (selectedServices.has('frame') && frameProduct) {
-            total += frameTotal;
-        }
-        if (selectedServices.has('mug') && mugProduct) {
-            total += mugTotal;
-        }
+        if (selectedServices.has('album') && albumProduct) total += albumTotal;
+        if (selectedServices.has('frame') && frameProduct) total += frameTotal;
+        if (selectedServices.has('mug') && mugProduct) total += mugTotal;
+        total += deliveryFee;
         return total;
     };
 
@@ -403,8 +421,14 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
         })();
 
         const data = {
-            location_id: locationId,
+            location_id: deliveryMethod === 'pickup' ? locationId : null,
             delivery_method: deliveryMethod,
+            delivery_type: deliveryMethod === 'home' ? deliveryType : null,
+            flat: deliveryMethod === 'home' ? flat : null,
+            road: deliveryMethod === 'home' ? road : null,
+            block: deliveryMethod === 'home' ? block : null,
+            postal_code: deliveryMethod === 'home' ? postalCode : null,
+            delivery_instructions: deliveryMethod === 'home' ? deliveryInstructions : null,
             special_instructions: specialInstructions,
             notes: notes,
             services: Array.from(selectedServices),
@@ -1179,19 +1203,18 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                         <label className="mb-2 block text-sm font-medium text-gray-700">
                                             Photo size <span className="text-red-500">*</span>
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={reprintProducts.map((p) => ({
+                                                value: p.id,
+                                                label: p.name,
+                                                subtitle: `${p.size_label} — ৳${parseFloat(p.price).toFixed(0)}`,
+                                                icon: p.flag_emoji || null,
+                                            }))}
                                             value={reprintProduct}
-                                            onChange={(e) => setReprintProduct(e.target.value)}
-                                            className={INPUT}
-                                        >
-                                            <option value="">Select size...</option>
-                                            {reprintProducts.map((product) => (
-                                                <option key={product.id} value={product.id}>
-                                                    {product.name} ({product.size_label}) — ৳{parseFloat(product.price).toFixed(0)}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.reprint_product && <p className={ERR}>{errors.reprint_product}</p>}
+                                            onChange={setReprintProduct}
+                                            placeholder="Select size..."
+                                            error={errors.reprint_product}
+                                        />
                                     </div>
 
                                     {/* Number of copies */}
@@ -1234,14 +1257,14 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                         <label className="mb-2 block text-sm font-medium text-gray-700">
                                             Paper type
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={[
+                                                { value: 'glossy', label: 'Glossy' },
+                                                { value: 'matte', label: 'Matte' },
+                                            ]}
                                             value={reprintPaperType}
-                                            onChange={(e) => setReprintPaperType(e.target.value)}
-                                            className={INPUT}
-                                        >
-                                            <option value="glossy">Glossy</option>
-                                            <option value="matte">Matte</option>
-                                        </select>
+                                            onChange={setReprintPaperType}
+                                        />
                                     </div>
 
                                     {/* Additional items (upload/awaiting only) */}
@@ -1302,18 +1325,18 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                                         <div className="grid grid-cols-2 gap-3">
                                                             <div>
                                                                 <label className="mb-1 block text-xs font-medium text-gray-600">Size <span className="text-red-500">*</span></label>
-                                                                <select
+                                                                <CustomSelect
+                                                                    options={reprintProducts.map((p) => ({
+                                                                        value: p.id,
+                                                                        label: p.name,
+                                                                        subtitle: `${p.size_label} — ৳${parseFloat(p.price).toFixed(0)}`,
+                                                                        icon: p.flag_emoji || null,
+                                                                    }))}
                                                                     value={item.product}
-                                                                    onChange={(e) => updateReprintItem(item.id, 'product', e.target.value)}
-                                                                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                                                                >
-                                                                    <option value="">Select size...</option>
-                                                                    {reprintProducts.map(p => (
-                                                                        <option key={p.id} value={p.id}>
-                                                                            {p.name} ({p.size_label}) — ৳{parseFloat(p.price).toFixed(0)}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
+                                                                    onChange={(val) => updateReprintItem(item.id, 'product', val)}
+                                                                    placeholder="Select size..."
+                                                                    compact
+                                                                />
                                                             </div>
                                                             <div>
                                                                 <label className="mb-1 block text-xs font-medium text-gray-600">Copies</label>
@@ -1715,29 +1738,23 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                     <label className="mb-2 block text-sm font-medium text-gray-700">
                                         Delivery method <span className="text-red-500">*</span>
                                     </label>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name="deliveryMethod"
-                                                value="pickup"
-                                                checked={deliveryMethod === 'pickup'}
-                                                onChange={() => setDeliveryMethod('pickup')}
-                                                className="h-4 w-4 text-primary focus:ring-primary"
-                                            />
-                                            <span className="text-sm text-gray-700">Pickup from studio</span>
-                                        </label>
-                                        <label className="flex items-center gap-2 cursor-not-allowed opacity-50">
-                                            <input
-                                                type="radio"
-                                                name="deliveryMethod"
-                                                value="home"
-                                                disabled
-                                                className="h-4 w-4 text-primary focus:ring-primary"
-                                            />
-                                            <span className="text-sm text-gray-500">Home delivery</span>
-                                            <span className="text-xs text-gray-400">(Coming soon)</span>
-                                        </label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeliveryMethod('pickup')}
+                                            className={`rounded-lg border p-3 text-left transition-all ${deliveryMethod === 'pickup' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300'}`}
+                                        >
+                                            <p className={`text-sm font-medium ${deliveryMethod === 'pickup' ? 'text-primary' : 'text-gray-700'}`}>Studio Pickup</p>
+                                            <p className="text-xs text-gray-400">Customer collects</p>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeliveryMethod('home')}
+                                            className={`rounded-lg border p-3 text-left transition-all ${deliveryMethod === 'home' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300'}`}
+                                        >
+                                            <p className={`text-sm font-medium ${deliveryMethod === 'home' ? 'text-primary' : 'text-gray-700'}`}>Home Delivery</p>
+                                            <p className="text-xs text-gray-400">Pathao Courier</p>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1747,19 +1764,60 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                         <label className={LABEL}>
                                             Pickup studio <span className="text-destructive">*</span>
                                         </label>
-                                        <select
+                                        <CustomSelect
+                                            options={locations.map((loc) => ({
+                                                value: loc.id,
+                                                label: loc.name,
+                                                subtitle: loc.address,
+                                            }))}
                                             value={locationId}
-                                            onChange={(e) => setLocationId(e.target.value)}
-                                            className={INPUT}
-                                        >
-                                            <option value="">Select location...</option>
-                                            {locations.map((loc) => (
-                                                <option key={loc.id} value={loc.id}>
-                                                    {loc.name} — {loc.address}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.location_id && <p className={ERR}>{errors.location_id}</p>}
+                                            onChange={setLocationId}
+                                            placeholder="Select location..."
+                                            error={errors.location_id}
+                                            className="mt-1"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Home delivery fields */}
+                                {deliveryMethod === 'home' && (
+                                    <div className="mb-4 space-y-3">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button type="button" onClick={() => setDeliveryType('regular')}
+                                                className={`rounded-lg border p-2.5 text-left transition-all ${deliveryType === 'regular' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300'}`}>
+                                                <p className={`text-sm font-semibold ${deliveryType === 'regular' ? 'text-primary' : 'text-gray-900'}`}>Regular</p>
+                                                <p className="text-xs text-gray-500">2–3 days · +৳{deliveryFees?.regular ?? 0}</p>
+                                            </button>
+                                            <button type="button" onClick={() => setDeliveryType('express')}
+                                                className={`rounded-lg border p-2.5 text-left transition-all ${deliveryType === 'express' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-200 hover:border-gray-300'}`}>
+                                                <p className={`text-sm font-semibold ${deliveryType === 'express' ? 'text-primary' : 'text-gray-900'}`}>Express</p>
+                                                <p className="text-xs text-gray-500">Next day · +৳{deliveryFees?.express ?? 0}</p>
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <label className={LABEL}>Delivery Address <span className="text-destructive">*</span></label>
+                                            {selectedCustomer?.address && (
+                                                <button type="button" onClick={() => {
+                                                    const parts = selectedCustomer.address.split(', ').filter(p => p !== 'Dhaka');
+                                                    setFlat(parts[0] || ''); setRoad(parts[1] || '');
+                                                    setBlock(parts[2] || ''); setPostalCode(parts[3] || '');
+                                                }} className="text-xs text-primary hover:underline">Use saved address</button>
+                                            )}
+                                        </div>
+                                        <input value={flat} onChange={e => setFlat(e.target.value)} placeholder="Flat / Apt / House No." className={INPUT} />
+                                        <input value={road} onChange={e => setRoad(e.target.value)} placeholder="Road / Street" className={INPUT} />
+                                        <input value={block} onChange={e => setBlock(e.target.value)} placeholder="Block / Area (optional)" className={INPUT} />
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input value={postalCode} onChange={e => setPostalCode(e.target.value)} placeholder="Postal Code" className={INPUT} />
+                                            <input value="Dhaka" disabled className={INPUT + ' bg-gray-50 text-gray-400'} />
+                                        </div>
+                                        <div>
+                                            <label className={LABEL}>Note for Delivery Man <span className="text-xs font-normal text-muted-foreground">(optional)</span></label>
+                                            <textarea value={deliveryInstructions} onChange={e => setDeliveryInstructions(e.target.value)}
+                                                placeholder="e.g. Call before arriving, leave with guard..." rows={2} className={INPUT + ' resize-none'} />
+                                        </div>
+                                        {errors.delivery_type && <p className={ERR}>{errors.delivery_type}</p>}
+                                        {(errors.flat || errors.road || errors.postal_code) && <p className={ERR}>{errors.flat || errors.road || errors.postal_code}</p>}
                                     </div>
                                 )}
 
@@ -2040,17 +2098,15 @@ export default function CreateOrder({ products, locations, studioFees, staffLoca
                                                 <label className={LABEL}>
                                                     Method <span className="text-destructive">*</span>
                                                 </label>
-                                                <select
+                                                <CustomSelect
+                                                    options={['cash', 'bkash', 'nagad', 'card', 'other'].map((m) => ({
+                                                        value: m,
+                                                        label: m.charAt(0).toUpperCase() + m.slice(1),
+                                                    }))}
                                                     value={paymentMethod}
-                                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                                    className={INPUT}
-                                                >
-                                                    {['cash', 'bkash', 'nagad', 'card', 'other'].map((m) => (
-                                                        <option key={m} value={m}>
-                                                            {m.charAt(0).toUpperCase() + m.slice(1)}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    onChange={setPaymentMethod}
+                                                    className="mt-1"
+                                                />
                                             </div>
 
                                             {['bkash', 'nagad', 'card'].includes(paymentMethod) && (

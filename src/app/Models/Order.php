@@ -17,6 +17,12 @@ class Order extends Model
         'user_id',
         'location_id',
         'pickup_type',
+        'delivery_type',
+        'delivery_address',
+        'delivery_instructions',
+        'delivery_fee',
+        'pathao_consignment_id',
+        'pathao_delivery_status',
         'status',
         'payment_status',
         'total_amount',
@@ -26,16 +32,23 @@ class Order extends Model
         'special_instructions',
         'paper_type',
         'notified_at',
+        'bkash_reference',
     ];
 
     protected function casts(): array
     {
         return [
-            'total_amount' => 'decimal:2',
+            'total_amount'    => 'decimal:2',
             'discount_amount' => 'decimal:2',
-            'amount_paid' => 'decimal:2',
-            'notified_at' => 'datetime',
+            'amount_paid'     => 'decimal:2',
+            'delivery_fee'    => 'decimal:2',
+            'notified_at'     => 'datetime',
         ];
+    }
+
+    public function isDelivery(): bool
+    {
+        return $this->pickup_type === 'delivery';
     }
 
     public function user(): BelongsTo
