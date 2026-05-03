@@ -124,6 +124,8 @@ services:
       MYSQL_USER: "${DB_USERNAME:-focuslab}"
       MYSQL_PASSWORD: "${DB_PASSWORD:-secret}"
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-rootsecret}"
+      B2_BACKUP_KEY_ID: "${B2_BACKUP_KEY_ID}"
+      B2_BACKUP_APP_KEY: "${B2_BACKUP_APP_KEY}"
     healthcheck:
       test:
         [
