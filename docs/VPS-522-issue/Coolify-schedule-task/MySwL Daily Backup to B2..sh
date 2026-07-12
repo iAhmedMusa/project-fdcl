@@ -1,0 +1,1 @@
+mysqldump -u root -p"${MYSQL_ROOT_PASSWORD}" --all-databases --single-transaction --quick | gzip > /tmp/fdcl-db-$(date +\%Y\%m\%d-\%H\%M).sql.gz && curl -u "${B2_BACKUP_KEY_ID}:${B2_BACKUP_APP_KEY}" -T /tmp/fdcl-db-$(date +\%Y\%m\%d-\%H\%M).sql.gz "https://s3.eu-central-003.backblazeb2.com/fdcl-db/fdcl/fdcl-db-$(date +\%Y\%m\%d-\%H\%M).sql.gz" && rm /tmp/fdcl-db-*.sql.gz
