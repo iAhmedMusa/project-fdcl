@@ -49,4 +49,8 @@ CLOUD_STORAGE_PLAN.md
 .mcp.json
 .opencode.json
 
+# ── Standalone landing site (Cloudflare Worker build runs at repo root) ────
+/node_modules/
+/package-lock.json
+
 bare-prod/*

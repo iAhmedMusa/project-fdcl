@@ -1,0 +1,9 @@
+{
+  "name": "focus-lab-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root shim: the deployable Next.js landing site lives in landing-page-only/. Cloudflare's create-an-app flow builds at repo root with no Root-directory setting, so this delegates install + build into that folder.",
+  "scripts": {
+    "build": "npm ci --prefix landing-page-only && npm run build --prefix landing-page-only"
+  }
+}

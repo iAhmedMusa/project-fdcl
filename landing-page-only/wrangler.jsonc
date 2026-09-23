@@ -1,0 +1,16 @@
+// Cloudflare Worker config — Static Assets hosting for the FDCL landing site.
+//
+// This folder is a pure static Next.js export (see next.config.mjs:
+// output: 'export'). There is no Worker script and no SSR — Cloudflare
+// serves the prebuilt ./out directory straight from the edge.
+// The dashboard flow "Create an app" (build: npm run build,
+// deploy: npx wrangler deploy) works untouched with this file.
+{
+  "$schema": "https://developers.cloudflare.com/workers/wrangler/configuration-schema.json",
+  "name": "focus-lab-website",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./out",
+    "not_found_handling": "404-page"
+  }
+}
