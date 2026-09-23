@@ -47,17 +47,16 @@ folder — Static Assets hosting, no Worker script needed).
 |---|---|
 | Project name | `focus-lab-website` |
 | Production branch | `landing-page-only` |
+| Root directory | `landing-page-only` |
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` (default — works via `wrangler.jsonc`) |
 | Preview command | `npx wrangler preview` (default) |
 | Environment variables | `NODE_VERSION = 20` |
 
-> The form has **no Root directory field** — the build runs at repo root.
-> That's covered by two committed shim files: root `package.json` (delegates
-> install + build into `landing-page-only/`) and root `wrangler.jsonc`
-> (serves `./landing-page-only/out`). Don't delete them. The copy inside
-> `landing-page-only/wrangler.jsonc` is the same config for local
-> `wrangler deploy` runs from that folder.
+> The create screen doesn't show Root directory — set it after the first
+> (failed) build under Worker → Settings → Build → Root directory =
+> `landing-page-only`, then Retry deployment. The deploy command needs
+> `landing-page-only/wrangler.jsonc` (already committed) — don't delete it.
 
 ### Step 3: Deploy
 
@@ -127,7 +126,7 @@ Worker → **Deployments** → pick any previous deployment → **Rollback to th
 | Symptom | Fix |
 |---|---|
 | Deploy fails: missing `wrangler.toml`/`wrangler.jsonc` | It's committed at `landing-page-only/wrangler.jsonc`. If you set a different Root directory, move it or fix the path. |
-| `npx wrangler deploy` fails: "Missing entry-point" | Means no wrangler config found at the build root — check root `wrangler.jsonc` is committed and the branch is `landing-page-only`. |
+| `npx wrangler deploy` fails: "Missing entry-point" | Build ran at repo root instead of `landing-page-only/` — set Root directory under Worker → Settings → Build, then Retry. |
 | Build fails on Node version | Set env var `NODE_VERSION = 20` in Worker → Settings → Environment variables, then Retry. |
 | `workers.dev` URL works, custom domain shows SSL error | Wait up to ~15 min for certificate issuance; check Domains & Routes shows Active. |
 | Old content stuck after deploy | Pages → Caching → **Purge cache**, or hard-refresh (Ctrl/Cmd+Shift+R). JS/CSS filenames are hashed, so this is rare. |
@@ -139,7 +138,7 @@ Worker → **Deployments** → pick any previous deployment → **Rollback to th
 ## Checklist (copy/paste)
 
 - [ ] `landing-page-only` branch pushed to GitHub
-- [ ] Worker created, build `npm run build`, deploy `npx wrangler deploy`, `NODE_VERSION=20`
+- [ ] Worker created, root directory `landing-page-only`, build `npm run build`, deploy `npx wrangler deploy`, `NODE_VERSION=20`
 - [ ] `*.workers.dev` URL verified (content, images, fonts, WhatsApp links)
 - [ ] Custom domain added and **Active**
 - [ ] `https://yourdomain.com` loads with valid certificate, SSL mode Full (strict)
