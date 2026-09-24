@@ -146,8 +146,8 @@ class DashboardController extends Controller
                 'payment_status' => $order->payment_status,
                 'total_amount' => $order->total_amount,
                 'created_at' => $order->created_at->diffForHumans(),
-                'user' => ['name' => $order->user->name],
-                'location' => ['name' => $order->location->name],
+                'user' => ['name' => $order->user?->name ?? 'N/A'],
+                'location' => ['name' => $order->location?->name ?? 'N/A'],
             ]);
 
         // 6-month rolling revenue trend (location-scoped only)
