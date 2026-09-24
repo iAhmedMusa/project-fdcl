@@ -33,9 +33,9 @@ const STATUS_CHART_COLORS = {
 };
 
 const TOOLTIP_STYLE = {
-    contentStyle: { backgroundColor: '#0D1B2A', border: 'none', borderRadius: '8px', fontSize: '12px' },
-    labelStyle:   { color: '#fff' },
-    itemStyle:    { color: '#D4A017' },
+    contentStyle: { backgroundColor: '#151515', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', fontSize: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.35)' },
+    labelStyle:   { color: '#fff', fontWeight: 600 },
+    itemStyle:    { color: '#E8C547' },
 };
 
 const SERVICE_LABELS = {
@@ -58,24 +58,43 @@ const SERVICE_COLORS = {
 
 function SectionHeader({ title }) {
     return (
-        <div className="mb-4 flex items-center gap-3">
-            <h2 className="whitespace-nowrap text-sm font-semibold text-foreground">{title}</h2>
-            <div className="h-px flex-1 bg-border/60" />
+        <div className="flex items-center gap-3">
+            <h2 className="whitespace-nowrap text-sm font-semibold tracking-tight text-foreground">{title}</h2>
+            <div className="h-px flex-1 bg-border" />
         </div>
     );
 }
 
-function KpiCard({ label, value, sub, accent = 'border-border', icon, valueClass = 'text-foreground' }) {
+function Card({ className = '', children }) {
     return (
-        <div className={`rounded-xl border-l-4 bg-card p-4 shadow-sm ${accent}`}>
-            <div className="flex items-start justify-between gap-2">
+        <div className={`rounded-xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${className}`}>
+            {children}
+        </div>
+    );
+}
+
+const KPI_TONES = {
+    blue:   { icon: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', value: 'text-foreground' },
+    gold:   { icon: 'bg-[#D4A017]/10 text-[#9a7a10] dark:text-[#D4A017]', value: 'text-foreground' },
+    amber:  { icon: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', value: 'text-foreground' },
+    red:    { icon: 'bg-red-500/10 text-red-600 dark:text-red-400', value: 'text-foreground' },
+    purple: { icon: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', value: 'text-foreground' },
+    teal:   { icon: 'bg-teal-500/10 text-teal-600 dark:text-teal-400', value: 'text-foreground' },
+    neutral:{ icon: 'bg-muted text-muted-foreground', value: 'text-foreground' },
+};
+
+function KpiCard({ label, value, sub, tone = 'neutral', icon, valueClass }) {
+    const t = KPI_TONES[tone] ?? KPI_TONES.neutral;
+    return (
+        <div className="rounded-xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-colors hover:border-border">
+            <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium text-muted-foreground">{label}</p>
-                    <p className={`mt-1.5 text-2xl font-bold tracking-tight ${valueClass}`}>{value}</p>
-                    {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+                    <p className={`mt-2 text-2xl font-bold tabular-nums tracking-tight ${valueClass ?? t.value}`}>{value}</p>
+                    {sub && <p className="mt-1.5 text-xs tabular-nums text-muted-foreground">{sub}</p>}
                 </div>
                 {icon && (
-                    <div className="shrink-0 rounded-lg bg-muted p-2.5">
+                    <div className={`shrink-0 rounded-lg p-2.5 ${t.icon}`}>
                         {icon}
                     </div>
                 )}
@@ -163,8 +182,8 @@ export default function Dashboard({
             <div className="space-y-6">
                 {/* Page title */}
                 <div>
-                    <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
-                    <p className="mt-0.5 text-sm text-muted-foreground">Overview of orders, revenue, and operations.</p>
+                    <h1 className="text-xl font-bold tracking-tight text-foreground">Dashboard</h1>
+                    <p className="mt-1 text-sm text-muted-foreground">Overview of orders, revenue, and operations.</p>
                 </div>
 
                 <DashboardFilterBar locations={locations} filters={filters} baseRoute="/admin" />
@@ -174,9 +193,9 @@ export default function Dashboard({
                     <KpiCard
                         label="Today's Orders"
                         value={stats.today_orders}
-                        accent="border-l-4 border-blue-500"
+                        tone="blue"
                         icon={
-                            <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                         }
@@ -184,10 +203,9 @@ export default function Dashboard({
                     <KpiCard
                         label="Today's Revenue"
                         value={fmt(stats.today_revenue)}
-                        accent="border-l-4 border-primary"
-                        valueClass="text-primary"
+                        tone="gold"
                         icon={
-                            <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         }
@@ -195,10 +213,9 @@ export default function Dashboard({
                     <KpiCard
                         label="Pending Orders"
                         value={stats.pending_orders}
-                        accent="border-l-4 border-amber-500"
-                        valueClass="text-amber-600"
+                        tone="amber"
                         icon={
-                            <svg className="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         }
@@ -206,10 +223,9 @@ export default function Dashboard({
                     <KpiCard
                         label="Unpaid Balance"
                         value={fmt(stats.unpaid_balance)}
-                        accent="border-l-4 border-red-500"
-                        valueClass="text-red-600"
+                        tone="red"
                         icon={
-                            <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>
                         }
@@ -221,30 +237,28 @@ export default function Dashboard({
                     <KpiCard
                         label="This Month's Revenue"
                         value={fmt(stats.monthly_revenue)}
-                        accent="border-l-4 border-primary/50"
+                        tone="gold"
                         sub={delta !== null
                             ? `${parseFloat(delta) >= 0 ? '↑' : '↓'} ${Math.abs(delta)}% vs last month`
                             : undefined
                         }
-                        valueClass={delta !== null && parseFloat(delta) >= 0 ? 'text-primary' : 'text-foreground'}
                     />
                     <KpiCard
                         label="Studio Appointments"
                         value={`${appointment_stats.today ?? 0} today`}
-                        accent="border-l-4 border-purple-500"
+                        tone="purple"
                         sub={`${appointment_stats.this_week ?? 0} this week · ${appointment_stats.attendance_rate ?? 0}% attended`}
                     />
                     <KpiCard
                         label="New Customers"
                         value={stats.new_customers_month}
-                        accent="border-l-4 border-teal-500"
+                        tone="teal"
                         sub="joined this month"
                     />
                     <KpiCard
                         label="Overdue Unpaid"
                         value={stats.overdue_unpaid_count}
-                        accent={stats.overdue_unpaid_count > 0 ? 'border-l-4 border-amber-500' : 'border-l-4 border-border'}
-                        valueClass={stats.overdue_unpaid_count > 0 ? 'text-amber-600' : 'text-foreground'}
+                        tone={stats.overdue_unpaid_count > 0 ? 'amber' : 'neutral'}
                         sub="orders 7+ days unpaid"
                     />
                 </div>
@@ -252,29 +266,29 @@ export default function Dashboard({
                 {/* ── SMS Balance + Revenue by Service ─────────────────────── */}
                 <div className="grid gap-4 lg:grid-cols-3">
                     {/* SMS Balance */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <div className="mb-4 flex items-center justify-between">
+                    <Card>
+                        <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold text-foreground">BulkSMS Balance</p>
-                                <p className="text-xs text-muted-foreground">Available credits</p>
+                                <p className="text-sm font-semibold tracking-tight text-foreground">BulkSMS Balance</p>
+                                <p className="mt-0.5 text-xs text-muted-foreground">Available credits</p>
                             </div>
                             <button
                                 onClick={fetchSmsBalance}
                                 disabled={smsLoading}
-                                className="cursor-pointer rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="shrink-0 cursor-pointer rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {smsLoading ? 'Loading…' : 'Refresh'}
                             </button>
                         </div>
 
-                        <p className="text-3xl font-bold tracking-tight text-foreground">
+                        <p className="text-3xl font-bold tabular-nums tracking-tight text-foreground">
                             {smsLoading
                                 ? <span className="text-base font-normal text-muted-foreground">Fetching…</span>
                                 : smsError
                                     ? <span className="text-base font-normal text-red-500">Failed to load</span>
                                     : smsBalance !== null
                                         ? smsBalance
-                                        : <span className="text-base font-normal text-muted-foreground">Not loaded</span>
+                                        : <span className="text-base font-normal text-muted-foreground">Not loaded — press Refresh</span>
                             }
                         </p>
 
@@ -283,10 +297,10 @@ export default function Dashboard({
                                 <button
                                     key={type}
                                     onClick={() => setSmsType(type)}
-                                    className={`flex-1 cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
+                                    className={`flex-1 cursor-pointer rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-150 active:scale-[0.98] ${
                                         smsType === type
                                             ? 'border-primary bg-primary/10 text-primary'
-                                            : 'text-muted-foreground hover:bg-muted'
+                                            : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
                                     }`}
                                 >
                                     {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -295,24 +309,24 @@ export default function Dashboard({
                         </div>
 
                         {smsEstimate && (
-                            <p className="mt-3 text-xs text-muted-foreground">
+                            <p className="mt-3 text-xs tabular-nums text-muted-foreground">
                                 ≈ <span className="font-bold text-foreground">{smsEstimate}</span> SMS available
                             </p>
                         )}
-                    </div>
+                    </Card>
 
                     {/* Revenue by Service */}
-                    <div className="rounded-xl border bg-card p-5 shadow-sm lg:col-span-2">
-                        <div className="mb-4 flex items-center justify-between">
+                    <Card className="lg:col-span-2">
+                        <div className="mb-4 flex items-center justify-between gap-3">
                             <div>
-                                <p className="text-sm font-semibold text-foreground">Revenue by Service</p>
-                                <p className="text-xs text-muted-foreground">Breakdown for selected period</p>
+                                <p className="text-sm font-semibold tracking-tight text-foreground">Revenue by Service</p>
+                                <p className="mt-0.5 text-xs text-muted-foreground">Breakdown for selected period</p>
                             </div>
                             <div className="relative">
                                 <select
                                     value={serviceLocFilter}
                                     onChange={(e) => setServiceLocFilter(e.target.value)}
-                                    className="h-8 cursor-pointer appearance-none rounded-lg border bg-background pl-3 pr-8 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                                    className="h-8 cursor-pointer appearance-none rounded-lg border border-border bg-background pl-3 pr-8 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                 >
                                     <option value="">All Locations</option>
                                     {locations.map((l) => (
@@ -326,21 +340,24 @@ export default function Dashboard({
                         </div>
 
                         {serviceRows.every((r) => r.revenue === 0) ? (
-                            <p className="py-8 text-center text-sm text-muted-foreground">No service revenue for selected period.</p>
+                            <div className="flex flex-col items-center gap-1 py-8 text-center">
+                                <p className="text-sm font-medium text-foreground">No service revenue for selected period.</p>
+                                <p className="text-xs text-muted-foreground">Try a different period or location.</p>
+                            </div>
                         ) : (
                             <div className="space-y-3.5">
                                 {serviceRows.filter((r) => r.revenue > 0).map((row) => (
                                     <div key={row.category}>
-                                        <div className="mb-1.5 flex items-center justify-between text-xs">
-                                            <div className="flex items-center gap-2">
+                                        <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                                            <div className="flex min-w-0 items-center gap-2">
                                                 <span
                                                     className="h-2 w-2 shrink-0 rounded-full"
                                                     style={{ backgroundColor: SERVICE_COLORS[row.category] ?? '#9CA3AF' }}
                                                 />
-                                                <span className="font-medium text-foreground">{row.label}</span>
-                                                <span className="text-muted-foreground">{row.order_count} {row.order_count === 1 ? 'order' : 'orders'}</span>
+                                                <span className="truncate font-medium text-foreground">{row.label}</span>
+                                                <span className="shrink-0 tabular-nums text-muted-foreground">{row.order_count} {row.order_count === 1 ? 'order' : 'orders'}</span>
                                             </div>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex shrink-0 items-center gap-3 tabular-nums">
                                                 <span className="text-muted-foreground">{row.pct}%</span>
                                                 <span className="w-20 text-right font-bold text-foreground">{fmt(row.revenue)}</span>
                                             </div>
@@ -350,7 +367,7 @@ export default function Dashboard({
                                                 className="h-full rounded-full transition-all duration-500"
                                                 style={{
                                                     width: `${row.pct}%`,
-                                                    background: `linear-gradient(90deg, ${SERVICE_COLORS[row.category] ?? '#9CA3AF'}, ${SERVICE_COLORS[row.category] ?? '#9CA3AF'}aa)`,
+                                                    background: SERVICE_COLORS[row.category] ?? '#9CA3AF',
                                                 }}
                                             />
                                         </div>
@@ -359,39 +376,41 @@ export default function Dashboard({
                             </div>
                         )}
 
-                        <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs">
-                            <span className="font-semibold uppercase tracking-wide text-muted-foreground">Total</span>
+                        <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs tabular-nums">
+                            <span className="font-semibold uppercase tracking-wider text-muted-foreground">Total</span>
                             <span className="font-bold text-foreground">{fmt(serviceTotal)}</span>
                         </div>
-                    </div>
+                    </Card>
                 </div>
 
                 {/* ── Row C: Monthly Trend + Payment Methods ────────────────── */}
                 <SectionHeader title="Trends & Payments" />
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">6-Month Revenue Trend</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">6-Month Revenue Trend</p>
+                        <p className="mb-4 text-xs tabular-nums text-muted-foreground">{delta !== null ? `${parseFloat(delta) >= 0 ? '+' : ''}${delta}% vs last month` : 'Last 6 months'}</p>
                         <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={monthly_trend}>
                                     <defs>
                                         <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#D4A017" stopOpacity={0.25} />
+                                            <stop offset="5%" stopColor="#D4A017" stopOpacity={0.28} />
                                             <stop offset="95%" stopColor="#D4A017" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-                                    <XAxis dataKey="month" tickFormatter={monthLabel} stroke="#9CA3AF" fontSize={11} tickLine={false} />
-                                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
+                                    <XAxis dataKey="month" tickFormatter={monthLabel} stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `৳${(v/1000).toFixed(0)}k`} width={44} />
                                     <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Revenue']} />
-                                    <Area type="monotone" dataKey="revenue" stroke="#D4A017" strokeWidth={2.5} fill="url(#revGrad)" dot={false} activeDot={{ r: 4, fill: '#D4A017' }} />
+                                    <Area type="monotone" dataKey="revenue" stroke="#D4A017" strokeWidth={2.5} fill="url(#revGrad)" dot={false} activeDot={{ r: 4, fill: '#D4A017', strokeWidth: 0 }} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">Payment Methods</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">Payment Methods</p>
+                        <p className="mb-4 text-xs text-muted-foreground">Share by amount collected</p>
                         <div className="h-60">
                             {payment_methods.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
@@ -405,6 +424,7 @@ export default function Dashboard({
                                             innerRadius={60}
                                             outerRadius={85}
                                             paddingAngle={3}
+                                            strokeWidth={0}
                                         >
                                             {payment_methods.map((_, i) => (
                                                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -415,50 +435,56 @@ export default function Dashboard({
                                     </PieChart>
                                 </ResponsiveContainer>
                             ) : (
-                                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No payment data</div>
+                                <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
+                                    <p className="text-sm font-medium text-foreground">No payment data</p>
+                                    <p className="text-xs text-muted-foreground">Payments will appear here once orders are paid.</p>
+                                </div>
                             )}
                         </div>
-                    </div>
+                    </Card>
                 </div>
 
                 {/* ── Row D: Weekly Orders + Revenue by Service Chart ───────── */}
                 <SectionHeader title="Activity" />
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">Orders — Last 7 Days</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">Orders — Last 7 Days</p>
+                        <p className="mb-4 text-xs text-muted-foreground">Daily order volume</p>
                         <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={weekly_orders}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-                                    <XAxis dataKey="date" stroke="#9CA3AF" fontSize={11} tickLine={false} />
-                                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
+                                    <XAxis dataKey="date" stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} width={32} />
                                     <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [v, 'Orders']} />
-                                    <Line type="monotone" dataKey="count" stroke="#D4A017" strokeWidth={2.5} dot={{ fill: '#D4A017', r: 3, strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                                    <Line type="monotone" dataKey="count" stroke="#D4A017" strokeWidth={2.5} dot={{ fill: '#D4A017', r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">Revenue by Service</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">Revenue by Service</p>
+                        <p className="mb-4 text-xs text-muted-foreground">All locations, selected period</p>
                         <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={revenue_by_service} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-                                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} tickFormatter={fmt} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} horizontal={false} />
+                                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} tickFormatter={fmt} />
                                     <YAxis type="category" dataKey="category" stroke="#9CA3AF" fontSize={11} width={85} tickLine={false} axisLine={false} />
                                     <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Revenue']} />
-                                    <Bar dataKey="revenue" fill="#D4A017" radius={[0, 4, 4, 0]} />
+                                    <Bar dataKey="revenue" fill="#D4A017" radius={[0, 6, 6, 0]} barSize={18} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Card>
                 </div>
 
                 {/* ── Row E: Location + Top Products ───────────────────────── */}
                 <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">Orders by Location</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">Orders by Location</p>
+                        <p className="mb-4 text-xs text-muted-foreground">Distribution of orders</p>
                         <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -470,8 +496,7 @@ export default function Dashboard({
                                         outerRadius={85}
                                         paddingAngle={4}
                                         dataKey="count"
-                                        label={({ name, count }) => `${name}: ${count}`}
-                                        labelLine={false}
+                                        strokeWidth={0}
                                     >
                                         {orders_by_location.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -481,49 +506,54 @@ export default function Dashboard({
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="flex flex-wrap justify-center gap-4">
+                        <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2">
                             {orders_by_location.map((item, index) => (
                                 <div key={item.name} className="flex items-center gap-2">
                                     <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                                    <span className="text-xs text-muted-foreground">{item.name}</span>
+                                    <span className="text-xs tabular-nums text-muted-foreground">{item.name} · {item.count}</span>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">Top 5 Products</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">Top 5 Products</p>
+                        <p className="mb-4 text-xs text-muted-foreground">By revenue</p>
                         <div className="h-60">
                             {top_products.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={top_products} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-                                        <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} tickFormatter={fmt} />
+                                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} horizontal={false} />
+                                        <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} tickFormatter={fmt} />
                                         <YAxis type="category" dataKey="name" stroke="#9CA3AF" fontSize={11} width={105} tickLine={false} axisLine={false} />
                                         <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [fmt(v), 'Revenue']} />
-                                        <Bar dataKey="revenue" fill="#D4A017" radius={[0, 4, 4, 0]} />
+                                        <Bar dataKey="revenue" fill="#D4A017" radius={[0, 6, 6, 0]} barSize={18} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             ) : (
-                                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">No product data</div>
+                                <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
+                                    <p className="text-sm font-medium text-foreground">No product data</p>
+                                    <p className="text-xs text-muted-foreground">Top sellers will appear here.</p>
+                                </div>
                             )}
                         </div>
-                    </div>
+                    </Card>
                 </div>
 
                 {/* ── Row F: Status Distribution + Recent Orders ────────────── */}
                 <SectionHeader title="Orders Overview" />
                 <div className="grid gap-4 lg:grid-cols-3">
-                    <div className="rounded-xl border bg-card p-5 shadow-sm">
-                        <p className="mb-4 text-sm font-semibold text-foreground">Order Status</p>
+                    <Card>
+                        <p className="mb-1 text-sm font-semibold tracking-tight text-foreground">Order Status</p>
+                        <p className="mb-4 text-xs text-muted-foreground">Current queue</p>
                         <div className="h-60">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={order_status_dist} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
-                                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} allowDecimals={false} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} horizontal={false} />
+                                    <XAxis type="number" stroke="#9CA3AF" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
                                     <YAxis type="category" dataKey="status" stroke="#9CA3AF" fontSize={11} width={75} tickLine={false} axisLine={false} />
                                     <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [v, 'Orders']} />
-                                    <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                                    <Bar dataKey="count" radius={[0, 6, 6, 0]} barSize={18}>
                                         {order_status_dist.map((entry, i) => (
                                             <Cell key={i} fill={STATUS_CHART_COLORS[entry.status] ?? '#9CA3AF'} />
                                         ))}
@@ -531,29 +561,32 @@ export default function Dashboard({
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="rounded-xl border bg-card p-5 shadow-sm lg:col-span-2">
-                        <div className="mb-4 flex items-center justify-between">
-                            <p className="text-sm font-semibold text-foreground">Recent Orders</p>
-                            <Link href="/admin/orders" className="cursor-pointer text-xs font-semibold text-primary hover:underline">
+                    <Card className="lg:col-span-2">
+                        <div className="mb-4 flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-sm font-semibold tracking-tight text-foreground">Recent Orders</p>
+                                <p className="mt-0.5 text-xs text-muted-foreground">Latest activity across locations</p>
+                            </div>
+                            <Link href="/admin/orders" className="shrink-0 cursor-pointer rounded-lg px-2 py-1 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 active:scale-[0.98]">
                                 View all →
                             </Link>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="min-w-full">
                                 <thead>
-                                    <tr className="border-b">
-                                        <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Order</th>
-                                        <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Customer</th>
-                                        <th className="pb-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">Location</th>
-                                        <th className="pb-3 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Amount</th>
-                                        <th className="pb-3 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                                    <tr className="border-b border-border">
+                                        <th className="pb-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Order</th>
+                                        <th className="pb-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Customer</th>
+                                        <th className="pb-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Location</th>
+                                        <th className="pb-3 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount</th>
+                                        <th className="pb-3 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border/50">
+                                <tbody className="divide-y divide-border/60">
                                     {recent_orders.map((order) => (
-                                        <tr key={order.id} className="group transition-colors hover:bg-muted/40">
+                                        <tr key={order.id} className="group transition-colors hover:bg-muted/50">
                                             <td className="whitespace-nowrap py-3 pr-4">
                                                 <Link href={`/admin/orders/${order.order_number}`} className="cursor-pointer font-mono text-xs font-bold text-primary hover:underline">
                                                     {order.order_number}
@@ -561,7 +594,7 @@ export default function Dashboard({
                                             </td>
                                             <td className="whitespace-nowrap py-3 pr-4 text-sm text-foreground">{order.user.name}</td>
                                             <td className="whitespace-nowrap py-3 pr-4 text-sm text-muted-foreground">{order.location.name}</td>
-                                            <td className="whitespace-nowrap py-3 pr-4 text-right text-sm font-semibold text-foreground">{fmt(order.total_amount)}</td>
+                                            <td className="whitespace-nowrap py-3 pr-4 text-right text-sm font-semibold tabular-nums text-foreground">{fmt(order.total_amount)}</td>
                                             <td className="whitespace-nowrap py-3 text-center">
                                                 <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status]}`}>
                                                     <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[order.status]}`} />
@@ -573,7 +606,7 @@ export default function Dashboard({
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </AdminLayout>

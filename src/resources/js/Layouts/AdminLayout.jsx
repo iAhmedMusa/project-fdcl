@@ -97,14 +97,20 @@ export default function AdminLayout({ children }) {
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 title={compact ? item.name : undefined}
-                className={`group flex items-center rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer ${
+                className={`group relative flex items-center rounded-lg text-sm transition-all duration-150 cursor-pointer active:scale-[0.99] ${
                     compact ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5'
                 } ${
                     active
-                        ? 'border-l-2 border-primary bg-primary/10 text-primary'
-                        : 'border-l-2 border-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+                        ? 'bg-primary/10 font-semibold text-primary'
+                        : 'font-medium text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
             >
+                {active && (
+                    <span
+                        aria-hidden="true"
+                        className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-full bg-primary"
+                    />
+                )}
                 <span className={`shrink-0 transition-colors ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
                     {item.icon}
                 </span>
