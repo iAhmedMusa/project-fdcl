@@ -79,7 +79,7 @@ export default function Login({ status, canResetPassword }) {
                 {/* Google */}
                 <a
                     href={route('auth.google')}
-                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer"
+                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 active:scale-[0.98] cursor-pointer"
                 >
                     <GoogleIcon />
                     Continue with Google
@@ -90,7 +90,7 @@ export default function Login({ status, canResetPassword }) {
                         <div className="w-full border-t border-border" />
                     </div>
                     <div className="relative flex justify-center text-xs">
-                        <span className="bg-background px-3 text-muted-foreground">or sign in with phone</span>
+                        <span className="bg-background px-3 text-muted-foreground">or continue with phone or email</span>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@ export default function Login({ status, canResetPassword }) {
                     {/* Phone / login */}
                     <div className="space-y-1.5">
                         <label htmlFor="login" className="block text-sm font-medium text-foreground">
-                            Phone number
+                            Phone or email
                         </label>
                         <div className="relative">
                             <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
@@ -114,11 +114,10 @@ export default function Login({ status, canResetPassword }) {
                                 autoFocus
                                 onChange={(e) => setData('login', e.target.value)}
                                 className="block w-full rounded-lg border border-input bg-background py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20"
-                                placeholder="01XXXXXXXXX"
+                                placeholder="01XXXXXXXXX or you@email.com"
                                 required
                             />
                         </div>
-                        <p className="text-xs text-muted-foreground">You can also use your email address</p>
                     </div>
 
                     {/* Password */}
@@ -166,7 +165,7 @@ export default function Login({ status, canResetPassword }) {
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
-                                className="text-sm font-medium text-primary hover:text-primary/80"
+                                className="text-sm font-medium text-primary hover:text-primary/80 dark:text-blue-400"
                             >
                                 Forgot password?
                             </Link>
@@ -185,7 +184,7 @@ export default function Login({ status, canResetPassword }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-60 cursor-pointer"
+                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-60 active:scale-[0.98] cursor-pointer dark:bg-blue-700"
                     >
                         {processing ? (
                             <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -198,7 +197,7 @@ export default function Login({ status, canResetPassword }) {
 
                     <p className="text-center text-sm text-muted-foreground">
                         Don't have an account?{' '}
-                        <Link href={route('register')} className="font-semibold text-primary hover:text-primary/80">
+                        <Link href={route('register')} className="font-semibold text-primary hover:text-primary/80 dark:text-blue-400">
                             Create one
                         </Link>
                     </p>

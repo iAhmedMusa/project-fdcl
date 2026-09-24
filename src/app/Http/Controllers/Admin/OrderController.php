@@ -47,11 +47,11 @@ class OrderController extends Controller
                 'amount_paid' => (float) $order->amount_paid,
                 'created_at' => $order->created_at->diffForHumans(),
                 'user' => [
-                    'name' => $order->user->name,
-                    'email' => $order->user->email,
+                    'name' => $order->user?->name ?? 'N/A',
+                    'email' => $order->user?->email ?? 'N/A',
                 ],
                 'location' => [
-                    'name' => $order->location->name,
+                    'name' => $order->location?->name ?? 'N/A',
                 ],
                 'items_count' => $order->items->count(),
             ];
@@ -85,21 +85,21 @@ class OrderController extends Controller
                 'paper_type' => $order->paper_type,
                 'created_at' => $order->created_at->format('M d, Y \a\t H:i'),
                 'user' => [
-                    'id' => $order->user->id,
-                    'name' => $order->user->name,
-                    'email' => $order->user->email,
-                    'phone' => $order->user->phone ?? 'Not provided',
+                    'id' => $order->user?->id,
+                    'name' => $order->user?->name ?? 'N/A',
+                    'email' => $order->user?->email ?? 'N/A',
+                    'phone' => $order->user?->phone ?? 'Not provided',
                 ],
                 'location' => [
-                    'name' => $order->location->name,
-                    'address' => $order->location->address,
+                    'name' => $order->location?->name ?? 'N/A',
+                    'address' => $order->location?->address ?? 'N/A',
                 ],
                 'items' => $order->items->map(function ($item) {
                     return [
                         'id' => $item->id,
-                        'product_name' => $item->product->name,
-                        'category' => $item->product->category,
-                        'size_label' => $item->product->size_label,
+                        'product_name' => $item->product?->name ?? 'N/A',
+                        'category' => $item->product?->category ?? 'N/A',
+                        'size_label' => $item->product?->size_label ?? 'N/A',
                         'quantity' => $item->quantity,
                         'unit_price' => (float) $item->unit_price,
                         'subtotal' => (float) $item->subtotal,
