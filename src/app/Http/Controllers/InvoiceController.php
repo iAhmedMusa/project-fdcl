@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Services\InvoiceService;
 use App\Services\SmsService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -27,12 +29,17 @@ class InvoiceController extends Controller
         return $pdf->stream("FDCL-Invoice-{$order->order_number}.pdf");
     }
 
-    public function showPublic(string $token): \Illuminate\Contracts\View\View
+    public function showPublic(string $token): View|Response
     {
         $invoiceToken = InvoiceToken::where('token', $token)->firstOrFail();
 
         if ($invoiceToken->isExpired()) {
-            abort(410, 'This invoice link has expired.');
+            $order = $invoiceToken->order;
+
+            return response()->view('invoice.expired', [
+                'orderNumber' => $order?->order_number,
+                'expiresAt' => $invoiceToken->expires_at,
+            ], 410);
         }
 
         $order = $invoiceToken->order->load(['items.product', 'user', 'location', 'payments']);
@@ -45,7 +52,12 @@ class InvoiceController extends Controller
         $invoiceToken = InvoiceToken::where('token', $token)->firstOrFail();
 
         if ($invoiceToken->isExpired()) {
-            abort(410, 'This invoice link has expired.');
+            $order = $invoiceToken->order;
+
+            return response()->view('invoice.expired', [
+                'orderNumber' => $order?->order_number,
+                'expiresAt' => $invoiceToken->expires_at,
+            ], 410);
         }
 
         $order = $invoiceToken->order->load(['items.product', 'user', 'location', 'payments']);
@@ -54,7 +66,7 @@ class InvoiceController extends Controller
         return $pdf->download("FDCL-Invoice-{$order->order_number}.pdf");
     }
 
-    public function sendSms(Request $request, Order $order, InvoiceService $invoiceService, SmsService $smsService): \Illuminate\Http\JsonResponse
+    public function sendSms(Request $request, Order $order, InvoiceService $invoiceService, SmsService $smsService): JsonResponse
     {
         $phone = $order->user->phone ?? null;
 
@@ -63,8 +75,8 @@ class InvoiceController extends Controller
         }
 
         $token = $invoiceService->createOrRenewToken($order);
-        $url   = $invoiceService->getPublicUrl($token);
-        $sent  = $smsService->sendInvoiceLink($phone, $url, $order->order_number, $order->user->name ?? null);
+        $url = $invoiceService->getPublicUrl($token);
+        $sent = $smsService->sendInvoiceLink($phone, $url, $order->order_number, $order->user->name ?? null);
 
         if (! $sent) {
             return response()->json(['message' => 'SMS could not be sent. Check logs.'], 500);
@@ -75,7 +87,7 @@ class InvoiceController extends Controller
         return response()->json(['message' => 'Invoice SMS sent successfully.']);
     }
 
-    public function sendReadySms(Request $request, Order $order, InvoiceService $invoiceService, SmsService $smsService): \Illuminate\Http\JsonResponse
+    public function sendReadySms(Request $request, Order $order, InvoiceService $invoiceService, SmsService $smsService): JsonResponse
     {
         $phone = $order->user->phone ?? null;
 
@@ -84,8 +96,8 @@ class InvoiceController extends Controller
         }
 
         $token = $invoiceService->createOrRenewToken($order);
-        $url   = $invoiceService->getPublicUrl($token);
-        $sent  = $smsService->sendOrderReady($phone, $url, $order->order_number, $order->user->name);
+        $url = $invoiceService->getPublicUrl($token);
+        $sent = $smsService->sendOrderReady($phone, $url, $order->order_number, $order->user->name);
 
         if (! $sent) {
             return response()->json(['message' => 'SMS could not be sent. Check logs.'], 500);

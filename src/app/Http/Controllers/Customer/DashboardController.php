@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\InvoiceToken;
 use App\Models\Order;
 use App\Models\PhotoRegistry;
+use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -70,12 +70,16 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $orderNumber): Response
+    public function show(Request $request, string $orderNumber, InvoiceService $invoiceService): Response
     {
         $order = Order::with(['location', 'items.product', 'payments.recorder', 'photoRegistries'])
             ->where('order_number', $orderNumber)
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
+
+        // Auto-renew: logged-in customer always gets a valid link, so the
+        // Invoice button never lands on an expired 410 page.
+        $token = $invoiceService->createOrRenewToken($order);
 
         return Inertia::render('Customer/OrderDetail', [
             'order' => [
@@ -102,21 +106,21 @@ class DashboardController extends Controller
                     'google_maps_url' => $order->location?->google_maps_url,
                     'phone' => $order->location?->phone,
                 ],
-'items' => $order->items->map(function ($item) {
-                        return [
-                            'id' => $item->id,
-                            'product_name' => $item->product?->name,
-                            'category' => $item->product?->category,
-                            'size_label' => $item->product?->size_label,
-                            'product_description' => $item->product?->description,
-                            'quantity' => $item->quantity,
-                            'unit_price' => (float) $item->unit_price,
-                            'subtotal' => (float) $item->subtotal,
-                            'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($item->photo_paths ?? [])),
-                            'photo_source' => $item->photo_source,
-                            'item_specific_notes' => $item->item_specific_notes,
-                        ];
-                    }),
+                'items' => $order->items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_name' => $item->product?->name,
+                        'category' => $item->product?->category,
+                        'size_label' => $item->product?->size_label,
+                        'product_description' => $item->product?->description,
+                        'quantity' => $item->quantity,
+                        'unit_price' => (float) $item->unit_price,
+                        'subtotal' => (float) $item->subtotal,
+                        'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($item->photo_paths ?? [])),
+                        'photo_source' => $item->photo_source,
+                        'item_specific_notes' => $item->item_specific_notes,
+                    ];
+                }),
                 'payments' => $order->payments->map(function ($payment) {
                     return [
                         'id' => $payment->id,
@@ -133,7 +137,7 @@ class DashboardController extends Controller
                     'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($order->photoRegistries->first()->photo_paths ?? [])),
                 ] : null,
             ],
-            'invoiceToken' => InvoiceToken::where('order_id', $order->id)->value('token'),
+            'invoiceToken' => $token->token,
         ]);
     }
 }
