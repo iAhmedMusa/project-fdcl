@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Staff;
 
 use App\Events\OrderStatusChanged;
 use App\Http\Controllers\Controller;
-use App\Models\InvoiceToken;
 use App\Models\Order;
 use App\Models\PhotoRegistry;
 use App\Services\InvoiceService;
 use App\Services\OrderNumberGenerator;
-use App\Services\PhotoStorage;
 use App\Services\PathaoService;
+use App\Services\PhotoStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -79,9 +78,9 @@ class OrderController extends Controller
                 // Own studio orders (all states)
                 $q->where('location_id', $user->location_id)
                   // Unassigned delivery orders visible to all staff
-                  ->orWhere(function ($q2) {
-                      $q2->where('pickup_type', 'delivery')->whereNull('location_id');
-                  });
+                    ->orWhere(function ($q2) {
+                        $q2->where('pickup_type', 'delivery')->whereNull('location_id');
+                    });
             });
         }
 
@@ -118,7 +117,7 @@ class OrderController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $orderNumber): Response
+    public function show(Request $request, string $orderNumber, InvoiceService $invoiceService): Response
     {
         $order = Order::with([
             'user',
@@ -133,6 +132,9 @@ class OrderController extends Controller
         if (! $this->canManageAwaitingPhotoOrder($order)) {
             abort(403, 'You can only view awaiting photo orders from your location.');
         }
+
+        // Auto-renew: staff detail view always hands out a valid link.
+        $invoiceToken = $invoiceService->createOrRenewToken($order);
 
         return Inertia::render('Staff/OrderDetail', [
             'order' => [
@@ -214,8 +216,8 @@ class OrderController extends Controller
                     'photo_paths' => array_map(fn ($p) => Storage::url($p), array_filter($order->photoRegistries->first()->photo_paths ?? [])),
                 ] : null,
             ],
-            'invoiceToken' => InvoiceToken::where('order_id', $order->id)->value('token'),
-            'smsSent' => (bool) InvoiceToken::where('order_id', $order->id)->value('sms_sent'),
+            'invoiceToken' => $invoiceToken->token,
+            'smsSent' => (bool) $invoiceToken->sms_sent,
             'hasPhone' => ! empty($order->user->phone),
         ]);
     }
@@ -234,12 +236,12 @@ class OrderController extends Controller
         $newStatus = $validated['status'];
 
         $validTransitions = [
-            'pending'          => ['processing', 'cancelled'],
-            'processing'       => ['ready', 'cancelled'],
-            'ready'            => ['out_for_delivery', 'delivered', 'cancelled'],
+            'pending' => ['processing', 'cancelled'],
+            'processing' => ['ready', 'cancelled'],
+            'ready' => ['out_for_delivery', 'delivered', 'cancelled'],
             'out_for_delivery' => ['delivered', 'cancelled'],
-            'delivered'        => [],
-            'cancelled'        => [],
+            'delivered' => [],
+            'cancelled' => [],
         ];
 
         if (! in_array($newStatus, $validTransitions[$oldStatus] ?? [])) {
@@ -279,7 +281,7 @@ class OrderController extends Controller
 
         $validated = $request->validate([
             'item_type' => 'required|integer|in:1,2',
-            'weight'    => 'required|numeric|min:0.5|max:10',
+            'weight' => 'required|numeric|min:0.5|max:10',
         ]);
 
         try {
@@ -298,18 +300,18 @@ class OrderController extends Controller
             $staffUser = $request->user();
             $oldStatus = $order->status;
 
-            $order->pathao_consignment_id  = $consignmentId;
+            $order->pathao_consignment_id = $consignmentId;
             $order->pathao_delivery_status = 'Pending';
-            $order->location_id            = $staffUser->location_id;
-            $order->status                 = 'out_for_delivery';
-            $order->notified_at            = now();
+            $order->location_id = $staffUser->location_id;
+            $order->status = 'out_for_delivery';
+            $order->notified_at = now();
             $order->save();
 
             event(new OrderStatusChanged($order, $oldStatus));
 
             return back()->with('success', "Dispatched via Pathao. Consignment: {$consignmentId}");
         } catch (\RuntimeException $e) {
-            return back()->with('error', 'Pathao error: ' . $e->getMessage());
+            return back()->with('error', 'Pathao error: '.$e->getMessage());
         }
     }
 
@@ -335,7 +337,7 @@ class OrderController extends Controller
         }
 
         $validated = $request->validate([
-            'photo'   => 'required|image|max:10240',
+            'photo' => 'required|image|max:10240',
             'item_id' => 'required|integer',
         ]);
 
@@ -354,9 +356,9 @@ class OrderController extends Controller
 
         $photoRegistry = PhotoRegistry::create([
             'registry_code' => $registryCode,
-            'user_id'       => $order->user_id,
-            'photo_paths'   => [$photoPath],
-            'expires_at'    => now()->addYears(3),
+            'user_id' => $order->user_id,
+            'photo_paths' => [$photoPath],
+            'expires_at' => now()->addYears(3),
         ]);
 
         $order->photoRegistries()->attach($photoRegistry->id);
