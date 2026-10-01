@@ -201,7 +201,7 @@ export default function Wizard({ products, locations, deliveryFees }) {
             }),
         };
 
-        router.post('/order', payload, {
+        router.post(route('order.store'), payload, {
             onFinish: () => setSubmitting(false),
         });
     }

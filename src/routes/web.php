@@ -11,6 +11,7 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboardContro
 use App\Http\Controllers\FrameController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\MugController;
+use App\Http\Controllers\OrderController as GenericOrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReprintController;
 use App\Http\Controllers\Staff\AppointmentController as StaffAppointmentController;
@@ -48,6 +49,7 @@ Route::middleware(['auth', 'customer'])->group(function () {
     Route::get('/order', function () {
         return Inertia::render('Order/Services');
     })->name('order.create');
+    Route::post('/order', [GenericOrderController::class, 'store'])->name('order.store');
 
     // Photo Reprint
     Route::get('/order/reprint', [ReprintController::class, 'create'])->name('order.reprint');
