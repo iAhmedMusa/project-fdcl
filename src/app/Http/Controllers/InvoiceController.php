@@ -42,7 +42,16 @@ class InvoiceController extends Controller
             ], 410);
         }
 
-        $order = $invoiceToken->order->load(['items.product', 'user', 'location', 'payments']);
+        $order = $invoiceToken->order;
+
+        if (! $order) {
+            return response()->view('invoice.expired', [
+                'orderNumber' => null,
+                'expiresAt' => $invoiceToken->expires_at,
+            ], 410);
+        }
+
+        $order->load(['items.product', 'user', 'location', 'payments']);
 
         return view('invoice.public', compact('order', 'token'));
     }
@@ -60,7 +69,16 @@ class InvoiceController extends Controller
             ], 410);
         }
 
-        $order = $invoiceToken->order->load(['items.product', 'user', 'location', 'payments']);
+        $order = $invoiceToken->order;
+
+        if (! $order) {
+            return response()->view('invoice.expired', [
+                'orderNumber' => null,
+                'expiresAt' => $invoiceToken->expires_at,
+            ], 410);
+        }
+
+        $order->load(['items.product', 'user', 'location', 'payments']);
         $pdf = Pdf::loadView('pdf.invoice', compact('order'));
 
         return $pdf->download("FDCL-Invoice-{$order->order_number}.pdf");
@@ -97,7 +115,7 @@ class InvoiceController extends Controller
 
         $token = $invoiceService->createOrRenewToken($order);
         $url = $invoiceService->getPublicUrl($token);
-        $sent = $smsService->sendOrderReady($phone, $url, $order->order_number, $order->user->name);
+        $sent = $smsService->sendOrderReady($phone, $url, $order->order_number, $order->user?->name);
 
         if (! $sent) {
             return response()->json(['message' => 'SMS could not be sent. Check logs.'], 500);

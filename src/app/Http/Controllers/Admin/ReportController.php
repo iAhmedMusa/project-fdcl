@@ -79,8 +79,8 @@ class ReportController extends Controller
             ->map(fn ($o) => [
                 'Order #' => $o->order_number,
                 'Date' => $o->created_at->format('M d, Y'),
-                'Customer' => $o->user->name,
-                'Location' => $o->location->name,
+                'Customer' => $o->user?->name ?? 'N/A',
+                'Location' => $o->location?->name ?? 'N/A',
                 'Items' => $o->items_count,
                 'Total (৳)' => number_format($o->total_amount, 0),
                 'Paid (৳)' => number_format($o->amount_paid, 0),

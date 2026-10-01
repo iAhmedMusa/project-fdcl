@@ -95,8 +95,8 @@ class OrderController extends Controller
                 'created_at' => $order->created_at->diffForHumans(),
                 'created_at_formatted' => $order->created_at->format('M d, Y H:i'),
                 'user' => [
-                    'name' => $order->user->name,
-                    'phone' => $order->user->phone ?? 'N/A',
+                    'name' => $order->user?->name ?? 'N/A',
+                    'phone' => $order->user?->phone ?? 'N/A',
                 ],
                 'location' => $order->location ? ['name' => $order->location->name] : null,
                 'pickup_type' => $order->pickup_type,
@@ -160,10 +160,10 @@ class OrderController extends Controller
                 'updated_at' => $order->updated_at->format('M d, Y \a\t H:i'),
                 'is_awaiting_photo' => $order->isAwaitingPhoto(),
                 'user' => [
-                    'name' => $order->user->name,
-                    'email' => $order->user->email,
-                    'phone' => $order->user->phone ?? 'Not provided',
-                    'address' => $order->user->address ?? null,
+                    'name' => $order->user?->name ?? 'N/A',
+                    'email' => $order->user?->email ?? 'N/A',
+                    'phone' => $order->user?->phone ?? 'Not provided',
+                    'address' => $order->user?->address ?? null,
                 ],
                 'location' => $order->location ? [
                     'name' => $order->location->name,

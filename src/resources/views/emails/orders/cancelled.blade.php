@@ -1,7 +1,7 @@
 <x-mail::message>
 # Your Order Has Been Cancelled
 
-Hello {{ $order->user->name }},
+Hello {{ $order->user?->name ?? 'valued customer' }},
 
 We're sorry, but your order has been cancelled.
 

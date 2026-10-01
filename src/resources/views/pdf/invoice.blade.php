@@ -284,16 +284,16 @@ $logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_
             <tr>
                 <td style="padding-right:20px">
                     <div class="meta-section-title">Billed To</div>
-                    <div class="meta-name">{{ $order->user->name }}</div>
-                    @if($order->user->phone)
-                        <div class="meta-detail">{{ $order->user->phone }}</div>
+                    <div class="meta-name">{{ $order->user?->name ?? 'Guest' }}</div>
+                    @if($order->user?->phone)
+                        <div class="meta-detail">{{ $order->user?->phone }}</div>
                     @endif
                 </td>
                 <td style="text-align:right">
                     <div class="meta-section-title" style="text-align:right">Order Details</div>
                     <div class="meta-detail">
                         <span class="meta-key">Date:</span> {{ $order->created_at->format('d M Y') }}<br>
-                        <span class="meta-key">Branch:</span> {{ $order->location->name }}<br>
+                        <span class="meta-key">Branch:</span> {{ $order->location?->name ?? 'N/A' }}<br>
                         <span class="meta-key">Order Status:</span> <span class="status-text">{{ ucfirst($order->status) }}</span>
                     </div>
                 </td>
@@ -318,10 +318,10 @@ $logoB64    = 'data:image/png;base64,' . base64_encode(file_get_contents(public_
                             <span class="cat-tag">Studio Fee</span>
                             <span class="item-name">Session Fee</span>
                         @else
-                            <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
-                            <span class="item-name">{{ $item->product->name }}</span>
-                            @if($item->product->size_label)
-                                <span class="item-size">{{ $item->product->size_label }}</span>
+                            <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product?->category ?? ''] ?? $item->product?->category ?? 'Item') }}</span>
+                            <span class="item-name">{{ $item->product?->name ?? 'Item' }}</span>
+                            @if($item->product?->size_label)
+                                <span class="item-size">{{ $item->product?->size_label }}</span>
                             @endif
                         @endif
                     </td>

@@ -1,7 +1,7 @@
 <x-mail::message>
 # Order Confirmed
 
-Hello {{ $order->user->name }},
+Hello {{ $order->user?->name ?? 'valued customer' }},
 
 Thank you for your order! We've received it and will start preparing it right away.
 
@@ -18,12 +18,12 @@ Thank you for your order! We've received it and will start preparing it right aw
 | Product | Size | Qty | Price |
 |:--------|:-----|:---:|------:|
 @foreach ($order->items as $item)
-| {{ $item->product->name }} | {{ $item->product->size_label ?? '—' }} | {{ $item->quantity }} | ৳{{ number_format($item->subtotal, 0) }} |
+| {{ $item->product?->name ?? 'Item' }} | {{ $item->product?->size_label ?? '—' }} | {{ $item->quantity }} | ৳{{ number_format($item->subtotal, 0) }} |
 @endforeach
 | | | **Total** | **৳{{ number_format($order->total_amount, 0) }}** |
 </x-mail::table>
 
-**Pickup Location:** {{ $order->location->name }} — {{ $order->location->address }}
+**Pickup Location:** {{ $order->location?->name ?? 'N/A' }} — {{ $order->location?->address ?? '' }}
 **Hours:** Sat–Thu 9:30 AM – 9:00 PM, Fri 3:00 PM – 9:00 PM
 
 @if ($registry)

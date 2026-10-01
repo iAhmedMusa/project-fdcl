@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\InvoiceToken;
+use App\Models\Order;
 use Tests\TestCase;
 
 class InvoiceExpiredTest extends TestCase
@@ -33,5 +34,21 @@ class InvoiceExpiredTest extends TestCase
         $this->assertStringContainsString('Your order and invoice still exist', $html);
         $this->assertStringContainsString('Log in to view my invoice', $html);
         $this->assertStringContainsString('FDCL-123', $html);
+    }
+
+    public function test_public_invoice_view_survives_missing_relations(): void
+    {
+        $order = new Order([
+            'order_number' => 'DUMMY-NULL',
+            'status' => 'pending',
+            'total_amount' => 100,
+        ]);
+        $order->id = 999999;
+        $order->created_at = now();
+
+        $html = view('invoice.public', ['order' => $order, 'token' => 'dummy'])->render();
+
+        $this->assertStringContainsString('Guest', $html);
+        $this->assertStringContainsString('N/A', $html);
     }
 }

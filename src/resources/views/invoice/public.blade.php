@@ -421,15 +421,15 @@ $shareText  = isset($token) ? urlencode("FDCL Invoice {$order->order_number}: {$
             <div class="meta-grid">
                 <div class="meta-block">
                     <div class="meta-label">Billed To</div>
-                    <p><strong>{{ $order->user->name }}</strong></p>
-                    @if($order->user->phone)
-                        <p class="muted">{{ $order->user->phone }}</p>
+                    <p><strong>{{ $order->user?->name ?? 'Guest' }}</strong></p>
+                    @if($order->user?->phone)
+                        <p class="muted">{{ $order->user?->phone }}</p>
                     @endif
                 </div>
                 <div class="meta-block">
                     <div class="meta-label">Order Details</div>
                     <p><strong>Date:</strong> {{ $order->created_at->format('d M Y') }}</p>
-                    <p><strong>Branch:</strong> {{ $order->location->name }}</p>
+                    <p><strong>Branch:</strong> {{ $order->location?->name ?? 'N/A' }}</p>
                     <p><strong>Order Status:</strong> {{ ucfirst($order->status) }}</p>
                 </div>
             </div>
@@ -451,10 +451,10 @@ $shareText  = isset($token) ? urlencode("FDCL Invoice {$order->order_number}: {$
                         @foreach($order->items->filter(fn($i) => $i->reprint_source !== 'studio_fee') as $item)
                         <tr>
                             <td>
-                                <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product->category] ?? $item->product->category) }}</span>
-                                <span class="item-name">{{ $item->product->name }}</span>
-                                @if($item->product->size_label)
-                                    <span class="item-size">{{ $item->product->size_label }}</span>
+                                <span class="cat-tag">{{ $item->reprint_source === 'awaiting' ? 'Studio Service' : ($categoryLabels[$item->product?->category ?? ''] ?? $item->product?->category ?? 'Item') }}</span>
+                                <span class="item-name">{{ $item->product?->name ?? 'Item' }}</span>
+                                @if($item->product?->size_label)
+                                    <span class="item-size">{{ $item->product?->size_label }}</span>
                                 @endif
                             </td>
                             <td style="text-align:center;color:var(--muted)">{{ $item->quantity }}</td>

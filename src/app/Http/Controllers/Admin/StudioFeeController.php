@@ -20,7 +20,7 @@ class StudioFeeController extends Controller
             ->map(fn ($fee) => [
                 'id' => $fee->id,
                 'location_id' => $fee->location_id,
-                'location_name' => $fee->location->name,
+                'location_name' => $fee->location?->name ?? 'N/A',
                 'fee' => (float) $fee->fee,
                 'is_active' => $fee->is_active,
             ]);

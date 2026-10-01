@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Staff;
 
 use App\Events\OrderPlaced;
+use App\Http\Controllers\Concerns\HandlesDelivery;
 use App\Http\Controllers\Controller;
 use App\Models\Location;
 use App\Models\Order;
@@ -12,7 +13,6 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\PhotoRegistry;
 use App\Models\Product;
-use App\Http\Controllers\Concerns\HandlesDelivery;
 use App\Models\StudioFee;
 use App\Models\User;
 use App\Services\OrderNumberGenerator;
@@ -31,6 +31,7 @@ use Inertia\Response;
 class WalkInOrderController extends Controller
 {
     use HandlesDelivery;
+
     public function __construct(
         private readonly OrderNumberGenerator $orderNumbers,
         private readonly PhotoStorage $photoStorage,
@@ -53,17 +54,17 @@ class WalkInOrderController extends Controller
 
         $staff = auth()->user()->load('location.studioFee');
         $staffLocation = [
-            'id'         => $staff->location->id,
-            'name'       => $staff->location->name,
-            'studio_fee' => (float) ($staff->location->studioFee->fee ?? 0),
+            'id' => $staff->location?->id,
+            'name' => $staff->location?->name ?? 'N/A',
+            'studio_fee' => (float) ($staff->location?->studioFee?->fee ?? 0),
         ];
 
         return Inertia::render('Staff/CreateOrder', [
-            'products'      => $products,
-            'locations'     => $locations,
-            'studioFees'    => $studioFees,
+            'products' => $products,
+            'locations' => $locations,
+            'studioFees' => $studioFees,
             'staffLocation' => $staffLocation,
-            'deliveryFees'  => $this->deliveryFees(),
+            'deliveryFees' => $this->deliveryFees(),
         ]);
     }
 
@@ -143,7 +144,7 @@ class WalkInOrderController extends Controller
 
             // Calculate reprint amount from all items
             $reprintItemsData = $validated['reprint_items'] ?? [];
-            $studioFeePerSession = (float) (auth()->user()->load('location.studioFee')->location->studioFee->fee ?? 0);
+            $studioFeePerSession = (float) (auth()->user()->load('location.studioFee')->location?->studioFee?->fee ?? 0);
             $studioFeeAmount = 0;
             if (in_array('reprint', $validated['services']) && ! empty($reprintItemsData)) {
                 foreach ($reprintItemsData as $reprintItem) {
@@ -500,8 +501,8 @@ class WalkInOrderController extends Controller
             'items' => $order->items->map(function ($item) {
                 return [
                     'product_id' => $item->product_id,
-                    'product_name' => $item->product->name,
-                    'category' => $item->product->category,
+                    'product_name' => $item->product?->name ?? 'N/A',
+                    'category' => $item->product?->category,
                     'quantity' => $item->quantity,
                     'unit_price' => (float) $item->unit_price,
                 ];

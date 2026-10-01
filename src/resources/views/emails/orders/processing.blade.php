@@ -1,7 +1,7 @@
 <x-mail::message>
 # Your Photos Are Being Printed
 
-Hello {{ $order->user->name }},
+Hello {{ $order->user?->name ?? 'valued customer' }},
 
 Good news! Your photos are now being printed by our team.
 
@@ -18,7 +18,7 @@ Your order will be ready for pickup **within 30 minutes**. We'll notify you as s
 
 **Pickup Location:**
 
-{{ $order->location->name }} — {{ $order->location->address }}
+{{ $order->location?->name ?? 'N/A' }} — {{ $order->location?->address ?? '' }}
 
 **Business Hours:**
 - Saturday–Thursday: 9:30 AM – 9:00 PM

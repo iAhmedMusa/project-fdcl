@@ -1,7 +1,7 @@
 <x-mail::message>
 # Thank You! Your Order is Complete
 
-Hello {{ $order->user->name }},
+Hello {{ $order->user?->name ?? 'valued customer' }},
 
 Thank you for choosing Focus Digital Color Lab! Your order has been successfully delivered.
 
@@ -25,7 +25,7 @@ Leave a Google Review
 
 If you have an FDCL Photo ID, you can reorder your photos anytime without re-uploading.
 
-<x-mail::button :url="route('reprint.create')">
+<x-mail::button :url="route('order.reprint')">
 Reorder Photos
 </x-mail::button>
 

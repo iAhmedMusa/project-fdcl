@@ -81,7 +81,7 @@ class UserController extends Controller
                     'total_amount' => (float) $order->total_amount,
                     'created_at' => $order->created_at->format('M d, Y'),
                     'location' => [
-                        'name' => $order->location->name,
+                        'name' => $order->location?->name ?? 'N/A',
                     ],
                     'items_count' => $order->items->count(),
                 ];
